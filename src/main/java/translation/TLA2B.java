@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 
+import exceptions.FrontEndException;
+import exceptions.MyException;
+
 import util.FileUtil;
 import util.ToolIO;
 
@@ -31,7 +34,6 @@ public class TLA2B {
 
 		String path = name.substring(0,
 				name.lastIndexOf(FileUtil.separator) + 1);
-
 
 		boolean createNaturals = false;
 		File naturals = new File(path + "Naturals.tla");
@@ -66,7 +68,7 @@ public class TLA2B {
 				e.printStackTrace();
 			}
 		}
-		
+
 		boolean createFiniteSets = false;
 		File finiteSets = new File(path + "FiniteSets.tla");
 		if (!finiteSets.exists()) {
@@ -83,7 +85,7 @@ public class TLA2B {
 				e.printStackTrace();
 			}
 		}
-		
+
 		boolean createSequences = false;
 		File sequences = new File(path + "Sequences.tla");
 		if (!sequences.exists()) {
@@ -102,15 +104,22 @@ public class TLA2B {
 		}
 
 		StringBuilder s = new StringBuilder();
-		
+
 		File config = new File(name + ".cfg");
 		String configName = null;
 		if (config.exists()) {
 			configName = name;
 		}
 
-		s = Main.start(name, configName);
-		
+		try {
+			s = Main.start(name, configName, false);
+		} catch (FrontEndException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (MyException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		if (createNaturals) {
 			naturals.delete();
@@ -118,18 +127,19 @@ public class TLA2B {
 		if (createIntegers) {
 			integers.delete();
 		}
-		
+
 		if (createFiniteSets) {
 			finiteSets.delete();
 		}
-		
+
 		if (createSequences) {
 			sequences.delete();
 		}
 
 		if (s == null) {
 			return;
-		}else s.append("\n/* Created "+ new Date() + " by TLA2B */");
+		} else
+			s.append("\n/* Created " + new Date() + " by TLA2B */");
 		File f;
 		f = new File(path + sourceModuleName + ".mch");
 		try {
@@ -170,26 +180,20 @@ public class TLA2B {
 				+ "a .. b    ==  {a, b}\n" + "====";
 		return n;
 	}
-	
-	private static String finiteSets(){
-		String n = "---- MODULE FiniteSets ----\n"
-		+ "IsFiniteSets(S) == S\n"
-		+ "Cardinality(S) == S\n"
-		+ "====";
+
+	private static String finiteSets() {
+		String n = "---- MODULE FiniteSets ----\n" + "IsFiniteSets(S) == S\n"
+				+ "Cardinality(S) == S\n" + "====";
 		return n;
-		
+
 	}
-	private static String sequences(){
-		String n = "---- MODULE Sequences ----\n"
-			+ "Seq(s) == s\n"
-			+ "Len(s) == s\n"
-			+ "s \\o t  == s\n"
-			+ "Append(s,e) == s\n"
-			+ "Head(s) == s\n"
-			+ "Tail(s) == s\n"
-			+ "SubSeq(s,m,n) == s\n"
-			+ "====";
-			return n;
+
+	private static String sequences() {
+		String n = "---- MODULE Sequences ----\n" + "Seq(s) == s\n"
+				+ "Len(s) == s\n" + "s \\o t  == s\n" + "Append(s,e) == s\n"
+				+ "Head(s) == s\n" + "Tail(s) == s\n" + "SubSeq(s,m,n) == s\n"
+				+ "====";
+		return n;
 	}
 
 }

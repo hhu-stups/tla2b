@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import exceptions.ModuleErrorException;
+import exceptions.MyException;
 import exceptions.NotImplementedException;
 import exceptions.TypeErrorException;
 
@@ -412,10 +413,12 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return new IntType();
 
 		case B_OPCODE_nat: // Nat
+			compareTypes(n, "Nat", expected, new PowerSetType(new IntType()));
 			return new PowerSetType(new IntType());
 
 			// Standart Module Integers
 		case B_OPCODE_int: // Int
+			compareTypes(n, "Int", expected, new PowerSetType(new IntType()));
 			return new PowerSetType(new IntType());
 		case B_OPCODE_uminus: // -x
 			visitExprOrOpArgNode(n.getArgs()[0], c, new IntType());
@@ -516,6 +519,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 			// TLA Builtins, but not in tlc.tool.BuiltInOPs
 		case B_OPCODE_bool: // BOOLEAN
+			compareTypes(n, "BOOLEAN", expected, new PowerSetType(new BooleanType()));
 			return new PowerSetType(new BooleanType());
 
 		case B_OPCODE_string: // STRING
@@ -555,9 +559,10 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 		if (d == null) {
 			// TODO
-			System.err.println("subdefinition " + name + " not evaluated yet");
+			// System.err.println("subdefinition " + name +
+			// " not evaluated yet");
 			// Definitionen sind noch nicht ausgewertet
-			return new Untyped();
+			return expected;
 		}
 		compareTypes(n, name, expected, d.getType());
 
@@ -670,7 +675,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		case OPCODE_subseteq: // \subseteq
 			return evalSubset(n, c, expected);
 
-			// Functions
+			/*********** Function ****************/
 		case OPCODE_nrfs: // succ[n \in Nat] == n + 1
 		case OPCODE_fc: // [n \in Nat |-> n+1]
 			return evalLambdaFc(n, c, expected);
@@ -680,6 +685,14 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 		case OPCODE_sof: // [ A -> b]
 			return evalSetOfFunction(n, c, expected);
+
+		case OPCODE_domain: {
+			MyType f = visitExprOrOpArgNode(n.getArgs()[0], c,
+					new PowerSetType(new PairType()));
+			MyType dom = ((PairType)((PowerSetType) f).getSubType()).getFirst();
+			return new PowerSetType(dom);
+		}
+			/************* End Function ********/
 
 		case OPCODE_sso: // $SubsetOf Represents {x \in S : p}.
 			return evalSubsetOf(n, c, expected);
@@ -912,7 +925,6 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			throw new TypeErrorException("Expected: " + expected
 					+ ", found POW(POW(PAIR(_A,_B)))\n" + n.getLocation());
 		}
-
 		PairType pair = (PairType) ((PowerSetType) ((PowerSetType) e)
 				.getSubType()).getSubType();
 		MyType gamma1 = pair.getFirst();
@@ -925,7 +937,8 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		MyType res2 = visitExprOrOpArgNode(n.getArgs()[1], c, new PowerSetType(
 				gamma2));
 		res2 = ((PowerSetType) res2).getSubType();
-		return new PowerSetType(new PowerSetType(new PairType(res1, res2)));
+		MyType result = new PowerSetType(new PowerSetType(new PairType(res1, res2)));
+		return result;
 	}
 
 	private MyType evalTuple(OpApplNode n, DefContext c, MyType expected)

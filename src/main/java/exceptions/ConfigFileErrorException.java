@@ -1,6 +1,5 @@
 package exceptions;
 
-import translation.MyException;
 
 @SuppressWarnings("serial")
 public class ConfigFileErrorException extends MyException{

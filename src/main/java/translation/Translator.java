@@ -552,12 +552,14 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 	private ExprReturn evalBBuiltIns(OpApplNode n, DefContext c,
 			boolean makePred) {
+		// B Builtins
 		UniqueString name = n.getOperator().getName();
 		StringBuilder out = new StringBuilder();
 		int priority = P_max;
 
 		switch (BBuiltInOPs.getOpcode(name)) {
-		// B Builtins
+		
+		/************* Module Naturals ***************/
 		case B_OPCODE_dotdot: // ..
 			out.append(evalOp2Args(n, "..", c, false, P_dotdot));
 			return new ExprReturn(out, P_dotdot);
@@ -606,6 +608,8 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append("NATURAL");
 			return new ExprReturn(out, priority);
 			
+			
+		/************* Module Integers ***********************/	
 		case B_OPCODE_int: // Int
 			out.append("INTEGER");
 			return new ExprReturn(out, priority);
@@ -615,7 +619,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			return new ExprReturn(out, P_uminus);
 
-		// Standard Module FiniteSets
+		/************** Standard Module FiniteSets ********************/
 		case B_OPCODE_card: // Cardinality
 			out.append("card(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
@@ -632,7 +636,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(makeBoolExpression(!makePred, out), priority); 
 		}
 
-		// Standard Module Sequences
+		/************* Standard Module Sequences  **************************/
 		case B_OPCODE_len: // length of the sequence
 			out.append("size(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
@@ -687,6 +691,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out);
 		}
 			
+		
 			// TLA Builtins, but not in tool.BuiltInOPs
 		case B_OPCODE_bool: // BOOLEAN
 			out.append("BOOL");
@@ -717,11 +722,6 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 	}
 
-	
-	/***************************************************************************
-	* The following HashSets are used in computing Leibnizity.                 *
-	*                                                                          *
-	***************************************************************************/
 	private StringBuilder brackets(ExprReturn r, int p, boolean left) {
 		StringBuilder res = new StringBuilder();
 		if ((left && r.getPriority() < p) || (!left && r.getPriority() <= p)) {
@@ -924,7 +924,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out, P_max);
 		}
 
-			// Functions
+		/************** Functions ******************/
 
 		case OPCODE_nrfs:
 		case OPCODE_fc: // Represents [x \in S |-> e].
@@ -950,7 +950,6 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 		case OPCODE_fa: // f[1]
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
-
 			out.append("(");
 			ExprOrOpArgNode[] args = n.getArgs();
 			for (int i = 1; i < args.length; i++) {
@@ -960,6 +959,12 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			}
 			out.append(")");
 			return new ExprReturn(out, priority);
+			
+		case OPCODE_domain:
+			out.append("dom(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
+			out.append(")");
+			return new ExprReturn(out, P_max);
 
 			// Records
 		case OPCODE_sor: // x \in [val : Data, rdy : {0, 1}, ack : {0, 1}]

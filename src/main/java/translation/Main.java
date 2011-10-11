@@ -2,6 +2,7 @@ package translation;
 
 import exceptions.ConfigFileErrorException;
 import exceptions.ModuleErrorException;
+import exceptions.MyException;
 import exceptions.TypeErrorException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -14,9 +15,14 @@ import util.ToolIO;
 public class Main {
 
 	public static void main(String[] args) {
-		//ToolIO.setMode(ToolIO.TOOL);
-		StringBuilder sb;
-		sb = start(args[0], args[0]);
+		// ToolIO.setMode(ToolIO.TOOL);
+		StringBuilder sb = null;
+		try {
+			sb = start(args[0], args[0], false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (sb != null)
 			System.out.println(sb);
 	}
@@ -48,18 +54,20 @@ public class Main {
 
 	}
 
-	public static StringBuilder start(String fileName, String configName) {
+	public static StringBuilder start(String fileName, String configName, boolean moduleAsString) throws exceptions.FrontEndException, MyException {
 		StringBuilder res = new StringBuilder();
-		String moduleName = evalFileName(fileName);
+		String moduleName = fileName;
+		if(!moduleAsString)
+			moduleName = evalFileName(fileName);
 		String config = evalConfigName(configName);
-
+		
 		ModuleNode rootModule;
-		try {
+		//try {
 			rootModule = parseModule(moduleName);
-		} catch (exceptions.FrontEndException e) {
-			System.err.println("FrontEndException");
-			return null;
-		}
+//		} catch (exceptions.FrontEndException e) {
+//			System.err.println("FrontEndException2");
+//			return null;
+//		}
 
 		ModuleContext con = new ModuleContext(rootModule);
 
@@ -70,46 +78,45 @@ public class Main {
 		}
 
 		ModuleTypeChecker mtc = new ModuleTypeChecker(rootModule, con);
-		try {
-			mtc.start();
-		} catch (TypeErrorException e) {
-			// System.out.println("TypeError" + e.getMessage());
-			// e.printStackTrace();
-			System.err.println("*** TypeError ***");
-			System.err.println(e.getMessage());
-			return null;
-		} catch (ModuleErrorException e) {
-			e.printStackTrace();
-		} catch (MyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//try {
+		mtc.start();
+//		} catch (TypeErrorException e) {
+//			// System.out.println("TypeError" + e.getMessage());
+//			// e.printStackTrace();
+//			System.err.println("*** TypeError ***");
+//			System.err.println(e.getMessage());
+//			return null;
+//		} catch (ModuleErrorException e) {
+//			e.printStackTrace();
+//		} catch (MyException e) {
+//			e.printStackTrace();
+//		}
 
 		Translator t = new Translator();
 		res = t.visitModule(rootModule, con);
 		return res;
 	}
 
-	public static ModuleNode parseModule(String moduleName) throws exceptions.FrontEndException {
+	public static ModuleNode parseModule(String moduleName)
+			throws exceptions.FrontEndException {
 
 		// Parser
-		 SpecObj spec = new SpecObj(moduleName, new MySimpleFilenameToStream());
-		//SpecObj spec = new SpecObj(moduleName, null);
+		SpecObj spec = new SpecObj(moduleName, new MySimpleFilenameToStream());
+		// SpecObj spec = new SpecObj(moduleName, null);
 		// PrintStream p = new PrintStream(new BufferedDataOutputStream());
 		try {
 			SANY.frontEndMain(spec, moduleName, ToolIO.out);
 			// frontEndMain(spec, mName, null);
 			// SANY.frontEndMain(spec, mName, p);
 		} catch (FrontEndException e) {
-			// Error in Frontend
-			System.err.println("FrontEndException");
+			// Error in Frontend, never happens
 			return null;
 		}
 
-		if(spec.parseErrors.isFailure() || spec.semanticErrors.isFailure()){
+		if (spec.parseErrors.isFailure() || spec.semanticErrors.isFailure()) {
 			throw new exceptions.FrontEndException("ParseError", spec);
 		}
-		
+
 		// RootModule
 		ModuleNode n = spec.getExternalModuleTable().rootModule;
 		if (spec.getInitErrors().isFailure()) {
