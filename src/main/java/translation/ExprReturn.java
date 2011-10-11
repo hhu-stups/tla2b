@@ -1,8 +1,7 @@
 package translation;
 
-//Rückgabewert einer TLA+-Expression
-// enhält zum einen den Typ und zum anderen die Priorität des Operator
-// Dieser wird für die Klammerung gebraucht
+//return object of a tla-expression
+// contains the type and priority of the operator
 public class ExprReturn {
 	public StringBuilder out= new StringBuilder();
 	private int priority;

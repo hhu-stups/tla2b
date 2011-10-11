@@ -5,8 +5,8 @@ import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpApplNode;
 
-// TLA+-Aktion
-// für diese Klasse wird eine B-Operation erzeugt
+// TLA+-action 
+// represents a B-operation
 public class Action {
 	public String name;
 	public ExprOrOpArgNode node;

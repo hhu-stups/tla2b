@@ -26,7 +26,7 @@ import tla2sany.semantic.StringNode;
 import tlc2.tool.BuiltInOPs;
 import types.*;
 
-//Typüberprüfung und Typinferenz
+// typechecking and typinference
 public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		IType, BBuildIns {
 	private ModuleNode root;
@@ -697,8 +697,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		case OPCODE_sso: // $SubsetOf Represents {x \in S : p}.
 			return evalSubsetOf(n, c, expected);
 
-		case OPCODE_soa: // $SetOfAll Represents {e : x \in S}. TODO übersetzung
-			// fehlt beide Konstruktoren
+		case OPCODE_soa: // $SetOfAll Represents {e : x \in S}. TODO translation
 		{
 			MyType e = new PowerSetType(new Untyped()).compare(expected);
 			if (e == null) {
@@ -781,7 +780,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		case 0: // no builtin
 			return evalBBuiltIns(n, c, expected);
 
-			// temporale Formel werden nicht mit übersetzt
+			// temporal formulas are not be translated
 		case OPCODE_box: // []
 		case OPCODE_diamond: // <>
 		case OPCODE_wf:

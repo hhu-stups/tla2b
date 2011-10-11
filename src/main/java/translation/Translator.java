@@ -12,7 +12,7 @@ import types.StructType;
 import types.Untyped;
 import util.UniqueString;
 
-//Übersetzer
+// translator
 public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		BBuildIns, Priorities {
 	ModuleContext moduleContext;
@@ -614,7 +614,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append("INTEGER");
 			return new ExprReturn(out, priority);
 			
-		case B_OPCODE_uminus: // unäres minus
+		case B_OPCODE_uminus: // unary minus
 			out.append("-");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			return new ExprReturn(out, P_uminus);

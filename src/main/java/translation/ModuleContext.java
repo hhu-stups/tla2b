@@ -10,7 +10,7 @@ import tlc2.tool.ModelConfig;
 import tlc2.util.Vect;
 import types.Untyped;
 
-// Information, die in einem Modul benötigt werden
+// contains the content of a tla+ module
 public class ModuleContext {
 	private String spec = "";
 	private String next = "";

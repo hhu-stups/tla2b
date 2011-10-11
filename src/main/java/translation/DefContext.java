@@ -8,7 +8,7 @@ import tla2sany.semantic.OpDefNode;
 import types.MyType;
 import types.Untyped;
 
-//Enthält alle Informationen einer TLA+-Definition
+//contains the content of a TLA+-definition
 public class DefContext {
 	private boolean next= false;
 	private String[] params;
