@@ -46,7 +46,7 @@ task copy(type:Copy, dependsOn: pack) {
 
 task deploy(type: Zip, dependsOn: copy) {
    from('build/') { include 'tla/**' }
-   baseName = 'tla'
+   baseName = 'tla2b'
 }
 
 
