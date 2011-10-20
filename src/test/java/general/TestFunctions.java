@@ -144,7 +144,7 @@ public class TestFunctions {
 				+ "f[x \\in Nat] ==  x+1\n"
 				+ "ASSUME [f EXCEPT ![TRUE] = 1] # f"
 				+ "=================================";
-		StringBuilder sb = Main.start(module, null, true);
+		Main.start(module, null, true);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -154,7 +154,7 @@ public class TestFunctions {
 				+ "f[x \\in Nat] ==  x+1\n"
 				+ "ASSUME [f EXCEPT ![1] = TRUE] # f"
 				+ "=================================";
-		StringBuilder sb = Main.start(module, null, true);
+		Main.start(module, null, true);
 	}
 
 	@Test

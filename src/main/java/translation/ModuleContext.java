@@ -2,12 +2,9 @@ package translation;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
-import tlc2.tool.ModelConfig;
-import tlc2.util.Vect;
 import types.Untyped;
 
 // contains the content of a tla+ module
@@ -20,7 +17,7 @@ public class ModuleContext {
 	ArrayList<String> invariants = new ArrayList<String>();
 	ArrayList<Action> actions = new ArrayList<Action>();
 	ArrayList<OpDefNode> lets = new ArrayList<OpDefNode>();
-
+	
 	public Hashtable<String, Constant> constants;
 	public Hashtable<String, Variable> variables;
 	public Hashtable<String, DefContext> definitions;

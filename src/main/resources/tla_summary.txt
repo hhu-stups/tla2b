@@ -1,0 +1,50 @@
+Logic
+------
+ P /\ Q					conjunction
+ P \/ Q 				disjunction
+ ~ or \lnot or \neg 	negation
+ =>						implication
+ <=> or \equiv			equivalence
+ TRUE
+ FALSE
+ BOOLEAN
+ \A x : P or \A x \in S : P
+ \E x : P or \E x \in S : P
+ 
+Equality:
+------
+ e = f					equality
+ e # f or e /= f		disequality 
+
+
+Sets
+------
+ {d, e}					Set consisting of elements d, e
+ {x \in S : P}			Set of elements x in S satisfying p
+ {e : x \in S}			Set of elements e such that x in S
+ e \in S				element of
+ e \notin S 			not element of
+ S \cup T or S \union T		set union
+ S \cap T or S \intersect 	set intersection
+ S \subseteq T 			equality or subset of
+ S \ t					set difference
+ SUBSET S				Set of subsets of S
+ UNION S				Union of all elements of S
+
+Functions
+------
+ f[e]					Function application
+ DOMAIN f				Domain of function f
+ [x \in S |-> e]		Function f such that f[x] = e for x in S
+ [S -> T]				Set of functions f with f[x] in T for x in S
+ [f EXCEPT ![e] = d]	The function equal to f except f[e] = d
+
+Records
+------
+ e.id					The id-field of record e
+ [id|->e,...,id|->e]	construct a record with given field names and values
+ [id|->S,...,id|->S]	set of records with given fields and field types
+ [r EXCEPT !.id = e]	The record equal to r except r.id = e
+ 
+
+ 

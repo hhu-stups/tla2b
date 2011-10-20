@@ -1,6 +1,5 @@
 package translation;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -20,7 +19,6 @@ public class ConfigTypeChecker implements IType {
 
 	private ModuleContext moduleContext;
 
-	@SuppressWarnings("unchecked")
 	public ConfigTypeChecker(ModelConfig configAst, ModuleContext moduleContext) {
 		this.moduleContext = moduleContext;
 		this.configAst = configAst;
@@ -31,7 +29,6 @@ public class ConfigTypeChecker implements IType {
 		this.moduleContext.setSpec("");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void start() throws ConfigFileErrorException {
 		// next declaration
 		evalNext();

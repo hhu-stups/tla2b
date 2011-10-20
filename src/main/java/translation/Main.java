@@ -1,9 +1,7 @@
 package translation;
 
 import exceptions.ConfigFileErrorException;
-import exceptions.ModuleErrorException;
 import exceptions.MyException;
-import exceptions.TypeErrorException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
@@ -15,12 +13,12 @@ import util.ToolIO;
 public class Main {
 
 	public static void main(String[] args) {
-		// ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.setMode(ToolIO.TOOL);
 		StringBuilder sb = null;
 		try {
-			sb = start(args[0], args[0], false);
+			sb = start(args[0], null, false);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			// ToolIO.printAllMessages();
 			e.printStackTrace();
 		}
 		if (sb != null)
@@ -54,20 +52,16 @@ public class Main {
 
 	}
 
-	public static StringBuilder start(String fileName, String configName, boolean moduleAsString) throws exceptions.FrontEndException, MyException {
+	public static StringBuilder start(String fileName, String configName,
+			boolean moduleAsString) throws exceptions.FrontEndException,
+			MyException {
 		StringBuilder res = new StringBuilder();
 		String moduleName = fileName;
-		if(!moduleAsString)
+		if (!moduleAsString)
 			moduleName = evalFileName(fileName);
 		String config = evalConfigName(configName);
-		
-		ModuleNode rootModule;
-		//try {
-			rootModule = parseModule(moduleName);
-//		} catch (exceptions.FrontEndException e) {
-//			System.err.println("FrontEndException2");
-//			return null;
-//		}
+
+		ModuleNode rootModule = parseModule(moduleName);
 
 		ModuleContext con = new ModuleContext(rootModule);
 
@@ -78,19 +72,19 @@ public class Main {
 		}
 
 		ModuleTypeChecker mtc = new ModuleTypeChecker(rootModule, con);
-		//try {
+		// try {
 		mtc.start();
-//		} catch (TypeErrorException e) {
-//			// System.out.println("TypeError" + e.getMessage());
-//			// e.printStackTrace();
-//			System.err.println("*** TypeError ***");
-//			System.err.println(e.getMessage());
-//			return null;
-//		} catch (ModuleErrorException e) {
-//			e.printStackTrace();
-//		} catch (MyException e) {
-//			e.printStackTrace();
-//		}
+		// } catch (TypeErrorException e) {
+		// // System.out.println("TypeError" + e.getMessage());
+		// // e.printStackTrace();
+		// System.err.println("*** TypeError ***");
+		// System.err.println(e.getMessage());
+		// return null;
+		// } catch (ModuleErrorException e) {
+		// e.printStackTrace();
+		// } catch (MyException e) {
+		// e.printStackTrace();
+		// }
 
 		Translator t = new Translator();
 		res = t.visitModule(rootModule, con);
@@ -101,20 +95,41 @@ public class Main {
 			throws exceptions.FrontEndException {
 
 		// Parser
-		SpecObj spec = new SpecObj(moduleName, new MySimpleFilenameToStream());
-		// SpecObj spec = new SpecObj(moduleName, null);
+		// SpecObj spec = new SpecObj(moduleName, new
+		// MySimpleFilenameToStream());
+		SpecObj spec = new SpecObj(moduleName, null);
 		// PrintStream p = new PrintStream(new BufferedDataOutputStream());
 		try {
 			SANY.frontEndMain(spec, moduleName, ToolIO.out);
 			// frontEndMain(spec, mName, null);
 			// SANY.frontEndMain(spec, mName, p);
 		} catch (FrontEndException e) {
-			// Error in Frontend, never happens
+			// Error in Frontend, should never happens
 			return null;
 		}
 
-		if (spec.parseErrors.isFailure() || spec.semanticErrors.isFailure()) {
-			throw new exceptions.FrontEndException("ParseError", spec);
+		// // Parse Error
+		// if (spec.getParseErrors().isFailure()) {
+		//
+		// throw new ParseErrorException(
+		// allMessagesToString(ToolIO.getAllMessages()));
+		// // throw new ParseErrorException(spec.getParseErrors().toString());
+		// }
+		//
+		// // semantic error
+		// if (spec.getSemanticErrors().isFailure()) {
+		// throw new SemanticErrorException(
+		// allMessagesToString(ToolIO.getAllMessages()));
+		// // throw new
+		// // SemanticErrorException(spec.getSemanticErrors().toString());
+		// }
+
+		if (spec.parseErrors.isFailure()) {
+			throw new exceptions.FrontEndException(allMessagesToString(ToolIO.getAllMessages())+spec.parseErrors, spec);
+		}
+		
+		if (spec.semanticErrors.isFailure()) {
+			throw new exceptions.FrontEndException(allMessagesToString(ToolIO.getAllMessages())+spec.semanticErrors, spec);
 		}
 
 		// RootModule
@@ -124,31 +139,31 @@ public class Main {
 			return null;
 		}
 
-		// Parse Error
-		if (spec.getParseErrors().isFailure()) {
-			String[] messages = ToolIO.getAllMessages();
-			for (int i = 0; i < messages.length; i++) {
-				System.err.println(messages[i]);
-			}
-			System.err.println(spec.getParseErrors());
-			return null;
-		}
-
-		// semantic error
-		if (spec.getSemanticErrors().isFailure()) {
-			String[] messages = ToolIO.getAllMessages();
-			for (int i = 0; i < messages.length; i++) {
-				System.err.println(messages[i]);
-			}
-			return null;
-		}
+		// // Parse Error
+		// if (spec.getParseErrors().isFailure()) {
+		// String[] messages = ToolIO.getAllMessages();
+		// for (int i = 0; i < messages.length; i++) {
+		// System.err.println(messages[i]);
+		// }
+		// System.err.println(spec.getParseErrors());
+		// return null;
+		// }
 
 		if (n == null) { // Parse Error
 			System.out.println("Rootmodule null");
-			return null;
+			throw new exceptions.FrontEndException(
+					allMessagesToString(ToolIO.getAllMessages()), spec);
 		}
 
 		return n;
+	}
+
+	public static String allMessagesToString(String[] allMessages) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < allMessages.length-1; i++) {
+			sb.append(allMessages[i] + "\n");
+		}
+		return sb.toString();
 	}
 
 	public static void evalConfigFile2(String configName,

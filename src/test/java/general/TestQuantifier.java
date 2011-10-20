@@ -6,6 +6,7 @@ import static util.TestUtil.getTreeAsString;
 import org.junit.Test;
 import translation.Main;
 import util.ToolIO;
+import exceptions.FrontEndException;
 import exceptions.TypeErrorException;
 
 public class TestQuantifier {
@@ -61,9 +62,8 @@ public class TestQuantifier {
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 
-
 	// test types
-	
+
 	@Test(expected = TypeErrorException.class)
 	public void TestSetType() throws Exception {
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -81,8 +81,7 @@ public class TestQuantifier {
 				+ "=================================";
 		Main.start(module, null, true);
 	}
-	
-	
+
 	@Test
 	public void TestConvert2Predicate() throws Exception {
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -94,12 +93,23 @@ public class TestQuantifier {
 				+ "PROPERTIES !x.(x : NATURAL => TRUE = TRUE)\n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
-	@Test (expected = TypeErrorException.class)
+
+	@Test(expected = TypeErrorException.class)
 	public void TestTypeOfVariable() throws Exception {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals\n"
 				+ "ASSUME \\A x \\in Nat : x = TRUE \n"
+				+ "=================================";
+		Main.start(module, null, true);
+	}
+
+	// TLA+ allows no shadowing
+	@Test(expected = FrontEndException.class)
+	public void TestShadowing() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals\n"
+				+ "ASSUME \\E x \\in {1}: \\E x \\in {TRUE}: x  \n"
 				+ "=================================";
 		Main.start(module, null, true);
 	}

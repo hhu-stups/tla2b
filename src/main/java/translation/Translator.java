@@ -9,7 +9,6 @@ import types.BooleanType;
 import types.IType;
 import types.MyType;
 import types.StructType;
-import types.Untyped;
 import util.UniqueString;
 
 // translator
@@ -129,16 +128,15 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 					.getOperator().getKind() == UserDefinedOpKind) {
 				name = ((OpApplNode) ((ExprNode) mc.actions.get(i).node))
 						.getOperator().getName().toString();
-				//d = mc.definitions.get(name);
-				
-				//for (int j = 0; j < a.params.size(); j++) {
-				//	d.temp.put(a.params.get(j), new Parameter(new Untyped()));
-				//}
-				
-				
+				name = name.replace('!', '_');
+				// d = mc.definitions.get(name);
+
+				// for (int j = 0; j < a.params.size(); j++) {
+				// d.temp.put(a.params.get(j), new Parameter(new Untyped()));
+				// }
+
 			}
 			d = mc.definitions.get(mc.getNext());
-			
 
 			out.append(" " + name + "Op");
 
@@ -169,7 +167,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				out.append(visitBounded(a.parent, null));
 				out.append(" & ");
 			}
-			
+
 			out.append(visitExprOrOpArgNode(a.node, d, true).out);
 
 			out.append("\n\tTHEN ");
@@ -197,7 +195,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 	private StringBuilder evalInit(ModuleContext mc, ModuleNode n) {
 		StringBuilder out = new StringBuilder();
-		
+
 		if (mc.variables.size() == 0 || mc.getInit().equals(""))
 			return out;
 
@@ -273,18 +271,23 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				evalNext(def, mc);
 				dc = mc.definitions.get(def.getName().toString());
 				dc.setNext(true);
-				out.append(visitOpDefNode(def, dc));
+				// out.append(visitOpDefNode(def, dc));
 			}
 
 			// Definition in this module
 			else if (!standardModules.contains(def
 					.getOriginallyDefinedInModuleNode().getName().toString())) {
+
+				if (standardModules.contains(def.getSource()
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())) {
+					continue;
+				}
 				dc = mc.definitions.get(def.getName().toString());
 				if (!dc.isTemporal()) {
 					out.append(visitOpDefNode(def, dc));
 				}
 			}
-
 		}
 
 		// for (int i = 0; i < mc.lets.size(); i++) {
@@ -294,7 +297,19 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		// }
 
 		return out;
+	}
 
+	public static int count(String s) {
+		int counter = 0;
+		int start = 0;
+
+		while (true) {
+			start = s.indexOf('!', start) + 1;
+			if (start == 0)
+				break;
+			counter++;
+		}
+		return counter;
 	}
 
 	private void evalNext(OpDefNode n, ModuleContext mc) {
@@ -310,7 +325,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			return;
 		}
 		case LetInKind: {
-			//TODO
+			// TODO
 			LetInNode next1 = (LetInNode) next;
 			this.getActions(next1.getBody(), name, c, params);
 			return;
@@ -329,13 +344,13 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		switch (opcode) {
 		case OPCODE_be: // BoundedExists
 		{
-			
+
 			if (params == null) {
 				this.getActions(node.getArgs()[0], name, c, node);
 			} else {
 				Action a = new Action(name, node);
-				//a.defCon = c.definitions.get(name);
-				//this.getActions(node.getArgs()[0], name, c, params);
+				// a.defCon = c.definitions.get(name);
+				// this.getActions(node.getArgs()[0], name, c, params);
 				a.boundedExists(params);
 				c.actions.add(a);
 			}
@@ -345,7 +360,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		case OPCODE_dl: // DisjList
 		case OPCODE_lor: {
 			for (int i = 0; i < node.getArgs().length; i++) {
-				this.getActions(node.getArgs()[i], name+ (i + 1), c, params);
+				this.getActions(node.getArgs()[i], name + (i + 1), c, params);
 			}
 			return;
 		}
@@ -353,7 +368,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			// We handle all the other builtin operators here.
 			Action a = new Action(name, node);
 			a.boundedExists(params);
-			//a.defCon = c.definitions.get(c.getNext());
+			// a.defCon = c.definitions.get(c.getNext());
 			c.actions.add(a);
 			return;
 		}
@@ -398,7 +413,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		/*
 		 * if(n.getDef()!= null){ visitThmOrAssumpDefNode(n.getDef(), mc); }
 		 */
-		DefContext defCon = (DefContext)n.getToolObject(1);
+		DefContext defCon = (DefContext) n.getToolObject(1);
 		out.append(visitExprNode(n.getAssume(), defCon, true).out);
 
 		return out;
@@ -412,7 +427,21 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 	// Definitions
 	public StringBuilder visitOpDefNode(OpDefNode n, DefContext dc) {
 		StringBuilder out = new StringBuilder();
-		out.append(" " + n.getName());
+		String name = n.getName().toString();
+		// if (name.contains("!")) {
+		// //prefix = name.substring(0, name.indexOf('!'));
+		// name = name.substring(name.indexOf('!') + 1);
+		// }
+		name = name.replace('!', '_');
+
+		// if(dc.getPrefix()!= null){
+		// out.append(dc.getPrefix()+ "_" + name);
+		// }
+		// else{
+		// out.append(name);
+		// }
+		out.append(name);
+
 		String[] ps = dc.getParams();
 		if (ps.length > 0) {
 			out.append("(");
@@ -430,6 +459,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			BooleanType b = (BooleanType) dc.getType();
 			makePred = !b.isBoolValue();
 		}
+
 		out.append(visitExprNode(n.getBody(), dc, makePred).out);
 		out.append(";\n");
 		return out;
@@ -444,17 +474,27 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		int priority = P_max;
 		switch (n.getOperator().getKind()) {
-		case ConstantDeclKind:
-			out.append(visitOpDeclNode((OpDeclNode) n.getOperator()));
+		case ConstantDeclKind: {
+			String cName = n.getOperator().getName().toString();
+			if (c.substitution.containsKey(cName)) {
+				return visitExprOrOpArgNode(c.substitution.get(cName), c, false);
+			}
+			out.append(cName);
 			return new ExprReturn(out, priority);
-
+		}
 		case VariableDeclKind:
 			String name2 = n.getOperator().getName().toString();
-			out.append(name2);
-			if (makePred
-					&& moduleContext.variables.get(name2).getType().getType() == BOOLEAN) {
-				out.append(" = TRUE");
+			if (c.substitution.containsKey(name2)) {
+				return visitExprOrOpArgNode(c.substitution.get(name2), c, false);
 			}
+			out.append(name2);
+
+			// TODO wieder zurueck
+			// if (makePred
+			// && moduleContext.variables.get(name2).getType().getType() ==
+			// BOOLEAN) {
+			// out.append(" = TRUE");
+			// }
 			return new ExprReturn(out, priority);
 
 		case UserDefinedOpKind: {
@@ -471,7 +511,6 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 				DefContext defCon = c.lets.get(name).getDefCon();
 
-
 				for (int i = 0; i < defCon.getParams().length; i++) {
 					String pname = defCon.getParams()[i];
 					defCon.parameters.get(pname).setEr(
@@ -479,6 +518,13 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				}
 				return visitExprNode(node.getBody(), defCon, makePred);
 			}
+
+			if (c.getPrefix() != null) {
+				name = c.getPrefix() + "_" + name;
+			}
+
+			// converts e.g. count!Init to count_Init
+			name = name.replace("!", "_");
 
 			out.append(name);
 			if (n.getArgs().length > 0) {
@@ -491,16 +537,17 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				out.append(")");
 
 			}
-			MyType t = moduleContext.definitions.get(name).getType();
-			if (t.getType() == BOOLEAN) {
-				BooleanType b = (BooleanType) t;
-				if (!b.isBoolValue()) {
-					return new ExprReturn(makeBoolExpression(!makePred, out),
-							priority);
-				} else if (b.isBoolValue() && makePred) {
-					out.append(" = TRUE");
-				}
-			}
+			// TODO wieder zurueck
+			// MyType t = moduleContext.definitions.get(name).getType();
+			// if (t.getType() == BOOLEAN) {
+			// BooleanType b = (BooleanType) t;
+			// if (!b.isBoolValue()) {
+			// return new ExprReturn(makeBoolExpression(!makePred, out),
+			// priority);
+			// } else if (b.isBoolValue() && makePred) {
+			// out.append(" = TRUE");
+			// }
+			// }
 			return new ExprReturn(out, priority);
 		}
 
@@ -558,7 +605,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		int priority = P_max;
 
 		switch (BBuiltInOPs.getOpcode(name)) {
-		
+
 		/************* Module Naturals ***************/
 		case B_OPCODE_dotdot: // ..
 			out.append(evalOp2Args(n, "..", c, false, P_dotdot));
@@ -599,7 +646,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		case B_OPCODE_mod: // modulo
 			out.append(evalOp2Args(n, " mod ", c, false, P_mod));
 			return new ExprReturn(out, P_mod);
-			
+
 		case B_OPCODE_exp: // x hoch y, x^y
 			out.append(evalOp2Args(n, " ** ", c, false, P_exp));
 			return new ExprReturn(out, P_exp);
@@ -607,25 +654,24 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		case B_OPCODE_nat: // Nat
 			out.append("NATURAL");
 			return new ExprReturn(out, priority);
-			
-			
-		/************* Module Integers ***********************/	
+
+			/************* Module Integers ***********************/
 		case B_OPCODE_int: // Int
 			out.append("INTEGER");
 			return new ExprReturn(out, priority);
-			
+
 		case B_OPCODE_uminus: // unary minus
 			out.append("-");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			return new ExprReturn(out, P_uminus);
 
-		/************** Standard Module FiniteSets ********************/
+			/************** Standard Module FiniteSets ********************/
 		case B_OPCODE_card: // Cardinality
 			out.append("card(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(")");
 			return new ExprReturn(out, priority);
-			
+
 		case B_OPCODE_finite: // IsFiniteSet TODO
 		{
 			out.append("!f_.(f_ : ");
@@ -633,40 +679,40 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append(" => #f2_.(f2_ : ");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append("f2_>f_)))");
-			return new ExprReturn(makeBoolExpression(!makePred, out), priority); 
+			return new ExprReturn(makeBoolExpression(!makePred, out), priority);
 		}
 
-		/************* Standard Module Sequences  **************************/
+		/************* Standard Module Sequences **************************/
 		case B_OPCODE_len: // length of the sequence
 			out.append("size(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(")");
 			return new ExprReturn(out);
-			
+
 		case B_OPCODE_append: // Append(s,x)
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append("<-");
 			out.append(visitExprOrOpArgNode(n.getArgs()[1], c, false).out);
 			return new ExprReturn(out, P_append);
-			
-		case B_OPCODE_head: //Head(s)
+
+		case B_OPCODE_head: // Head(s)
 			out.append("first(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(")");
 			return new ExprReturn(out);
-			
-		case B_OPCODE_tail: //Tail(s)
+
+		case B_OPCODE_tail: // Tail(s)
 			out.append("tail(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(")");
 			return new ExprReturn(out);
-			
+
 		case B_OPCODE_conc: // s \o s2 - concatenation of s and s2
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append("^");
 			out.append(visitExprOrOpArgNode(n.getArgs()[1], c, false).out);
 			return new ExprReturn(out, P_conc);
-			
+
 		case B_OPCODE_subseq: // SubSeq(s,m,n)
 		{
 			StringBuilder s = visitExprOrOpArgNode(n.getArgs()[0], c, false).out;
@@ -678,21 +724,21 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append("/|\\");
 			out.append(visitExprOrOpArgNode(n.getArgs()[2], c, false).out);
 			out.append("-");
-			out.append(brackets(visitExprOrOpArgNode(n.getArgs()[1], c, false), P_minus, false));
+			out.append(brackets(visitExprOrOpArgNode(n.getArgs()[1], c, false),
+					P_minus, false));
 			out.append("+1");
 			return new ExprReturn(out, P_take_first);
 		}
-		
-		case B_OPCODE_seq: //Set of Sequences
+
+		case B_OPCODE_seq: // Set of Sequences
 		{
 			out.append("seq(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(")");
 			return new ExprReturn(out);
 		}
-			
-		
-			// TLA Builtins, but not in tool.BuiltInOPs
+
+		// TLA Builtins, but not in tool.BuiltInOPs
 		case B_OPCODE_bool: // BOOLEAN
 			out.append("BOOL");
 			return new ExprReturn(out, priority);
@@ -712,7 +758,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		case B_OPCODE_string: // STRING
 			out.append("STRING");
 			return new ExprReturn(out, priority);
-		
+
 		default:
 			System.err.println("unknown B Builtin: "
 					+ n.getOperator().getName());
@@ -831,10 +877,10 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append(evalOpMoreArgs(n, ", ", c, false, P_min));
 			out.append("]");
 			return new ExprReturn(out, P_max);
-//			out.append("(");
-//			out.append(evalOpMoreArgs(n, "|-> ", c, false, P_maplet));
-//			out.append(")");
-//			return new ExprReturn(out, P_maplet);
+			// out.append("(");
+			// out.append(evalOpMoreArgs(n, "|-> ", c, false, P_maplet));
+			// out.append(")");
+			// return new ExprReturn(out, P_maplet);
 
 		case OPCODE_prime: // prime
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, makePred).out);
@@ -907,9 +953,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				}
 
 				out.append(" | ");
-				out
-						.append(visitExprOrOpArgNode(pair.getArgs()[1], c,
-								false).out);
+				out.append(visitExprOrOpArgNode(pair.getArgs()[1], c, false).out);
 				out.append(")");
 				if (i < n.getArgs().length - 1) {
 					out.append(" \\/ ");
@@ -959,7 +1003,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			}
 			out.append(")");
 			return new ExprReturn(out, priority);
-			
+
 		case OPCODE_domain:
 			out.append("dom(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
@@ -1138,8 +1182,9 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			StringNode s = (StringNode) n.getArgs()[i].getChildren()[0]
 					.getChildren()[0];
 			String nodeName = s.getRep().toString();
-			String val = visitExprOrOpArgNode((ExprOrOpArgNode) n.getArgs()[i]
-					.getChildren()[1], c, false).out.toString();
+			String val = visitExprOrOpArgNode(
+					(ExprOrOpArgNode) n.getArgs()[i].getChildren()[1], c, false).out
+					.toString();
 			temp.put(nodeName, val);
 		}
 
@@ -1248,9 +1293,9 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], c, true);
 		ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], c, makePred);
 		ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], c, makePred);
-		
+
 		MyType t = (MyType) n.getToolObject(1);
-		if (!makePred || t.getType()!= BOOLEAN) {
+		if (!makePred || t.getType() != BOOLEAN) {
 			res = "(%t_.(" + iif.out + " | " + then.out + ")\\/%t_.(not("
 					+ iif.out + ") | " + eelse.out + "))(0)";
 			return new ExprReturn(res, P_max);
@@ -1285,9 +1330,11 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 					.toString();
 			if (moduleContext.variables.get(base).getType().getType() == STRUCT) {
 				sb2.append(base + "'");
-				StringNode stringnode = (StringNode)((OpApplNode) a.getAtModifier()).getArgs()[0];
+				StringNode stringnode = (StringNode) ((OpApplNode) a
+						.getAtModifier()).getArgs()[0];
 				sb2.append(stringnode.getRep().toString());
-				//sb2.append(visitOpApplNode(a.getAtModifier(), c, makePred).out);
+				// sb2.append(visitOpApplNode(a.getAtModifier(), c,
+				// makePred).out);
 			} else {
 				sb2.append(base);
 				sb2.append("(");
@@ -1311,8 +1358,18 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			return visitExprNode(l.getBody(), c, true);
 		}
 
+		case SubstInKind: {
+			SubstInNode substNode = (SubstInNode) n;
+			// Subst[] subs = substNode.getSubsts();
+			// for (int i = 0; i < subs.length; i++) {
+			// c.substitution.put(subs[i].getOp().getName().toString(),
+			// subs[i].getExpr());
+			// }
+			return visitExprNode(substNode.getBody(), c, true);
+		}
+
 		default:
-			System.err.println("unbekannter Typ: " + n.getKind());
+			System.err.println("unknown Typ: " + n.getKind());
 			break;
 		}
 		return null;

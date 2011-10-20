@@ -23,6 +23,8 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.StringNode;
+import tla2sany.semantic.Subst;
+import tla2sany.semantic.SubstInNode;
 import tlc2.tool.BuiltInOPs;
 import types.*;
 
@@ -187,26 +189,32 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 	// Definitions
 	public void visitOpDefNode(OpDefNode n) throws MyException {
-		String defname = n.getName().toString();
+		String defName = n.getName().toString();
 		DefContext d;
 		MyType expected = new Untyped();
-		if (defname.equals(moduleContext.getInit())
-				|| defname.equals(moduleContext.getNext())) {
+		if (defName.equals(moduleContext.getInit())
+				|| defName.equals(moduleContext.getNext())) {
 			expected = new BooleanType();
 		}
-		if (definitions.get(defname) == null) {
+		if (definitions.get(defName) == null) {
 			// first time
-			d = new DefContext(defname);
+			d = new DefContext(defName);
 			d.setParams(evalParams(n.getParams()));
+
+			String prefix = null;
+			if (defName.contains("!")) {
+				prefix = defName.substring(0, defName.lastIndexOf('!'));
+			}
+			d.setPrefix(prefix);
 
 			MyType t = visitExprNode(n.getBody(), d, expected);
 			d.setType(t);
 			if (t.getType() != BOOLEAN) {
 				d.setEquation(true);
 			}
-			definitions.put(defname, d);
+			definitions.put(defName, d);
 		} else {
-			d = definitions.get(defname);
+			d = definitions.get(defName);
 			MyType t = visitExprNode(n.getBody(), d, expected);
 			d.setType(t);
 		}
@@ -304,6 +312,26 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return visitExprNode(l.getBody(), c, expected);
 		}
 
+		case SubstInKind: {
+			SubstInNode substNode = (SubstInNode) n;
+			Subst[] subs = substNode.getSubsts();
+			for (int i = 0; i < subs.length; i++) {
+				// eliminate substitutions like x <- x
+				if (subs[i].getExpr().getKind() == OpApplKind) {
+					OpApplNode o = (OpApplNode) subs[i].getExpr();
+					if (o.getOperator().getName().toString() == subs[i].getOp()
+							.getName().toString()) {
+						continue;
+					}
+				}
+
+				c.substitution.put(subs[i].getOp().getName().toString(),
+						subs[i].getExpr());
+
+			}
+			return visitExprNode(substNode.getBody(), c, expected);
+		}
+
 		default:
 			throw new NotImplementedException("unknown ExprNode" + n.getKind());
 		}
@@ -314,6 +342,12 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		switch (n.getOperator().getKind()) {
 		case ConstantDeclKind:
 			String cName = n.getOperator().getName().toString();
+
+			if (c.substitution.containsKey(cName)) {
+				return visitExprOrOpArgNode(c.substitution.get(cName), c,
+						expected);
+			}
+
 			Constant con = constants.get(cName);
 			compareTypes(n, cName, expected, con.getType());
 			if (expected == null) {
@@ -325,8 +359,13 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			}
 
 		case VariableDeclKind: // Bezeichner im Module
-
+		{
 			String vName = n.getOperator().getName().toString();
+
+			if (c.substitution.containsKey(vName)) {
+				return visitExprOrOpArgNode(c.substitution.get(vName), c,
+						expected);
+			}
 			Variable v = variables.get(vName);
 			compareTypes(n, vName, expected, v.getType());
 			if (expected != null) {
@@ -334,6 +373,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 				return expected.compare(v.getType());
 			} else
 				return v.getType();
+		}
 
 		case UserDefinedOpKind:
 			if (BBuiltInOPs.contains(n.getOperator().getName())) {
@@ -468,8 +508,8 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 					.getSubType();
 			PairType pair = (PairType) seq.getSubType();
 
-			PowerSetType set_elements = (PowerSetType) visitExprOrOpArgNode(n
-					.getArgs()[0], c, new PowerSetType(pair.getSecond()));
+			PowerSetType set_elements = (PowerSetType) visitExprOrOpArgNode(
+					n.getArgs()[0], c, new PowerSetType(pair.getSecond()));
 
 			MyType res = new PowerSetType(new PowerSetType(new PairType(
 					new IntType(), set_elements.getSubType())));
@@ -517,9 +557,10 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return res;
 		}
 
-			// TLA Builtins, but not in tlc.tool.BuiltInOPs
+		// TLA Builtins, but not in tlc.tool.BuiltInOPs
 		case B_OPCODE_bool: // BOOLEAN
-			compareTypes(n, "BOOLEAN", expected, new PowerSetType(new BooleanType()));
+			compareTypes(n, "BOOLEAN", expected, new PowerSetType(
+					new BooleanType()));
 			return new PowerSetType(new BooleanType());
 
 		case B_OPCODE_string: // STRING
@@ -551,9 +592,16 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		String name = n.getOperator().getName().toString();
 
 		DefContext d = null;
-		if (c.lets.containsKey(name)) {// Subdefinition
+		// definition is a Subdefinition
+		if (c.lets.containsKey(name)) {
 			d = c.lets.get(name).getDefCon();
-		} else {// Normale Definition
+		}
+		// definition is a definition of instanced module
+		else if (c.getPrefix() != null) {
+			d = definitions.get(c.getPrefix() + "!" + name);
+		}
+		// definition is a normal definition 
+		else {
 			d = definitions.get(name);
 		}
 
@@ -608,7 +656,21 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return evalElementof(n, c, expected);
 
 		case OPCODE_prime: // prime
-			return visitExprOrOpArgNode(n.getArgs()[0], c, expected);
+		{
+			try {
+				OpApplNode node = (OpApplNode) n.getArgs()[0];
+				if (node.getOperator().getKind() != VariableDeclKind) {
+					throw new TypeErrorException("Expected variable at \""
+							+ node.getOperator().getName() + "\":\n"
+							+ node.getLocation());
+				}
+				return visitExprOrOpArgNode(n.getArgs()[0], c, expected);
+			} catch (ClassCastException e) {
+				throw new TypeErrorException(
+						"Expected variable as argument of prime operator:\n"
+								+ n.getArgs()[0].getLocation());
+			}
+		}
 
 		case OPCODE_noteq: // /=
 		case OPCODE_eq: // =
@@ -689,10 +751,11 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		case OPCODE_domain: {
 			MyType f = visitExprOrOpArgNode(n.getArgs()[0], c,
 					new PowerSetType(new PairType()));
-			MyType dom = ((PairType)((PowerSetType) f).getSubType()).getFirst();
+			MyType dom = ((PairType) ((PowerSetType) f).getSubType())
+					.getFirst();
 			return new PowerSetType(dom);
 		}
-			/************* End Function ********/
+		/************* End Function ********/
 
 		case OPCODE_sso: // $SubsetOf Represents {x \in S : p}.
 			return evalSubsetOf(n, c, expected);
@@ -736,14 +799,15 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			ArrayList<MyType> expectedList = pair.getList();
 			ArrayList<MyType> a = new ArrayList<MyType>();
 			for (int i = 0; i < n.getArgs().length; i++) {
-				PowerSetType p = (PowerSetType) visitExprOrOpArgNode(n
-						.getArgs()[i], c, new PowerSetType(expectedList.get(i)));
+				PowerSetType p = (PowerSetType) visitExprOrOpArgNode(
+						n.getArgs()[i], c,
+						new PowerSetType(expectedList.get(i)));
 				a.add(p.getSubType());
 			}
 			return new PowerSetType(makePair(a));
 		}
 
-			// TODO Typechecking Records
+		// TODO Typechecking Records
 		case OPCODE_rc: // [h_1 |-> 1, h_2 |-> 2]
 		{
 			StructType st = new StructType();
@@ -781,6 +845,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return evalBBuiltIns(n, c, expected);
 
 			// temporal formulas are not be translated
+		case OPCODE_sa: // []_
 		case OPCODE_box: // []
 		case OPCODE_diamond: // <>
 		case OPCODE_wf:
@@ -936,7 +1001,8 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		MyType res2 = visitExprOrOpArgNode(n.getArgs()[1], c, new PowerSetType(
 				gamma2));
 		res2 = ((PowerSetType) res2).getSubType();
-		MyType result = new PowerSetType(new PowerSetType(new PairType(res1, res2)));
+		MyType result = new PowerSetType(new PowerSetType(new PairType(res1,
+				res2)));
 		return result;
 	}
 

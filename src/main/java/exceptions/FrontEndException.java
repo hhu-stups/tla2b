@@ -2,6 +2,7 @@ package exceptions;
 
 import tla2sany.modanalyzer.SpecObj;
 
+@SuppressWarnings("serial")
 public class FrontEndException extends Exception {
 
 	public SpecObj spec;
