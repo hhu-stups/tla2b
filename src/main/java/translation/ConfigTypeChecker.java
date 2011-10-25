@@ -16,17 +16,16 @@ import types.*;
 public class ConfigTypeChecker implements IType {
 	private ModuleNode rootModule;
 	private ModelConfig configAst;
-
-	private ModuleContext moduleContext;
+	private ModuleContext mc;
 
 	public ConfigTypeChecker(ModelConfig configAst, ModuleContext moduleContext) {
-		this.moduleContext = moduleContext;
+		this.mc = moduleContext;
 		this.configAst = configAst;
 
 		// no default values for init, next and spec
-		this.moduleContext.setNext("");
-		this.moduleContext.setInit("");
-		this.moduleContext.setSpec("");
+		this.mc.setNext(null);
+		this.mc.setInit(null);
+		this.mc.setSpec(null);
 	}
 
 	public void start() throws ConfigFileErrorException {
@@ -57,34 +56,39 @@ public class ConfigTypeChecker implements IType {
 		for (int i = 0; i < v.capacity(); i++) {
 			if (v.elementAt(i) != null) {
 				String inv = (String) v.elementAt(i);
-				if (!moduleContext.definitions.containsKey(inv)) {
+				if (!mc.containsDef(inv)) {
 					throw new ConfigFileErrorException(
 							"Invalid invariant declaration. Module does not contain definition '"
 									+ inv + "'");
 				}
-				moduleContext.invariants.add(inv);
+				mc.invariants.add(inv);
 			}
 		}
 	}
 
 	private void evalSpec() throws ConfigFileErrorException {
 		String spec = configAst.getSpec();
-		if (moduleContext.definitions.containsKey(spec)) {
-			moduleContext.setSpec(spec);
-		} else if (!spec.equals("")) {
-			throw new ConfigFileErrorException(
-					"Module does not contain the defintion '" + spec + "'");
+		if (!spec.equals("")) {
+			if (mc.containsDef(spec)) {
+				mc.setSpec(spec);
+			} else {
+				throw new ConfigFileErrorException(
+						"Module does not contain the defintion '" + spec + "'");
+			}
 		}
 	}
 
 	private void evalNext() throws ConfigFileErrorException {
 		String next = configAst.getNext();
-		if (moduleContext.definitions.containsKey(next)) {
-			moduleContext.setNext(next);
-		} else if (!next.equals("")) {
-			throw new ConfigFileErrorException(
-					"Module does not contain the defintion '" + next + "'");
+		if (!next.equals("")) {
+			if (mc.containsDef(next)) {
+				mc.setNext(next);
+			} else {
+				throw new ConfigFileErrorException(
+						"Module does not contain the defintion '" + next + "'");
+			}
 		}
+
 	}
 
 	private void evalInit() throws ConfigFileErrorException {
@@ -92,18 +96,20 @@ public class ConfigTypeChecker implements IType {
 		String init = configAst.getInit();
 		// no init predicate but variables in the module, which needs to be
 		// initialized
-		if (init.equals("")
-				&& moduleContext.getRoot().getVariableDecls().length > 0) {
-			throw new ConfigFileErrorException(
-					"No initialisation predicate in the configuration file");
-		}
+		if (init.equals("")) {
+			if (mc.getRoot().getVariableDecls().length > 0) {
+				throw new ConfigFileErrorException(
+						"No initialisation predicate in the configuration file");
+			}
 
-		if (moduleContext.definitions.containsKey(init)) {
-			moduleContext.setInit(init);
-		} else if (!init.equals("")) {
-			throw new ConfigFileErrorException(
-					"Invalid declaration of the initialisation predicate. Module does not contain the defintion '"
-							+ init + "'");
+			if (mc.containsDef(init)) {
+				mc.setInit(init);
+			} else if (!init.equals("")) {
+				throw new ConfigFileErrorException(
+						"Invalid declaration of the initialisation predicate. Module does not contain the defintion '"
+								+ init + "'");
+			}
+
 		}
 
 	}
@@ -116,7 +122,7 @@ public class ConfigTypeChecker implements IType {
 			String conName = constant.elementAt(0).toString();
 
 			// every constants in the config file must appear in the TLA+ module
-			if (!moduleContext.constantDecl.contains(conName)) {
+			if (!mc.containsCon(conName)) {
 				throw new ConfigFileErrorException(
 						"Module does not contain this constant: " + conName);
 			}
@@ -124,7 +130,7 @@ public class ConfigTypeChecker implements IType {
 			String conValue = constant.elementAt(1).toString();
 			MyType conType = ConGetType(constant.elementAt(1));
 
-			Constant conObj = moduleContext.constants.get(conName);
+			Constant conObj = mc.getCon(conName);
 			conObj.setValue(conValue);
 			conObj.setType(conType);
 
@@ -132,7 +138,7 @@ public class ConfigTypeChecker implements IType {
 			// the name of constants, then the constant declaration in the
 			// resulting B machine disappears
 			if (conName.equals(conValue)) {
-				moduleContext.constantDecl.remove(conName);
+				mc.removeBCon(conName);
 			}
 		}
 
@@ -140,16 +146,15 @@ public class ConfigTypeChecker implements IType {
 
 	@SuppressWarnings("unchecked")
 	private void evalConstantOverrides() throws ConfigFileErrorException {
-		moduleContext.overrides = configAst.getOverrides();
-		
+		mc.setOverrides(configAst.getOverrides());
 		Hashtable<String, String> over = configAst.getOverrides();
 		Enumeration<String> keys = over.keys();
 		Enumeration<String> values = over.elements();
 		while (keys.hasMoreElements()) {
 			String conName = keys.nextElement();
 			String conValue = values.nextElement();
-			if (moduleContext.definitions.containsKey(conValue)) {
-				Constant con = moduleContext.constants.get(conName);
+			if (mc.containsDef(conValue)) {
+				Constant con = mc.getCon(conName);
 				con.setValue(conValue);
 			} else {
 				throw new ConfigFileErrorException("Invalid substitution for "
@@ -158,7 +163,7 @@ public class ConfigTypeChecker implements IType {
 			}
 
 		}
-		
+
 	}
 
 	private void duplicateIdentifier(ModuleNode module)
@@ -180,7 +185,8 @@ public class ConfigTypeChecker implements IType {
 			SetEnumValue set = (SetEnumValue) o;
 			PowerSetType t = new PowerSetType(new ModelValueType());
 			if (set.size() == 0) {
-				throw new ConfigFileErrorException("empty set is not permitted!");
+				throw new ConfigFileErrorException(
+						"empty set is not permitted!");
 			}
 			MyType elemType = ConGetType(set.elems.elementAt(0));
 			t.setSubType(elemType);
@@ -197,8 +203,8 @@ public class ConfigTypeChecker implements IType {
 
 		} else if (o.getClass().getName().equals("tlc2.value.ModelValue")) {
 			ModelValue mv = (ModelValue) o;
-			if (!moduleContext.setEnumeration.contains(mv.toString())) {
-				moduleContext.setEnumeration.add(mv.toString());
+			if (!mc.containsEnum(mv.toString())) {
+				mc.addEnum(mv.toString());
 			}
 			return new ModelValueType();
 		} else if (o.getClass().getName().equals("tlc2.value.StringValue")) {

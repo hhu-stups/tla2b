@@ -39,6 +39,7 @@ public class DefContext {
 	public DefContext(String n, OpDefNode node) {
 		name = n;
 		this.node = node;
+		this.type = new Untyped();
 	}
 
 	public DefContext() {

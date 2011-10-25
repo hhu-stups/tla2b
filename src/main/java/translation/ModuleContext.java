@@ -2,6 +2,8 @@ package translation;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
@@ -9,55 +11,80 @@ import types.Untyped;
 
 // contains the content of a tla+ module
 public class ModuleContext {
-	private String spec = "";
-	private String next = "";
-	private String init = "";
+	private String spec;
+	private String next;
+	private String init;
 	private ModuleNode rootModule;
+	private Hashtable<String, DefContext> definitions;
+	private Hashtable<String, Variable> variables;
+	private Hashtable<String, Constant> constants;
 
-	ArrayList<String> invariants = new ArrayList<String>();
-	ArrayList<Action> actions = new ArrayList<Action>();
-	ArrayList<OpDefNode> lets = new ArrayList<OpDefNode>();
-	
-	public Hashtable<String, Constant> constants;
-	public Hashtable<String, Variable> variables;
-	public Hashtable<String, DefContext> definitions;
-	public Hashtable<String, String> overrides;
-	public ArrayList<String> setEnumeration;
 	
 	// Constants which appear in the resulting B machine
-	protected ArrayList<String> constantDecl;
+	private ArrayList<String> constantDecl;
+	
+	protected Hashtable<String, String> overrides;
+	protected ArrayList<String> setEnumeration;
+	
+	
+	protected ArrayList<String> invariants = new ArrayList<String>();
+	protected ArrayList<Action> actions = new ArrayList<Action>();
+	protected ArrayList<OpDefNode> lets = new ArrayList<OpDefNode>();
 
-	public ModuleContext(ModuleNode rootModule) {
-		
+	
+
+
+
+	public ModuleContext(ModuleNode rootModule, String config) {
+
 		// set root Module
 		this.rootModule = rootModule;
-		
+
 		// determine the definitions of the module
 		evalDefinitions();
-		
+
 		// determine the constants of the module
 		evalConstants();
-		
+
+		evalVariables();
+
 		/*
-		 * Next state relation: if there is no config file use the Next
-		 * definition as next state relation for default
+		 * Conventions: if there is no config file use the 'Next' as next state
+		 * relation, 'Init' as initialisation predicate or 'Spec' as module
+		 * specification
 		 */
-		if(definitions.containsKey("Next")){
-			this.next = "Next";
+		if (config == null) {
+			if (definitions.containsKey("Spec")) {
+				this.spec = "Spec";
+			}
+			if (this.spec == null) {
+				if (definitions.containsKey("Next")) {
+					this.next = "Next";
+				}
+				if (definitions.containsKey("Init")) {
+					this.init = "Init";
+				}
+			}
 		}
-		if(definitions.containsKey("Init")){
-			this.init = "Init";
-		}
-		if(definitions.containsKey("Spec")){
-			this.spec = "Spec";
-		}
-		
+
 		// Overrides
 		overrides = new Hashtable<String, String>();
 
 		// set enumeration
 		setEnumeration = new ArrayList<String>();
 
+	}
+
+	private void evalVariables() {
+		OpDeclNode[] vars = rootModule.getVariableDecls();
+		this.variables = new Hashtable<String, Variable>();
+		if (vars.length > 0) {
+			for (int i = 0; i < vars.length; i++) {
+				String var = vars[i].getName().toString();
+				variables.put(var, new Variable(var, new Untyped()));
+			}
+
+		}
 	}
 
 	private void evalConstants() {
@@ -67,7 +94,8 @@ public class ModuleContext {
 		for (int i = 0; i < moduleCons.length; i++) {
 			OpDeclNode con = moduleCons[i];
 			String conName = con.getName().toString();
-			this.constants.put(conName, new Constant(conName, new Untyped(), ""));
+			this.constants.put(conName,
+					new Constant(conName, new Untyped(), ""));
 			this.constantDecl.add(conName);
 		}
 	}
@@ -79,20 +107,44 @@ public class ModuleContext {
 		standardModules.add("Naturals");
 		standardModules.add("FiniteSets");
 		standardModules.add("Sequences");
-		
+
 		definitions = new Hashtable<String, DefContext>();
 		for (int i = 0; i < opDefs.length; i++) {
-			OpDefNode def = opDefs[i];
+			OpDefNode defNode = opDefs[i];
 			// Definition in this module
-
-			if (!standardModules.contains(def
+			if (!standardModules.contains(defNode
 					.getOriginallyDefinedInModuleNode().getName().toString())) {
-				String defName = def.getName().toString();
-				definitions.put(defName, new DefContext(defName, def));
+				
+				if (standardModules.contains(defNode.getSource()
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())) {
+					continue;
+				}
+				evalDefintion(defNode);
 			}
 		}
 	}
 
+	private void evalDefintion(OpDefNode defNode) {
+		
+		String defName = defNode.getName().toString();
+		DefContext defCon = new DefContext(defName, defNode);
+		String prefix = null;
+		if (defName.contains("!")) {
+			prefix = defName.substring(0, defName.lastIndexOf('!'));
+			defCon.setPrefix(prefix);
+		}
+		defCon.setParams(evalParams(defNode.getParams()));
+		definitions.put(defName, defCon);
+	}
+
+	private String[] evalParams(FormalParamNode[] params) {
+		String[] res = new String[params.length];
+		for (int i = 0; i < params.length; i++) {
+			res[i] = params[i].getName().toString();
+		}
+		return res;
+	}
 
 	public Hashtable<String, Constant> getConstants() {
 		return constants;
@@ -100,10 +152,6 @@ public class ModuleContext {
 
 	public ModuleNode getRoot() {
 		return rootModule;
-	}
-
-	public void setRoot(ModuleNode root) {
-		this.rootModule = root;
 	}
 
 	public ArrayList<String> getInvariants() {
@@ -133,6 +181,56 @@ public class ModuleContext {
 	public void setInit(String init) {
 		this.init = init;
 	}
+
+	public DefContext getDef(String defName) {
+		return definitions.get(defName);
+	}
+
+	public boolean containsDef(String defName) {
+		return definitions.containsKey(defName);
+	}
+
+	public Variable getVar(String valName) {
+		return variables.get(valName);
+	}
+
+	public Constant getCon(String conName) {
+		return constants.get(conName);
+	}
+
+	public boolean containsCon(String conName){
+		return constants.containsKey(conName);
+	}
+	
+	public void removeBCon(String conName){
+		constantDecl.remove(conName);
+	}
+	
+	public ArrayList<String> getBConstants(){
+		ArrayList<String> clone = new ArrayList<String>(constantDecl);
+		return clone;
+	}
+	
+	
+	public void setOverrides(Hashtable<String, String> overrides) {
+		this.overrides = overrides;
+	}
+	public Hashtable<String, String> getOverrides(){
+		return this.overrides;
+	}
+	
+	public void addEnum(String modelValue){
+		setEnumeration.add(modelValue);
+	}
+	
+	public boolean containsEnum(String modelValue){
+		return setEnumeration.contains(modelValue);
+	}
+	
+	public ArrayList<String> getEnum(){
+		return setEnumeration;
+	}
+	
 
 	public String toString() {
 		String res;

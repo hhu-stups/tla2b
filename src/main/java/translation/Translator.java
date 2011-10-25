@@ -3,6 +3,7 @@ package translation;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+
 import tla2sany.semantic.*;
 import tlc2.tool.BuiltInOPs;
 import types.BooleanType;
@@ -14,7 +15,8 @@ import util.UniqueString;
 // translator
 public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		BBuildIns, Priorities {
-	ModuleContext moduleContext;
+	
+	private ModuleContext moduleContext;
 
 	// ModuleNode
 	public StringBuilder visitModule(ModuleNode n, ModuleContext mc) {
@@ -27,7 +29,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		out.append(evalSets(mc));
 
 		// Constants and Properties
-		out.append(evalConsDecl(mc.constantDecl));
+		out.append(evalConsDecl(mc.getBConstants()));
 		out.append(evalProperties(mc, n));
 
 		// Variables
@@ -66,7 +68,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 	private StringBuilder evalSets(ModuleContext mc) {
 		StringBuilder out = new StringBuilder();
-		ArrayList<String> l = mc.setEnumeration;
+		ArrayList<String> l = mc.getEnum();
 		if (l.size() == 0)
 			return out;
 		out.append("SETS\n ");
@@ -87,12 +89,12 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		if (h.size() == 0 && n.getAssumptions().length == 0)
 			return out;
 		out.append("PROPERTIES\n ");
-		Constant con;
-		String name;
-
-		for (int j = 0; j < mc.constantDecl.size(); j++) {
-			name = mc.constantDecl.get(j);
-			con = h.get(name);
+		
+		
+		ArrayList<String> cons = mc.getBConstants();
+		for (int j = 0; j < cons.size(); j++) {
+			String conName = cons.get(j);
+			Constant con = h.get(conName);
 
 			if (j != 0)
 				out.append(" & ");
@@ -105,8 +107,9 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 
 		}
 
-		if (n.getAssumptions().length > 0 && mc.constantDecl.size() > 0)
+		if (n.getAssumptions().length > 0 && cons.size() > 0)
 			out.append(" & ");
+		
 		// Assumptions
 		out.append(evalAssumptions(n.getAssumptions(), mc));
 		return out;
@@ -136,7 +139,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 				// }
 
 			}
-			d = mc.definitions.get(mc.getNext());
+			d = mc.getDef(mc.getNext());
 
 			out.append(" " + name + "Op");
 
@@ -153,14 +156,16 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			}
 
 			out.append(" = ");
+			
+			
+			OpDeclNode[] vars = mc.getRoot().getVariableDecls(); 
 			out.append("ANY ");
-			for (Enumeration<String> e = mc.variables.keys(); e
-					.hasMoreElements();) {
-				out.append(e.nextElement() + "_n");
-				if (e.hasMoreElements())
+			for (int j = 0; j < vars.length; j++) {
+				out.append(vars[j].getName() + "_n");
+				if(j!= vars.length-1)
 					out.append(", ");
 			}
-
+			
 			out.append("\n\tWHERE ");
 
 			if (a.params.size() > 0) {
@@ -171,17 +176,15 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			out.append(visitExprOrOpArgNode(a.node, d, true).out);
 
 			out.append("\n\tTHEN ");
-			for (Enumeration<String> e = mc.variables.keys(); e
-					.hasMoreElements();) {
-				out.append(e.nextElement());
-				if (e.hasMoreElements())
+			for (int j = 0; j < vars.length; j++) {
+				out.append(vars[j].getName());
+				if(j!= vars.length-1)
 					out.append(", ");
 			}
 			out.append(" := ");
-			for (Enumeration<String> e = mc.variables.keys(); e
-					.hasMoreElements();) {
-				out.append(e.nextElement() + "_n");
-				if (e.hasMoreElements())
+			for (int j = 0; j < vars.length; j++) {
+				out.append(vars[j].getName() + "_n");
+				if(j!= vars.length-1)
 					out.append(", ");
 			}
 			out.append(" END");
@@ -196,9 +199,8 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 	private StringBuilder evalInit(ModuleContext mc, ModuleNode n) {
 		StringBuilder out = new StringBuilder();
 
-		if (mc.variables.size() == 0 || mc.getInit().equals(""))
+		if (n.getVariableDecls().length == 0 || mc.getInit().equals(""))
 			return out;
-
 		out.append("INITIALISATION\n ");
 
 		for (int i = 0; i < n.getVariableDecls().length; i++) {
@@ -216,28 +218,26 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 	private StringBuilder evalInvarianten(ArrayList<String> invs,
 			ModuleContext mc) {
 		StringBuilder out = new StringBuilder();
-		if (mc.variables.size() > 0) {
+		
+		OpDeclNode[] vars = mc.getRoot().getVariableDecls();
+		if (vars.length > 0) {
 			out.append("INVARIANT\n ");
 			for (int i = 0; i < invs.size(); i++) {
 				out.append(invs.get(i));
 				if (i != invs.size() - 1)
 					out.append(" & ");
 			}
-			out.append("");
 		}
 		if (mc.getInvariants().size() > 0) {
 			out.append(" & ");
 		}
-		int counter = 0;
-		Enumeration<Variable> e = mc.variables.elements();
-		while (e.hasMoreElements()) {
-			Variable v = e.nextElement();
-
-			out.append(v.getName() + " :" + v.getType() + "");
-			if (counter < mc.variables.size() - 1) {
+		
+		for (int i = 0; i < vars.length; i++) {
+			String varName = vars[0].getName().toString();
+			out.append(varName + " :" + mc.getVar(varName).getType());
+			if(i< vars.length-1){
 				out.append(" & ");
 			}
-			counter++;
 		}
 		out.append("\n");
 		return out;
@@ -254,22 +254,32 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		if (opDefs.length == 0)
 			return out;
 
-		if (opDefs.length > 0
-				&& opDefs[opDefs.length - 1].getOriginallyDefinedInModuleNode()
-						.equals(mc.getRoot()))
+		// are there definitions to translate
+		boolean existingDefinitions = false;
+		for (int i = 0; i < opDefs.length; i++) {
+			if (!standardModules.contains(opDefs[i]
+					.getOriginallyDefinedInModuleNode().getName().toString())) {
+				existingDefinitions = true;
+				break;
+			}
+		}
+		if (existingDefinitions)
 			out.append("DEFINITIONS\n");
+		else
+			return out;
 
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
+			String defName = def.getName().toString();
 			DefContext dc;
 			/*
 			 * if (def.getName().equals("Spec")) continue; else
 			 */
-			if (def.getName().toString().equals(mc.getNext())
-					&& def.getOriginallyDefinedInModuleNode().equals(
-							mc.getRoot())) {
+			
+			// Next definition
+			if (defName.equals(mc.getNext())) {
 				evalNext(def, mc);
-				dc = mc.definitions.get(def.getName().toString());
+				dc = mc.getDef(def.getName().toString());
 				dc.setNext(true);
 				// out.append(visitOpDefNode(def, dc));
 			}
@@ -283,7 +293,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 						.toString())) {
 					continue;
 				}
-				dc = mc.definitions.get(def.getName().toString());
+				dc = mc.getDef(def.getName().toString());
 				if (!dc.isTemporal()) {
 					out.append(visitOpDefNode(def, dc));
 				}
@@ -1161,7 +1171,9 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		String name = visitExprOrOpArgNode(n.getArgs()[0], c, false).out
 				.toString();
-		Variable v = moduleContext.variables.get(name);
+		
+		//TODO 
+		Variable v = moduleContext.getVar(name);
 		if (v == null || v.getType().getType() != STRUCT) {
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], c, false).out);
 			out.append(" <+ {");
@@ -1328,7 +1340,7 @@ public class Translator extends BuiltInOPs implements ASTConstants, IType,
 			AtNode a = (AtNode) n;
 			String base = visitExprNode(a.getAtBase(), c, makePred).out
 					.toString();
-			if (moduleContext.variables.get(base).getType().getType() == STRUCT) {
+			if (moduleContext.getVar(base).getType().getType() == STRUCT) {
 				sb2.append(base + "'");
 				StringNode stringnode = (StringNode) ((OpApplNode) a
 						.getAtModifier()).getArgs()[0];

@@ -32,28 +32,11 @@ import types.*;
 public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 		IType, BBuildIns {
 	private ModuleNode root;
-	private Hashtable<String, Constant> constants;
-	private Hashtable<String, Variable> variables;
-	private Hashtable<String, DefContext> definitions;
-	private ModuleContext moduleContext;
-
-	public Hashtable<String, Constant> getConstants() {
-		return constants;
-	}
-
-	public Hashtable<String, Variable> getVariables() {
-		return variables;
-	}
-
-	public Hashtable<String, DefContext> getDefinitions() {
-		return definitions;
-	}
+	private ModuleContext mc;
 
 	public ModuleTypeChecker(ModuleNode n, ModuleContext mc) {
 		root = n;
-		constants = mc.getConstants();
-		moduleContext = mc;
-		definitions = new Hashtable<String, DefContext>();
+		this.mc = mc;
 
 	}
 
@@ -64,23 +47,18 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 	public void start() throws MyException {
 		visitModule(root);
 
-		moduleContext.constants = getConstants();
-		moduleContext.variables = getVariables();
-		moduleContext.definitions = getDefinitions();
-
-		if (moduleContext.variables.size() > 0
-				&& moduleContext.getInit().equals("")) {
+		if (root.getVariableDecls().length > 0 && mc.getInit() == null) {
 			throw new ModuleErrorException("No initialisation predicate.");
 		}
 	}
 
 	private void evalOverrides() throws MyException {
-		Enumeration<String> keys = moduleContext.overrides.keys();
-		Enumeration<String> values = moduleContext.overrides.elements();
+		Enumeration<String> keys = mc.getOverrides().keys();
+		Enumeration<String> values = mc.getOverrides().elements();
 		while (keys.hasMoreElements()) {
-			Constant c = constants.get(keys.nextElement());
+			Constant c = mc.getCon(keys.nextElement());
 			MyType t1 = c.getType();
-			MyType t2 = definitions.get(values.nextElement()).getType();
+			MyType t2 = mc.getDef(values.nextElement()).getType();
 
 			if (!t1.equals(t2)) {
 				throw new TypeErrorException(
@@ -93,10 +71,10 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 	}
 
 	public void visitModule(ModuleNode n) throws MyException {
-		// alle Variablen aus VARIABLES
-		evalVariables(n.getVariableDecls());
+		OpDeclNode[] vars = n.getVariableDecls();
+		OpDeclNode[] cons = n.getConstantDecls();
 
-		int counter = countUntypedVarsCons();
+		int counter = countUntypedVarsCons(vars, cons);
 		int old = Integer.MAX_VALUE;
 		int i = 0;
 
@@ -105,21 +83,21 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			evalAssumptions(n.getAssumptions());
 			evalDefinitions(n.getOpDefs());
 			evalOverrides();
-			counter = countUntypedVarsCons();
+			counter = countUntypedVarsCons(vars, cons);
 			i++;
 		}
 		if (counter > 0) {
-			Enumeration<Variable> e = variables.elements();
-			while (e.hasMoreElements()) {
-				Variable var = e.nextElement();
+
+			for (int j = 0; j < vars.length; j++) {
+				Variable var = mc.getVar(vars[i].getName().toString());
 				if (var.getType().isUntyped()) {
 					throw new TypeErrorException("Variable " + var.getName()
 							+ " has no Type");
 				}
 			}
-			Enumeration<Constant> c = constants.elements();
-			while (c.hasMoreElements()) {
-				Constant con = c.nextElement();
+
+			for (int j = 0; j < cons.length; j++) {
+				Constant con = mc.getCon(vars[i].getName().toString());
 				if (con.getType().isUntyped()) {
 					throw new TypeErrorException("Constant " + con.getName()
 							+ " has no Type");
@@ -140,34 +118,22 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 	}
 
 	// Helper Method: Counts the number of Untyped Variables
-	private int countUntypedVarsCons() {
-		Enumeration<Variable> e = variables.elements();
+	private int countUntypedVarsCons(OpDeclNode[] vars, OpDeclNode[] cons) {
 		int counter = 0;
-		while (e.hasMoreElements()) {
-			Variable var = e.nextElement();
+
+		for (int i = 0; i < vars.length; i++) {
+			Variable var = mc.getVar(vars[i].getName().toString());
 			if (var.getType().isUntyped()) {
 				counter++;
 			}
 		}
-		Enumeration<Constant> c = constants.elements();
-		while (c.hasMoreElements()) {
-			Constant con = c.nextElement();
+		for (int i = 0; i < cons.length; i++) {
+			Constant con = mc.getCon(cons[i].getName().toString());
 			if (con.getType().isUntyped()) {
 				counter++;
 			}
 		}
 		return counter;
-	}
-
-	private void evalVariables(OpDeclNode[] vars) {
-		variables = new Hashtable<String, Variable>();
-		if (vars.length > 0) {
-			for (int i = 0; i < vars.length; i++) {
-				String var = vars[i].getName().toString();
-				variables.put(var, new Variable(var, new Untyped()));
-			}
-
-		}
 	}
 
 	private void evalDefinitions(OpDefNode[] opDefs) throws MyException {
@@ -182,6 +148,12 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 			if (!standardModules.contains(def
 					.getOriginallyDefinedInModuleNode().getName().toString())) {
+				
+				if (standardModules.contains(def.getSource()
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())) {
+					continue;
+				}
 				visitOpDefNode(def);
 			}
 		}
@@ -190,35 +162,22 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 	// Definitions
 	public void visitOpDefNode(OpDefNode n) throws MyException {
 		String defName = n.getName().toString();
-		DefContext d;
+		DefContext defCon = mc.getDef(defName);
+		
+		if(defCon == null){
+			throw new NotImplementedException(defName);
+		}
+
 		MyType expected = new Untyped();
-		if (defName.equals(moduleContext.getInit())
-				|| defName.equals(moduleContext.getNext())) {
+		if (defName.equals(mc.getInit()) || defName.equals(mc.getNext())) {
 			expected = new BooleanType();
 		}
-		if (definitions.get(defName) == null) {
-			// first time
-			d = new DefContext(defName);
-			d.setParams(evalParams(n.getParams()));
 
-			String prefix = null;
-			if (defName.contains("!")) {
-				prefix = defName.substring(0, defName.lastIndexOf('!'));
-			}
-			d.setPrefix(prefix);
-
-			MyType t = visitExprNode(n.getBody(), d, expected);
-			d.setType(t);
-			if (t.getType() != BOOLEAN) {
-				d.setEquation(true);
-			}
-			definitions.put(defName, d);
-		} else {
-			d = definitions.get(defName);
-			MyType t = visitExprNode(n.getBody(), d, expected);
-			d.setType(t);
+		MyType t = visitExprNode(n.getBody(), defCon, expected);
+		defCon.setType(t);
+		if (t.getType() != BOOLEAN) {
+			defCon.setEquation(true);
 		}
-
 	}
 
 	private String[] evalParams(FormalParamNode[] params) {
@@ -348,7 +307,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 						expected);
 			}
 
-			Constant con = constants.get(cName);
+			Constant con = mc.getCon(cName);
 			compareTypes(n, cName, expected, con.getType());
 			if (expected == null) {
 				return con.getType();
@@ -366,7 +325,7 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 				return visitExprOrOpArgNode(c.substitution.get(vName), c,
 						expected);
 			}
-			Variable v = variables.get(vName);
+			Variable v = mc.getVar(vName);
 			compareTypes(n, vName, expected, v.getType());
 			if (expected != null) {
 				v.setType(expected.compare(v.getType()));
@@ -580,12 +539,12 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 	}
 
-	private MyType evalUserDefinedOpKind(OpApplNode n, DefContext c,
+	private MyType evalUserDefinedOpKind(OpApplNode n, DefContext defCon,
 			MyType expected) throws MyException {
 
 		// Operator ist ein B-BuiltIn-Operator
 		if (BBuiltInOPs.contains(n.getOperator().getName())) {
-			return evalBBuiltIns(n, c, expected);
+			return evalBBuiltIns(n, defCon, expected);
 		}
 
 		// Definition Call
@@ -593,16 +552,17 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 
 		DefContext d = null;
 		// definition is a Subdefinition
-		if (c.lets.containsKey(name)) {
-			d = c.lets.get(name).getDefCon();
+		// TODO instanced subdefinition
+		if (defCon.lets.containsKey(name)) {
+			d = defCon.lets.get(name).getDefCon();
 		}
 		// definition is a definition of instanced module
-		else if (c.getPrefix() != null) {
-			d = definitions.get(c.getPrefix() + "!" + name);
+		else if (defCon.getPrefix() != null) {
+			d = mc.getDef(defCon.getPrefix() + "!" + name);
 		}
-		// definition is a normal definition 
+		// definition is a normal definition
 		else {
-			d = definitions.get(name);
+			d = mc.getDef(name);
 		}
 
 		if (d == null) {
@@ -612,16 +572,22 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			// Definitionen sind noch nicht ausgewertet
 			return expected;
 		}
-		compareTypes(n, name, expected, d.getType());
+
+		MyType e = expected.compare(d.getType());
+		if (e == null) {
+			throw new TypeErrorException("Expected: " + expected + ", found: "
+					+ d.getType() + " at " + name + "\n" + n.getLocation());
+
+		}
 
 		if (n.getArgs().length > 0) {
 			String[] pNames = d.getParams();
 			for (int i = 0; i < n.getArgs().length; i++) {
 				MyType t = d.parameters.get(pNames[i]).getType();
-				visitExprOrOpArgNode(n.getArgs()[i], c, t);
+				visitExprOrOpArgNode(n.getArgs()[i], defCon, t);
 			}
 		}
-		return d.getType();
+		return e;
 	}
 
 	private MyType evalBuiltInKind(OpApplNode n, DefContext c, MyType expected)
@@ -749,9 +715,16 @@ public class ModuleTypeChecker extends BuiltInOPs implements ASTConstants,
 			return evalSetOfFunction(n, c, expected);
 
 		case OPCODE_domain: {
-			MyType f = visitExprOrOpArgNode(n.getArgs()[0], c,
-					new PowerSetType(new PairType()));
-			MyType dom = ((PairType) ((PowerSetType) f).getSubType())
+			MyType e = new PowerSetType(new Untyped()).compare(expected);
+			if (e == null) {
+				throw new TypeErrorException("Expected " + expected
+						+ ", found POW(_A)\n" + n.getLocation());
+			}
+			PowerSetType funcType = new PowerSetType(new PairType(
+					((PowerSetType) e).getSubType(), new Untyped()));
+			MyType result = visitExprOrOpArgNode(n.getArgs()[0], c, funcType);
+
+			MyType dom = ((PairType) ((PowerSetType) result).getSubType())
 					.getFirst();
 			return new PowerSetType(dom);
 		}
