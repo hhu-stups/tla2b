@@ -1,18 +1,56 @@
+/**
+ * @author Dominik Hansen <Dominik.Hansen at hhu.de>
+ **/
+
 package types;
 
-public class StringType extends MyType implements IType {
+import exceptions.UnificationException;
 
-	public StringType() {
+public class StringType extends BType {
+
+	private static StringType instance = new StringType();
+
+	private StringType() {
 		super(STRING);
 	}
 	
+	public static StringType getInstance(){
+		return instance;
+	}
+
 	@Override
-	public String toString(){
+	public String toString() {
 		return "STRING";
+	}
+
+	@Override
+	public boolean compare(BType o) {
+		if (o.getKind() == UNTYPED || o.getKind() == STRING)
+			return true;
+		else
+			return false;
 	}
 
 	@Override
 	public boolean isUntyped() {
 		return false;
 	}
+
+	@Override
+	public StringType unify(BType o) throws UnificationException {
+		if (o.getKind() == STRING) {
+			return this;
+		} else if (o instanceof Untyped) {
+			((Untyped) o).setFollowersTo(this);
+			((Untyped) o).deleteFollowers();
+			return this;
+		} else
+			throw new UnificationException();
+	}
+
+	@Override
+	public StringType cloneBType() {
+		return this;
+	}
+	
 }

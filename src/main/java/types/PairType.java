@@ -1,59 +1,78 @@
 package types;
 
-import java.util.ArrayList;
+import exceptions.UnificationException;
 
-public class PairType extends MyType implements IType {
+public class PairType extends AbstractHasFollowers {
 
-	private MyType first;
-	private MyType second;
+	private BType first;
+	private BType second;
 
 	public PairType() {
 		super(PAIR);
-		first = new Untyped();
-		second = new Untyped();
+		setFirst(new Untyped());
+		setSecond(new Untyped());
 	}
 
-	public PairType(MyType f, MyType s) {
+	public PairType(BType f, BType s) {
 		super(PAIR);
-		first = f;
-		second = s;
+		this.first = f;
+		if (first instanceof AbstractHasFollowers) {
+			AbstractHasFollowers firstHasFollowers = (AbstractHasFollowers) first;
+			firstHasFollowers.addFollower(this);
+		}
+		this.second = s;
+		if (second instanceof AbstractHasFollowers) {
+			AbstractHasFollowers secondHasFollowers = (AbstractHasFollowers) second;
+			secondHasFollowers.addFollower(this);
+		}
 	}
 
-	public MyType getFirst() {
+	public BType getFirst() {
 		return first;
 	}
 
-	public void setFirst(MyType f) {
+	public void setFirst(BType f) {
 		this.first = f;
+
+		if (first instanceof AbstractHasFollowers) {
+			AbstractHasFollowers firstHasFollowers = (AbstractHasFollowers) first;
+			firstHasFollowers.addFollower(this);
+		}
+
+		// setting first can leads to a completely typed type
+		if (!this.isUntyped()) {
+			// this type is completely typed
+			this.deleteFollowers();
+		}
 	}
 
-	public MyType getSecond() {
+	public BType getSecond() {
 		return second;
 	}
 
-	public void setSecond(MyType second) {
-		this.second = second;
+	public void setSecond(BType s) {
+		this.second = s;
+
+		if (second instanceof AbstractHasFollowers) {
+			AbstractHasFollowers secondHasFollowers = (AbstractHasFollowers) second;
+			secondHasFollowers.addFollower(this);
+		}
+
+		// setting second can leads to a completely typed type
+		if (!this.isUntyped()) {
+			// this type is completely typed
+			this.deleteFollowers();
+		}
 	}
 
 	@Override
 	public String toString() {
-		return "(" + first + "*" + second + ")";
-	}
-
-	public ArrayList<MyType> getList() {
-		ArrayList<MyType> m = new ArrayList<MyType>();
-		getL(this, m);
-		return m;
-	}
-
-	private static void getL(MyType m, ArrayList<MyType> l) {
-		if (m.getType() == PAIR) {
-			PairType p = (PairType) m;
-			l.add(0, p.second);
-			getL(p.first, l);
-		} else {
-			l.add(0, m);
-		}
+		String res = first + "*";
+		if (second instanceof PairType) {
+			res += "(" + second + ")";
+		} else
+			res += second;
+		return res;
 	}
 
 	@Override
@@ -62,45 +81,36 @@ public class PairType extends MyType implements IType {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (!super.equals(o)) {
-			return false;
-		}
-		MyType t2 = (MyType) o;
-		if (this.getType() == UNTYPED || t2.getType() == UNTYPED)
-			return true;
-		PairType p;
-		try {
-			p = (PairType) o;
-		} catch (Exception e) {
-			return false;
-		}
-		if (this.first.equals(p.getFirst())
-				&& this.second.equals(p.getSecond()))
-			return true;
-		else
-			return false;
-	}
-	
-	
-	public MyType compare(MyType o) {
-		if (!this.equals(o))
-			return null;
-		
-		if(this.getType() == UNTYPED)
-			return o;
-		if(o.getType() == UNTYPED)
-			return this;
-		
-		
-		if (this.isUntyped() || o.isUntyped()) {
-			MyType f = first.compare(((PairType) o).getFirst());
-			MyType s = second.compare(((PairType) o).getSecond());
-			return new PairType(f, s);
+	public PairType unify(BType o) throws UnificationException {
+		if (!this.compare(o))
+			throw new UnificationException();
+		if (o instanceof AbstractHasFollowers)
+			((AbstractHasFollowers) o).setFollowersTo(this);
 
+		if (o instanceof PairType) {
+			PairType p = (PairType) o;
+			this.first = this.first.unify(p.first);
+			this.second = this.second.unify(p.second);
+		}
+		return this;
+	}
+
+	@Override
+	public boolean compare(BType o) {
+		if (o.getKind() == UNTYPED)
+			return true;
+
+		if (o instanceof PairType) {
+			PairType p = (PairType) o;
+			// test first and second component compatibility
+			return this.first.compare(p.first) && this.second.compare(p.second);
 		} else
-			return this;
-
+			return false;
 	}
-	
+
+	@Override
+	public PairType cloneBType() {
+		return new PairType(this.first.cloneBType(), this.second.cloneBType());
+	}
+
 }

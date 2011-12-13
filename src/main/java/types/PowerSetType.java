@@ -1,69 +1,86 @@
 package types;
 
-public class PowerSetType extends MyType {
-	private MyType subType;
+import exceptions.UnificationException;
 
-	public PowerSetType(MyType t) {
+public class PowerSetType extends AbstractHasFollowers {
+	private BType subType;
+
+	public PowerSetType(BType t) {
 		super(POW);
 		setSubType(t);
 	}
 
-	public MyType getSubType() {
+	public BType getSubType() {
 		return subType;
 	}
 
-	public void setSubType(MyType t) {
+	public void setSubType(BType t) {
+		// if (subType instanceof AbstractHasFollowers) {
+		// // delete old reference
+		// ((AbstractHasFollowers) subType).deleteFollower(this);
+		// }
+
+		if (t instanceof AbstractHasFollowers) {
+			// set new reference
+			((AbstractHasFollowers) t).addFollower(this);
+		}
 		subType = t;
+
+		// setting subType can lead to a completely typed type
+		if (!this.isUntyped()) {
+			// this type is completely typed
+			this.deleteFollowers();
+		}
+	}
+
+	public PowerSetType unify(BType o) throws UnificationException {
+
+		if (!this.compare(o)) {
+			throw new UnificationException();
+		}
+		// if o has followers than switch pointer to this
+		if (o instanceof AbstractHasFollowers) {
+			((AbstractHasFollowers) o).setFollowersTo(this);
+		}
+		if (o instanceof PowerSetType) {
+			PowerSetType p = (PowerSetType) o;
+			this.subType = this.subType.unify(p.subType);
+
+//			if (this.subType instanceof AbstractHasFollowers) {
+//				((AbstractHasFollowers) this.subType).removeFollower(o);
+//			}
+		}
+		return this;
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		try {
-			MyType t2 = (MyType) o;
-			if (this.getType() == UNTYPED || t2.getType() == UNTYPED) {
-				return true;
-			}
+	public boolean compare(BType o) {
+		if (o.getKind() == UNTYPED)
+			return true;
 
-			PowerSetType s2 = (PowerSetType) o;
-			if (this.getSubType().equals(s2.getSubType())) {
-				return true;
-			} else
-				return false;
-
-		} catch (ClassCastException e) {
+		if (o instanceof PowerSetType) {
+			PowerSetType p = (PowerSetType) o;
+			// test sub types compatibility
+			return this.subType.compare(p.subType);
+		} else
 			return false;
-		}
 	}
 
+	@Override
 	public String toString() {
-		if(subType.getType()== PAIR){
-			return "POW"+subType;
-		}
-		else return "POW(" + subType + ")";
+		String res = "POW(" + this.getSubType() + ")";
+
+		return res;
 	}
 
 	@Override
 	public boolean isUntyped() {
-		return this.getSubType().isUntyped();
+		return subType.isUntyped();
 	}
 
-	public MyType compare(MyType o) {
-		if (!this.equals(o))
-			return null;
-		
-		if(this.getType() == UNTYPED)
-			return o;
-		if(o.getType() == UNTYPED)
-			return this;
-		
-		
-		if (this.isUntyped() || o.isUntyped()) {
-			return new PowerSetType(subType.compare(((PowerSetType) o).subType));
-
-		} else
-			return this;
-
+	@Override
+	public PowerSetType cloneBType() {
+		return new PowerSetType(this.subType.cloneBType());
 	}
+
 }

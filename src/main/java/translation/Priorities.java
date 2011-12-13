@@ -35,6 +35,7 @@ public interface Priorities {
 	
 	public static final int P_conc = 110;
 	
+	public static final int P_rel_overriding = 90;
 	
 	public static final int P_in = 60;
 	public static final int P_notin = 60;
@@ -47,16 +48,15 @@ public interface Priorities {
 	public static final int P_leq = 50;
 	public static final int P_geq = 50;
 	
+	public static final int P_equiv = 60;
+	
 	public static final int P_and = 40;
 	public static final int P_or = 40;
 	
-	public static final int P_equiv = 30;
+
 	public static final int P_implies = 30;
 	
 	public static final int P_min = 0;
-	
-	
-	///
 	
 	
 	

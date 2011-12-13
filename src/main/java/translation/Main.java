@@ -1,6 +1,5 @@
 package translation;
 
-import exceptions.ConfigFileErrorException;
 import exceptions.MyException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -12,43 +11,45 @@ import util.ToolIO;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws exceptions.FrontEndException,
+			MyException {
 		ToolIO.setMode(ToolIO.TOOL);
-		StringBuilder sb = null;
-		try {
-			sb = start(args[0], args[0], false);
-		} catch (Exception e) {
-			// ToolIO.printAllMessages();
-			e.printStackTrace();
-		}
-		if (sb != null)
-			System.out.println(sb);
+		StringBuilder s = new StringBuilder();
+		String path = "C:\\Temp\\";
+		ToolIO.setUserDir(path);
+		s = start("Can", "Can", false);
+		System.out.println(s);
 	}
-
 
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
 			MyException {
-		StringBuilder res = new StringBuilder();
+
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = evalFileName(fileName);
 		String config = evalConfigName(configName);
 
-		ModuleNode rootModule = parseModule(moduleName);
+		ModuleNode moduleNode = parseModule(moduleName);
 
-		ModuleContext con = new ModuleContext(rootModule, config);
-
+		ModuleContext con;
 		if (config != null) {
-			evalConfigFile(config, con);
+			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
+			configAst.parse();
+
+			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
+					moduleNode);
+			configTC.start();
+			con = new ModuleContext(moduleNode, configTC);
+		}else{
+			con = new ModuleContext(moduleNode);
 		}
 
-		ModuleTypeChecker mtc = new ModuleTypeChecker(rootModule, con);
-		mtc.start();
+		TypeChecker tc = new TypeChecker(moduleNode, con);
+		tc.start();
 
-		Translator t = new Translator();
-		res = t.visitModule(rootModule, con);
-		return res;
+		BPrettyPrinter p = new BPrettyPrinter(moduleNode, con);
+		return p.start();
 	}
 
 	public static ModuleNode parseModule(String moduleName)
@@ -62,13 +63,16 @@ public class Main {
 			return null;
 		}
 
-
 		if (spec.parseErrors.isFailure()) {
-			throw new exceptions.FrontEndException(allMessagesToString(ToolIO.getAllMessages())+spec.parseErrors, spec);
+			throw new exceptions.FrontEndException(
+					allMessagesToString(ToolIO.getAllMessages())
+							+ spec.parseErrors, spec);
 		}
-		
+
 		if (spec.semanticErrors.isFailure()) {
-			throw new exceptions.FrontEndException(allMessagesToString(ToolIO.getAllMessages())+spec.semanticErrors, spec);
+			throw new exceptions.FrontEndException(
+					allMessagesToString(ToolIO.getAllMessages())
+							+ spec.semanticErrors, spec);
 		}
 
 		// RootModule
@@ -89,23 +93,11 @@ public class Main {
 
 	public static String allMessagesToString(String[] allMessages) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < allMessages.length-1; i++) {
+		for (int i = 0; i < allMessages.length - 1; i++) {
 			sb.append(allMessages[i] + "\n");
 		}
 		return sb.toString();
 	}
-
-	public static void evalConfigFile(String configName,
-			ModuleContext moduleContext) throws ConfigFileErrorException {
-
-		ModelConfig configAst = new ModelConfig(configName + ".cfg", null);
-		configAst.parse();
-
-		ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
-				moduleContext);
-		configTC.start();
-	}
-
 
 	public static String evalFileName(String name) {
 		if (name.toLowerCase().endsWith(".tla")) {
