@@ -34,7 +34,7 @@ public class TestDefSubstitution {
 				+ "Init == c = 1 \n"
 				+ "Next == c' = c + foo \n"
 				+ "=================================";
-		StringBuilder sb = Main.start(module, "DefSubstitution", true);
+		StringBuilder sb = Main.start(module, "DefSubstitution.cfg", true);
 		String expected = fileToString(path + "DefSubstitution.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

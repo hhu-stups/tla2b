@@ -10,17 +10,6 @@ import util.FileUtil;
 import util.ToolIO;
 
 public class Main {
-
-	public static void main(String[] args) throws exceptions.FrontEndException,
-			MyException {
-		ToolIO.setMode(ToolIO.TOOL);
-		StringBuilder s = new StringBuilder();
-		String path = "C:\\Temp\\";
-		ToolIO.setUserDir(path);
-		s = start("Can", "Can", false);
-		System.out.println(s);
-	}
-
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
 			MyException {
@@ -41,7 +30,7 @@ public class Main {
 					moduleNode);
 			configTC.start();
 			con = new ModuleContext(moduleNode, configTC);
-		}else{
+		} else {
 			con = new ModuleContext(moduleNode);
 		}
 

@@ -1361,7 +1361,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 		}
 
-		throw new NotImplementedException(n.getOperator().getName().toString());
+		throw new NotImplementedException("Not supported Operator: " + n.getOperator().getName().toString() + "\n" + n.getLocation());
 	}
 
 	public static BType makePair(ArrayList<BType> list) {

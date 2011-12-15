@@ -441,7 +441,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return out;
 	}
 
-	public StringBuilder visitAssumeNode(AssumeNode n) {
+	private StringBuilder visitAssumeNode(AssumeNode n) {
 		// there are named or unnamend assumptions
 		StringBuilder out = new StringBuilder();
 		DContext d = new DContext("");
@@ -453,7 +453,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return out;
 	}
 
-	public ExprReturn visitExprOrOpArgNode(ExprOrOpArgNode n, DContext d,
+	private ExprReturn visitExprOrOpArgNode(ExprOrOpArgNode n, DContext d,
 			int expected) {
 		if (n instanceof ExprNode) {
 			return visitExprNode((ExprNode) n, d, expected);
@@ -1461,7 +1461,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		throw new RuntimeException(n.toString(2));
 	}
 
-	public StringBuilder visitBounded(OpApplNode n, DContext d) {
+	private StringBuilder visitBounded(OpApplNode n, DContext d) {
 		StringBuilder out = new StringBuilder();
 		FormalParamNode[][] nodes = n.getBdedQuantSymbolLists();
 		ExprNode[] in = n.getBdedQuantBounds();

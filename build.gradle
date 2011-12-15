@@ -12,11 +12,11 @@ repositories {
 }
 
 dependencies {
-    compile (group: 'de.stups', name: 'tla', version: '1.0.1')
+    compile (group: 'de.stups', name: 'tla', version: '1.0.3')
 	testCompile (group: 'de.prob', name: 'prologlib', version: '2.0.158')
  	testCompile (group: 'de.prob', name: 'parserbase', version: '2.0.158')
   	testCompile (group: 'de.prob', name: 'bparser', version: '2.0.158')
-	testCompile group: 'junit', name: 'junit', version: '4.+'
+	testCompile (group: 'junit', name: 'junit', version: '4.+')
 }
 
 task pack(type: Jar, dependsOn: [jar]) {
@@ -31,6 +31,7 @@ task pack(type: Jar, dependsOn: [jar]) {
 		exclude 'META-INF/MANIFEST.MF'
 	}
 	manifest { attributes 'Main-Class': 'translation.TLA2B' }
+
 	doLast{
 		println "Created archive: "+archivePath
 	}
