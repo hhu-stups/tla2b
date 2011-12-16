@@ -10,6 +10,23 @@ import util.FileUtil;
 import util.ToolIO;
 
 public class Main {
+
+	public static void main(String[] args) throws exceptions.FrontEndException,
+			MyException {
+		char fileseparator = FileUtil.separatorChar;
+		String path = "Examples/";
+		path = path.replace('/', fileseparator);
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.setUserDir(path);
+		ToolIO.reset();
+
+
+		 StringBuilder sb = Main.start("SimpleAllocator", "SimpleAllocator" ,
+		 false);
+	
+		System.out.println(sb);
+	}
+
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
 			MyException {

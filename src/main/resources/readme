@@ -1,0 +1,19 @@
+Run TLA2B as a stand-alone translator for TLA+ modules:
+1. Open a console and goto the directory containing the TLA2B.jar
+   
+2. Type into the console:
+	java -jar TLA2B.jar MODULENAME
+	
+	where MODULENAME is absolute or relative path (regarding to the current directory) to the TLA+ module
+	(the extension tla can be present or absent).
+	e.g.: 	java -jar TLA2B.jar C:/Examples/test.tla
+			java -jar TLA2B.jar Examples/test
+	
+	If you want to use the module together with a configuration file, the file has to be named as the module
+	with the filename extension "cfg" and it has to be located in the same directory.
+	
+
+To integrate TLA2B into the ProB Animator and Modelchecker download ProB under section "Nightly Build" from
+	http://www.stups.uni-duesseldorf.de/ProB/index.php5/Download
+Then follow the instructions from the tla_summary.txt.
+	
