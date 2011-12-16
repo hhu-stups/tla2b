@@ -39,14 +39,14 @@ task pack(type: Jar, dependsOn: [jar]) {
 
 task copy(type:Copy, dependsOn: pack) {
    from('build/libs/') { include 'TLA2B.jar' }
-   into 'build/tla'
+   into 'build/tla2b'
    from('src/main/resources/') { include '**/*' }
-   into 'build/tla'
+   into 'build/tla2b'
 }
 
 
 task deploy(type: Zip, dependsOn: copy) {
-   from('build/') { include 'tla/**' }
+   from('build/') { include 'tla2b/**' }
    baseName = 'tla2b'
 }
 
