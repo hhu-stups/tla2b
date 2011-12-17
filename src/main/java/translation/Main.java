@@ -21,7 +21,7 @@ public class Main {
 		ToolIO.reset();
 
 
-		 StringBuilder sb = Main.start("SimpleAllocator", "SimpleAllocator" ,
+		 StringBuilder sb = Main.start("SynodSpec", "SynodSpec" ,
 		 false);
 	
 		System.out.println(sb);

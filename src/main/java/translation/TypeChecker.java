@@ -94,7 +94,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 		
 		for (int i = 0; i < moduleContext.inits.size(); i++) {
-			visitExprNode(moduleContext.inits.get(i), BoolType.getInstance());
+			visitExprNode(moduleContext.inits.get(i).getNode(), BoolType.getInstance());
 		}
 		
 		evalOverrides(n.getConstantDecls());
@@ -440,10 +440,12 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				p.setToolObject(tempId, pType);
 			}
 
-			// evaluate the body of the definition again
-			paramId = tempId;
-			found = visitExprNode(def.getBody(), found);
-			paramId = toolId;
+			if(def.getToolObject(CONSTANT_OBJECT)==null){
+				// evaluate the body of the definition again
+				paramId = tempId;
+				found = visitExprNode(def.getBody(), found);
+				paramId = toolId;
+			}
 
 			n.setToolObject(toolId, found);
 

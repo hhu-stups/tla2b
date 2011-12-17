@@ -46,7 +46,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	protected ArrayList<String> setEnumeration;
 	protected ArrayList<String> invariants = new ArrayList<String>();
 	protected ArrayList<BOperation> bOperations;
-	protected ArrayList<ExprNode> inits;
+	protected ArrayList<BInit> inits;
 	protected ExprNode next;
 
 	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
@@ -143,14 +143,14 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	}
 
 	private void evalInit(String defName) {
-		inits = new ArrayList<ExprNode>();
+		inits = new ArrayList<BInit>();
 		if (defName == null)
 			return;
 
 		if (definitions.containsKey(defName)) {
 			OpDefNode init = definitions.get(defName);
 			init.setToolObject(PRINT_DEFINITION, false);
-			inits.add(init.getBody());
+			inits.add(new BInit("", init.getBody()));
 		}
 	}
 
@@ -168,22 +168,21 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 	private void evalSpec(String spec) throws SemanticErrorException,
 			FrontEndException {
-		inits = new ArrayList<ExprNode>();
+		inits = new ArrayList<BInit>();
 		bOperations = new ArrayList<BOperation>();
 		OpDefNode def = definitions.get(spec);
 		ExprNode e = def.getBody();
-		processConfigSpec(e);
+		processConfigSpec(e, "");
 	}
 
-	private void processConfigSpec(ExprNode exprNode)
+	private void processConfigSpec(ExprNode exprNode, String prefix)
 			throws SemanticErrorException, FrontEndException {
 		
 		if(exprNode instanceof SubstInNode){
 			SubstInNode substInNode = (SubstInNode) exprNode;
-			processConfigSpec(substInNode.getBody());
+			processConfigSpec(substInNode.getBody(), prefix);
 			return;
 		}
-		
 		
 		if (exprNode instanceof OpApplNode) {
 			OpApplNode opApp = (OpApplNode) exprNode;
@@ -191,11 +190,14 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			if (args.length == 0) {
 				SymbolNode opNode = opApp.getOperator();
 				if (opNode instanceof OpDefNode) {
-					ExprNode body = ((OpDefNode) opNode).getBody();
+					OpDefNode def = (OpDefNode) opNode;
+					ExprNode body = def.getBody();
 					if (body.getLevel() == 1) {
-						inits.add(exprNode);
+						inits.add(new BInit(prefix, exprNode));
 					} else {
-						processConfigSpec(body);
+						String defName = def.getName().toString();
+						String newPrefix = prefix +defName.substring(0, defName.lastIndexOf('!') + 1);
+						processConfigSpec(body, newPrefix);
 					}
 					return;
 				}
@@ -206,7 +208,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			int opcode = BuiltInOPs.getOpCode(opApp.getOperator().getName());
 			if (opcode == OPCODE_cl || opcode == OPCODE_land) {
 				for (int i = 0; i < args.length; i++) {
-					this.processConfigSpec((ExprNode) args[i]);
+					this.processConfigSpec((ExprNode) args[i],prefix);
 				}
 				return;
 			}
@@ -218,7 +220,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 								.getOperator().getName()) == OPCODE_sa) {
 					ExprNode next = (ExprNode) ((OpApplNode) boxArg).getArgs()[0];
 					this.next = next;
-					findOperations(next, "Next");
+					findOperations(next, prefix+"Next");
 					return;
 				}
 			}
@@ -226,7 +228,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 		if (exprNode.getLevel() <= 1) {
 			// init
-			inits.add(exprNode);
+			inits.add(new BInit(prefix, exprNode));
 		} else if (exprNode.getLevel() == 3) {
 			// temporal
 
@@ -521,7 +523,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 		}
 
 		for (int i = 0; i < inits.size(); i++) {
-			visitExprNode(inits.get(i), "", new ArrayList<String>());
+			BInit bInit = inits.get(i);
+			visitExprNode(bInit.getNode(), bInit.getPrefix(), new ArrayList<String>());
 		}
 
 		for (int i = 0; i < bOperations.size(); i++) {

@@ -186,6 +186,9 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				if (symbolName.equals(symbolValue)) {
 					def.setToolObject(PRINT_DEFINITION, false);
 				}
+				if (symbolName.equals(symbolValue)) {
+					def.setToolObject(PRINT_DEFINITION, false);
+				}
 			} else {
 				// every constants in the config file must appear in the TLA+
 				// module

@@ -126,7 +126,8 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			if (i != 0) {
 				out.append(" & ");
 			}
-			out.append(visitExprNode(moduleContext.inits.get(i), new DContext(), PREDICATE).out);
+			BInit bInit = moduleContext.inits.get(i);
+			out.append(visitExprNode(bInit.getNode(), new DContext(bInit.getPrefix()), PREDICATE).out);
 		}
 		out.append(")\n");
 		return out;
@@ -258,6 +259,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			Boolean usedDefintion = (Boolean) def
 					.getToolObject(PRINT_DEFINITION);
 			if (usedDefintion != null && usedDefintion) {
+				ConstantObj conObj = (ConstantObj) def.getToolObject(CONSTANT_OBJECT);
+				if(conObj != null){
+					if(def.getName().toString().equals(conObj.getValue())){
+						// defname equals modelvalues
+						continue;
+					}
+				}
 				if (first) {
 					out.append("DEFINITIONS\n");
 					first = false;
@@ -638,7 +646,10 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			String defName = d.getPrefix()
 					+ def.getName().toString();
 			
-			
+			if (!moduleContext.definitions.containsKey(defName) && !d.localDefinitions.containsKey(def.getName().toString())){
+				//definition of module around the inner module calling the defintion
+				defName = def.getName().toString();
+			}
 			// let definition
 			if (!moduleContext.definitions.containsKey(defName)) {
 				
