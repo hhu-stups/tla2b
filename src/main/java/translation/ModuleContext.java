@@ -623,6 +623,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			}
 
 			String defName;
+			String name = node.getOperator().getName().toString();
 			if (node.getOperator().getName().toString().toString()
 					.startsWith(prefix)) {
 				defName = node.getOperator().getName().toString();
@@ -635,10 +636,14 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 			// let
 			if (!this.definitions.containsKey(defName)) {
-				OpDefNode def = (OpDefNode) node.getOperator();
-				visitExprNode(def.getBody(), newPrefix, new ArrayList<String>(
-						parameters));
-				return;
+				if(this.definitions.containsKey(name)){
+					defName = name;
+				}else{
+					OpDefNode def = (OpDefNode) node.getOperator();
+					visitExprNode(def.getBody(), newPrefix, new ArrayList<String>(
+							parameters));
+					return;
+				}
 			}
 
 			OpDefNode def = definitions.get(defName);
