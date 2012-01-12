@@ -3,9 +3,11 @@ package translation;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import exceptions.ConfigFileErrorException;
+import exceptions.UnificationException;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
@@ -17,10 +19,10 @@ import types.BType;
 import types.BoolType;
 import types.IType;
 import types.IntType;
-import types.ModelValueType;
 import types.PowerSetType;
 import types.StringType;
 import types.Untyped;
+import types.EnumType;
 import util.StandardModules;
 
 public class ConfigTypeChecker implements IType, TranslationGlobals {
@@ -39,12 +41,14 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 	private Hashtable<String, ConstantObj> conObjs;
 	private Hashtable<String, String> overrides;
 	private ArrayList<String> enumeratedSet;
+	private LinkedHashMap<String, EnumType> enumeratedTypes;
 
 	public ConfigTypeChecker(ModelConfig configAst, ModuleNode moduleNode) {
 		this.configAst = configAst;
 		this.moduleNode = moduleNode;
 
 		enumeratedSet = new ArrayList<String>();
+		enumeratedTypes = new LinkedHashMap<String, EnumType>();
 		evalDefinitions();
 	}
 
@@ -163,8 +167,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		for (int i = 0; i < configCons.size(); i++) {
 			Vect symbol = (Vect) configCons.elementAt(i);
 			String symbolName = symbol.elementAt(0).toString();
-			String symbolValue = symbol.elementAt(symbol.size()-1).toString();
-			BType symbolType = conGetType(symbol.elementAt(symbol.size()-1));
+			Object symbolValue = symbol.elementAt(symbol.size() - 1);
+			BType symbolType = conGetType(symbol.elementAt(symbol.size() - 1));
 
 			if (constants.containsKey(symbolName)) {
 				OpDeclNode c = constants.get(symbolName);
@@ -207,26 +211,26 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 			Map.Entry<String, String> entry = it.next();
 			String left = entry.getKey();
 			String right = entry.getValue();
-			
+
 			if (!definitions.containsKey(right)) {
 				throw new ConfigFileErrorException("Invalid substitution for "
-						+ left
-						+ ".\n Module does not contain definition "
+						+ left + ".\n Module does not contain definition "
 						+ right + ".");
 			}
-			
+
 			if (constants.containsKey(left)) {
 				OpDeclNode con = constants.get(left);
 				if (con.getArity() > 0) {
 					bConstants.remove(left);
-					con.setToolObject(OVERRIDE_SUBSTITUTION_ID, entry.getValue());
+					con.setToolObject(OVERRIDE_SUBSTITUTION_ID,
+							entry.getValue());
 					overrides.remove(entry.getKey());
 				}
 			} else if (definitions.containsKey(left)) {
 				OpDefNode def = definitions.get(left);
 				ConstantObj conObj = new ConstantObj(right, new Untyped());
 				def.setToolObject(CONSTANT_OBJECT, conObj);
-			}else {
+			} else {
 				// every constants in the config file must appear in the TLA+
 				// module
 				throw new ConfigFileErrorException(
@@ -243,22 +247,57 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 			return IntType.getInstance();
 		} else if (o.getClass().getName().equals("tlc2.value.SetEnumValue")) {
 			SetEnumValue set = (SetEnumValue) o;
-			PowerSetType t = new PowerSetType(ModelValueType.getInstance());
+			PowerSetType t = new PowerSetType(new Untyped());
 			if (set.size() == 0) {
 				throw new ConfigFileErrorException(
 						"empty set is not permitted!");
 			}
-			BType elemType = conGetType(set.elems.elementAt(0));
-			t.setSubType(elemType);
+			BType elemType;
 
-			for (int i = 1; i < set.size(); i++) {
-				elemType = conGetType(set.elems.elementAt(i));
-				// all Elements have the same Type?
-				if (!t.getSubType().equals(elemType)) {
-					throw new ConfigFileErrorException(
-							"Elements of the set must have the same type: " + o);
+			if (set.elems.elementAt(0).getClass().getName()
+					.equals("tlc2.value.ModelValue")) {
+				EnumType e = new EnumType(new ArrayList<String>());
+				for (int i = 0; i < set.size(); i++) {
+					if (set.elems.elementAt(i).getClass().getName()
+							.equals("tlc2.value.ModelValue")) {
+						String mv = ((ModelValue) set.elems.elementAt(i))
+								.toString();
+						if (!enumeratedSet.contains(mv)) {
+							enumeratedSet.add(mv);
+							e.modelvalues.add(mv);
+						} else {
+							e.modelvalues.add(mv);
+							EnumType e2 = enumeratedTypes.get(mv);
+							try {
+								e = e2.unify(e2);
+							} catch (UnificationException exception) {
+							}
+						}
+
+					} else {
+						throw new ConfigFileErrorException(
+								"Elements of the set must have the same type: "
+										+ o);
+					}
+				}
+				Iterator<String> it = e.modelvalues.iterator();
+				while(it.hasNext()){
+					enumeratedTypes.put(it.next(), e);
+				}
+				elemType = e;
+			} else {
+				elemType = conGetType(set.elems.elementAt(0));
+				for (int i = 1; i < set.size(); i++) {
+					elemType = conGetType(set.elems.elementAt(i));
+					// all Elements have the same Type?
+					if (!t.getSubType().compare(elemType)) {
+						throw new ConfigFileErrorException(
+								"Elements of the set must have the same type: "
+										+ o);
+					}
 				}
 			}
+			t.setSubType(elemType);
 			return t;
 
 		} else if (o.getClass().getName().equals("tlc2.value.ModelValue")) {
@@ -266,8 +305,15 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 
 			if (!enumeratedSet.contains(mv.toString())) {
 				enumeratedSet.add(mv.toString());
+				ArrayList<String> temp = new ArrayList<String>();
+				temp.add(mv.toString());
+				EnumType e = new EnumType(temp);
+				enumeratedTypes.put(mv.toString(), e);
+				return e;
+			} else {
+				return enumeratedTypes.get(mv.toString());
 			}
-			return ModelValueType.getInstance();
+
 		} else if (o.getClass().getName().equals("tlc2.value.StringValue")) {
 			return StringType.getInstance();
 		} else if (o.getClass().getName().equals("tlc2.value.BoolValue")) {
@@ -310,4 +356,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		return enumeratedSet;
 	}
 
+	public LinkedHashMap<String, EnumType> getEnumeratedTypes(){
+		return enumeratedTypes;
+	}
 }

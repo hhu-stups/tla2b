@@ -41,7 +41,7 @@ public class Main {
 			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
 			configAst.parse();
 
-			ConfigTypeChecker2 configTC = new ConfigTypeChecker2(configAst,
+			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
 					moduleNode);
 			configTC.start();
 			con = new ModuleContext(moduleNode, configTC);

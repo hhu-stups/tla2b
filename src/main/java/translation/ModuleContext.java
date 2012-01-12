@@ -49,7 +49,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	protected ArrayList<BInit> inits;
 	protected ExprNode next;
 	
-	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker2 ctc)
+	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
 			throws FrontEndException, ConfigFileErrorException,
 			SemanticErrorException {
 
