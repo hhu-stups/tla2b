@@ -5,15 +5,15 @@ import types.BType;
 
 public class ConstantObj {
 
-	private String value;
+	private Object value;
 	private BType type;
 
-	public ConstantObj(String value, BType t) {
+	public ConstantObj(Object value, BType t) {
 		this.value = value;
 		this.type = t;
 	}
 
-	public String getValue() {
+	public Object getValue() {
 		return value;
 	}
 

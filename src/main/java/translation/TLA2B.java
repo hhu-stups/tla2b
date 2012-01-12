@@ -67,7 +67,8 @@ public class TLA2B {
 		try {
 			f.createNewFile();
 		} catch (IOException e) {
-			// TODO
+			System.err.println(String.format("Could not create File %s.", path + sourceModuleName+".mch"));
+			return;
 		}
 
 		Writer fw = null;

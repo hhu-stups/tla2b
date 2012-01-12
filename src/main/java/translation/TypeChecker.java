@@ -92,11 +92,12 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		if (moduleContext.next != null) {
 			visitExprNode(moduleContext.next, BoolType.getInstance());
 		}
-		
+
 		for (int i = 0; i < moduleContext.inits.size(); i++) {
-			visitExprNode(moduleContext.inits.get(i).getNode(), BoolType.getInstance());
+			visitExprNode(moduleContext.inits.get(i).getNode(),
+					BoolType.getInstance());
 		}
-		
+
 		evalOverrides(n.getConstantDecls());
 
 		for (int i = 0; i < vars.length; i++) {
@@ -280,7 +281,14 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				PowerSetType found = new PowerSetType(new PairType());
 				found = found.unify(base);
 				PairType pair = (PairType) found.getSubType();
-				return pair.getSecond().unify(expected);
+				BType res = new Untyped();
+				try {
+					res = pair.getSecond().unify(expected);
+				} catch (UnificationException e) {
+					throw new TypeErrorException("Can not unify "
+							+ pair.getSecond() + " and " + expected + "\n"+ a.getLocation());
+				}
+				return res;
 			}
 		}
 
@@ -396,7 +404,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				return result;
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
-						"Expected %s, found %s at constant '%s',\n%s",
+						"Expected %s, found %s at parameter '%s',\n%s",
 						expected, t, pName, n.getLocation()));
 			}
 		}
@@ -440,7 +448,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				p.setToolObject(tempId, pType);
 			}
 
-			if(def.getToolObject(CONSTANT_OBJECT)==null){
+			if (def.getToolObject(CONSTANT_OBJECT) == null) {
 				// evaluate the body of the definition again
 				paramId = tempId;
 				found = visitExprNode(def.getBody(), found);
@@ -1018,6 +1026,51 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		/***********************************************************************
 		 * Function constructors
 		 ***********************************************************************/
+		case OPCODE_rfs: // recursive function ( f[x\in Nat] == IF x = 0 THEN 1
+							// ELSE f[n-1]
+		{
+			ArrayList<BType> domList = new ArrayList<BType>();
+			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
+			ExprNode[] bounds = n.getBdedQuantBounds();
+			for (int i = 0; i < bounds.length; i++) {
+				if (n.isBdedQuantATuple()[i]) {
+					throw new TypeErrorException(
+							"A tuple of bounded variable is not permitted.\n"
+									+ n.getLocation());
+				}
+				PowerSetType S = (PowerSetType) visitExprNode(bounds[i],
+						new PowerSetType(new Untyped()));
+				BType pType = S.getSubType();
+				for (int j = 0; j < params[i].length; j++) {
+					FormalParamNode p = params[i][j];
+					p.setToolObject(toolId, pType);
+					if (pType instanceof AbstractHasFollowers) {
+						((AbstractHasFollowers) pType).addFollower(p);
+					}
+					domList.add(pType);
+				}
+			}
+			BType domType = makePair(domList);
+
+			PowerSetType found = new PowerSetType(new PairType(domType,
+					new Untyped()));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at FunctionConstructor,\n%s",
+						expected, found, n.getLocation()));
+			}
+			FormalParamNode recFunc = n.getUnbdedQuantSymbols()[0];
+			recFunc.setToolObject(toolId, found);
+			found.addFollower(recFunc);
+
+			PairType pair = (PairType) found.getSubType();
+			visitExprOrOpArgNode(n.getArgs()[0], pair.getSecond());
+
+			return found;
+		}
+
 		case OPCODE_nrfs: // succ[n \in Nat] == n + 1
 		case OPCODE_fc: // [n \in Nat |-> n+1]
 		{
@@ -1363,7 +1416,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 		}
 
-		throw new NotImplementedException("Not supported Operator: " + n.getOperator().getName().toString() + "\n" + n.getLocation());
+		throw new NotImplementedException("Not supported Operator: "
+				+ n.getOperator().getName().toString() + "\n" + n.getLocation());
 	}
 
 	public static BType makePair(ArrayList<BType> list) {

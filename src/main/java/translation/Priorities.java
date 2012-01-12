@@ -20,12 +20,12 @@ public interface Priorities {
 	
 	public static final int P_maplet = 160;
 	
-	public static final int P_take_first = 150;
-	public static final int P_take_last = 150;
+	public static final int P_take_first = 160;
+	public static final int P_drop_last = 160;
 	
 	public static final int P_intersect = 140;
 	public static final int P_union = 140;
-	public static final int P_setdiff = 140; //TODO ??
+	public static final int P_setdiff = 140;
 	
 	public static final int P_append = 130;
 	

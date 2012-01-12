@@ -570,5 +570,4 @@ public class TestSet {
 		t.start();
 	}
 	
-	//TODO Except
 }

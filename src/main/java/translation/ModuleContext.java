@@ -48,8 +48,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	protected ArrayList<BOperation> bOperations;
 	protected ArrayList<BInit> inits;
 	protected ExprNode next;
-
-	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
+	
+	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker2 ctc)
 			throws FrontEndException, ConfigFileErrorException,
 			SemanticErrorException {
 
@@ -241,7 +241,6 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 	private void evalDefinitions() {
 		OpDefNode[] opDefs = moduleNode.getOpDefs();
-
 		class OpDefNodeComparator implements Comparator<OpDefNode> {
 			public int compare(OpDefNode a, OpDefNode b) {
 				if (a.getLocation().equals(b.getLocation())) {
@@ -259,7 +258,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			}
 		}
 		Arrays.sort(opDefs, new OpDefNodeComparator());
-
+		
 		definitions = new Hashtable<String, OpDefNode>();
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
@@ -516,6 +515,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	/**
 	 * 
 	 */
+	// TODO find local definitions
 	private void evalUsedDefintions() {
 		AssumeNode[] assumes = moduleNode.getAssumptions();
 		for (int i = 0; i < assumes.length; i++) {

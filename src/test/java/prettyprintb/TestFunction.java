@@ -67,7 +67,31 @@ public class TestFunction {
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
+	
+	/**********************************************************************
+	 * recursive Function
+	 **********************************************************************/
 
+	@Test
+	public void testRecursiveFunction() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals \n"
+				+ "CONSTANTS k, k2, k3 \n"
+				+ "fact[n \\in {1,2}] == IF n = 0 THEN 1 ELSE n+ fact[n-1] \n"
+				+ "ASSUME k = fact /\\ fact[k2] = k3 \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		final String expected = "MACHINE Testing\n"
+				+ "CONSTANTS k,k2,k3\n"
+				+ "PROPERTIES k : POW(INTEGER*INTEGER) & k2 : INTEGER & k3 : INTEGER \n"
+				+ " & k = fact & fact(k2) = k3 \n"
+				+ "DEFINITIONS fact == %n.(n : {1, 2}| (%t_.( t_ = 0 & n = 0 | 1 )\\/%t_.( t_ = 0 & not(n = 0) | n + fact(n - 1) ))(0)); \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
 	/**********************************************************************
 	 * Function call
 	 **********************************************************************/

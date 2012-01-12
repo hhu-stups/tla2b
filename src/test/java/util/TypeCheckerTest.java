@@ -10,7 +10,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.tool.ModelConfig;
-import translation.ConfigTypeChecker;
+import translation.ConfigTypeChecker2;
 import translation.Main;
 import translation.ModuleContext;
 import translation.TypeChecker;
@@ -47,7 +47,7 @@ public class TypeCheckerTest {
 			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
 			configAst.parse();
 
-			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
+			ConfigTypeChecker2 configTC = new ConfigTypeChecker2(configAst,
 					moduleNode);
 			configTC.start();
 			con = new ModuleContext(moduleNode, configTC);

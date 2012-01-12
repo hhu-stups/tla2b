@@ -26,8 +26,11 @@ import tla2sany.semantic.StringNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tlc2.tool.BuiltInOPs;
+import tlc2.value.SetEnumValue;
 import types.BType;
+import types.EnumType;
 import types.IType;
+import types.PowerSetType;
 import types.StructType;
 import util.StandardModules;
 import util.UniqueString;
@@ -53,15 +56,14 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		out.append("MACHINE " + module.getName().toString() + "\n");
 
-		// Sets
-		out.append(evalSets());
+		out.append(evalEnumeratedSets());
 
 		// Constants and Properties
 		out.append(evalConsDecl());
 		out.append(evalPropertyStatements());
 
 		StringBuilder operations = evalOperations();
-		
+
 		out.append(evalDefinition());
 
 		out.append(evalVariables());
@@ -75,22 +77,54 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return out;
 	}
 
-	private StringBuilder evalSets() {
+	/**
+	 * @return
+	 */
+	private StringBuilder evalEnumeratedSets() {
 		StringBuilder out = new StringBuilder();
-		ArrayList<String> l = moduleContext.getEnum();
-		if (l == null)
+		if (moduleContext.getEnum()== null)
 			return out;
 		out.append("SETS\n ");
-		out.append("ENUM = {");
-		for (int i = 0; i < l.size(); i++) {
-			out.append(l.get(i));
-			if (i < l.size() - 1) {
-				out.append(",");
+		
+		ArrayList<EnumType> printed = new ArrayList<EnumType>();
+		int counter = 1;
+		Iterator<ConstantObj> it =moduleContext.conObjs.values().iterator();
+		boolean first = true;
+		while (it.hasNext()) {
+			BType type = it.next().getType();
+			EnumType e = null;
+			if(type instanceof PowerSetType){
+				if(((PowerSetType) type).getSubType() instanceof EnumType){
+					e = (EnumType) ((PowerSetType) type).getSubType();
+				}else continue;
+					
+			}else if((type instanceof EnumType)){
+				e = (EnumType) type;
+			}else continue;
+			
+			if(!printed.contains(e)){
+				e.id = counter;
+				if(!first){
+					out.append("; ");					
+				}
+				out.append("ENUM"+counter+" = {");
+				Iterator<String> it2 = e.modelvalues.iterator();
+				while (it2.hasNext()) {
+					out.append(it2.next());
+					if(it2.hasNext()){
+						out.append(", ");
+					}
+				}
+				out.append("}");
+				printed.add(e);
+				counter++;
+				first = false;
 			}
 		}
-		out.append("}\n");
+		out.append("\n");
 		return out;
 	}
+
 
 	private StringBuilder evalInvariants() {
 		StringBuilder out = new StringBuilder();
@@ -127,7 +161,8 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				out.append(" & ");
 			}
 			BInit bInit = moduleContext.inits.get(i);
-			out.append(visitExprNode(bInit.getNode(), new DContext(bInit.getPrefix()), PREDICATE).out);
+			out.append(visitExprNode(bInit.getNode(),
+					new DContext(bInit.getPrefix()), PREDICATE).out);
 		}
 		out.append(")\n");
 		return out;
@@ -146,8 +181,9 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 			String prefix = defName.substring(0, defName.lastIndexOf('!') + 1);
 			DContext d = new DContext(prefix, "\t");
-			d.localDefinitions = new LinkedHashMap<String, LetDef>(op.getLocalDefintions());
-			
+			d.localDefinitions = new LinkedHashMap<String, LetDef>(
+					op.getLocalDefintions());
+
 			out.append(" " + defName.replace('!', '_') + "_Op");
 			if (op.getOpParams().size() > 0) {
 				out.append("(");
@@ -164,9 +200,9 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			boolean first = true;
 			for (int j = 0; j < vars.length; j++) {
 				String varName = vars[j].getName().toString();
-				if(op.getUnchangedVariables().contains(varName))
+				if (op.getUnchangedVariables().contains(varName))
 					continue;
-				if(!first){
+				if (!first) {
 					out.append(", ");
 				}
 				out.append(varName + "_n");
@@ -182,36 +218,37 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				out.append("\n\t ");
 			}
 			out.append(visitExprOrOpArgNode(op.getNode(), d, PREDICATE).out);
-			
-			for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr.hasNext(); ) {
+
+			for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr
+					.hasNext();) {
 				LetDef letDef = itr.next();
-				if (!op.getLocalDefintions().containsValue(letDef)){
+				if (!op.getLocalDefintions().containsValue(letDef)) {
 					moduleContext.globalLets.add(letDef);
 				}
 			}
-			
+
 			out.append("\n\tTHEN ");
-			
+
 			boolean first2 = true;
 			for (int j = 0; j < vars.length; j++) {
 				String varName = vars[j].getName().toString();
-				if(op.getUnchangedVariables().contains(varName))
+				if (op.getUnchangedVariables().contains(varName))
 					continue;
-				if(!first2){
+				if (!first2) {
 					out.append(", ");
 				}
 				out.append(varName);
 				first2 = false;
 			}
-			
+
 			out.append(" := ");
-			
+
 			boolean first3 = true;
 			for (int j = 0; j < vars.length; j++) {
 				String varName = vars[j].getName().toString();
-				if(op.getUnchangedVariables().contains(varName))
+				if (op.getUnchangedVariables().contains(varName))
 					continue;
-				if(!first3){
+				if (!first3) {
 					out.append(", ");
 				}
 				out.append(varName + "_n");
@@ -259,9 +296,10 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			Boolean usedDefintion = (Boolean) def
 					.getToolObject(PRINT_DEFINITION);
 			if (usedDefintion != null && usedDefintion) {
-				ConstantObj conObj = (ConstantObj) def.getToolObject(CONSTANT_OBJECT);
-				if(conObj != null){
-					if(def.getName().toString().equals(conObj.getValue())){
+				ConstantObj conObj = (ConstantObj) def
+						.getToolObject(CONSTANT_OBJECT);
+				if (conObj != null) {
+					if (def.getName().toString().equals(conObj.getValue())) {
 						// defname equals modelvalues
 						continue;
 					}
@@ -313,9 +351,10 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			out.append(")");
 		}
 		out.append(" == ");
-		DContext d = new DContext("","\t");
+		DContext d = new DContext("", "\t");
 		d.localDefinitions = letDef.getlocalDefinition();
-		out.append(visitExprNode(letDef.getNode().getBody(), d, VALUEORPREDICATE).out);
+		out.append(visitExprNode(letDef.getNode().getBody(), d,
+				VALUEORPREDICATE).out);
 		out.append(";\n");
 		return out;
 
@@ -328,21 +367,22 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		String defName = def.getName().toString();
 		ConstantObj conObj = (ConstantObj) def.getToolObject(CONSTANT_OBJECT);
-		if(conObj != null){
+		if (conObj != null) {
 			// config substitution
 			out.append(" " + defName.replace('!', '_'));
-			out.append(" == "+conObj.getValue()+ ";\n\n");
+			out.append(" == " + conObj.getValue() + ";\n\n");
 			return out;
 		}
-		
+
 		String prefix = defName.substring(0, defName.lastIndexOf('!') + 1);
 		DContext d = new DContext(prefix, "\t");
 		StringBuilder body = visitExprNode(def.getBody(), d, VALUEORPREDICATE).out;
 		// first print the local defintions
-		for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr.hasNext(); ) {
+		for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr
+				.hasNext();) {
 			out.append(evalLet(itr.next()));
 		}
-		
+
 		defName = defName.replace('!', '_');
 		out.append(" " + defName);
 		FormalParamNode[] params = def.getParams();
@@ -402,7 +442,25 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				if (moduleContext.conObjs != null
 						&& moduleContext.conObjs.get(conName) != null) {
 					ConstantObj c = moduleContext.conObjs.get(conName);
-					out.append(String.format("%s = %s\n", conName, c.getValue()));
+					BType t = c.getType();
+					boolean isEnum = false;
+					if (t instanceof PowerSetType){
+						BType sub = ((PowerSetType)t).getSubType(); 
+						if (sub instanceof EnumType){
+							EnumType en = (EnumType)sub;
+							SetEnumValue set = (SetEnumValue) c.getValue();
+							if (set.elems.size()==en.modelvalues.size()){
+								isEnum = true;
+							}
+							
+						}
+					}
+					if(isEnum){
+						out.append(String.format("%s = %s\n", conName, ((PowerSetType)t).getSubType()));
+					}else{
+						out.append(String.format("%s = %s\n", conName, c.getValue().toString()));
+					}
+
 				} else {
 					out.append(String.format("%s : %s\n", conName,
 							cons[i].getToolObject(toolId)));
@@ -454,8 +512,9 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		DContext d = new DContext("");
 		out.append(visitExprNode(n.getAssume(), d, PREDICATE).out);
-		
-		for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr.hasNext(); ) {
+
+		for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr
+				.hasNext();) {
 			moduleContext.globalLets.add(itr.next());
 		}
 		return out;
@@ -503,9 +562,12 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			for (int i = 0; i < l.getLets().length; i++) {
 				OpDefNode def = l.getLets()[i];
 				@SuppressWarnings("unchecked")
-				ArrayList<String> params = (ArrayList<String>) def.getToolObject(moduleContext.letParamsId);
-				String letName = moduleContext.createName(def.getName().toString());
-				LetDef letDef = new LetDef(letName, def, params, d.localDefinitions);
+				ArrayList<String> params = (ArrayList<String>) def
+						.getToolObject(moduleContext.letParamsId);
+				String letName = moduleContext.createName(def.getName()
+						.toString());
+				LetDef letDef = new LetDef(letName, def, params,
+						d.localDefinitions);
 				d.localDefinitions.put(def.getName().toString(), letDef);
 			}
 			return visitExprNode(l.getBody(), d, VALUEORPREDICATE);
@@ -556,7 +618,8 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			OpDeclNode con = (OpDeclNode) n.getOperator();
 			ExprOrOpArgNode substExpr = (ExprOrOpArgNode) con
 					.getToolObject(substitutionId);
-			String overrideName = (String) con.getToolObject(OVERRIDE_SUBSTITUTION_ID);
+			String overrideName = (String) con
+					.getToolObject(OVERRIDE_SUBSTITUTION_ID);
 			if (substExpr != null) {
 				String prefix = d.getPrefix();
 				if (prefix.length() > 0) {
@@ -569,29 +632,29 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 						prefix = "";
 					}
 				}
-				if(substExpr instanceof OpArgNode){
+				if (substExpr instanceof OpArgNode) {
 					prefix = prefix.replace('!', '_');
-					out.append(prefix + ((OpArgNode) substExpr).getName().toString());
-				}else{
-					out.append(visitExprOrOpArgNode(substExpr, new DContext(prefix), VALUE).out);
+					out.append(prefix
+							+ ((OpArgNode) substExpr).getName().toString());
+				} else {
+					out.append(visitExprOrOpArgNode(substExpr, new DContext(
+							prefix), VALUE).out);
 				}
-				
-			}
-			else if (overrideName != null){
+
+			} else if (overrideName != null) {
 				out.append(overrideName);
-			}else{
+			} else {
 				String cName = n.getOperator().getName().toString();
 				out.append(cName);
 			}
-			
-			if (n.getArgs().length>0){
+
+			if (n.getArgs().length > 0) {
 				out.append("(");
 				for (int i = 0; i < n.getArgs().length; i++) {
-					if(i!=0){
-						out.append(",");						
+					if (i != 0) {
+						out.append(",");
 					}
-					out.append(visitExprOrOpArgNode(n.getArgs()[i], d,
-							VALUE).out);
+					out.append(visitExprOrOpArgNode(n.getArgs()[i], d, VALUE).out);
 				}
 				out.append(")");
 			}
@@ -641,26 +704,31 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			if (BBuiltInOPs.contains(n.getOperator().getName())) {
 				return evalBBuiltIns(n, d, expected);
 			}
-			
+
 			OpDefNode def = (OpDefNode) n.getOperator();
-			String defName = d.getPrefix()
-					+ def.getName().toString();
-			
-			if (!moduleContext.definitions.containsKey(defName) && !d.localDefinitions.containsKey(def.getName().toString())){
-				//definition of module around the inner module calling the defintion
+			String defName = d.getPrefix() + def.getName().toString();
+
+			if (!moduleContext.definitions.containsKey(defName)
+					&& !d.localDefinitions
+							.containsKey(def.getName().toString())) {
+				// definition of module around the inner module calling the
+				// defintion
 				defName = def.getName().toString();
 			}
 			// let definition
 			if (!moduleContext.definitions.containsKey(defName)) {
-				
-				LetDef letDef = d.localDefinitions.get(def.getName().toString());
-				if (letDef == null){
-					System.out.println(def.getName());
-					//letDef = moduleContext.lets.get(def.getName().toString());
-					throw new RuntimeException();
+
+				LetDef letDef = d.localDefinitions
+						.get(def.getName().toString());
+				if (letDef == null) {
+					// letDef =
+					// moduleContext.lets.get(def.getName().toString());
+					System.out.println(def.toString(4));
+					throw new RuntimeException("Unkown Defintion: "
+							+ def.getName());
 				}
 				ArrayList<String> params = letDef.getParameters();
-				
+
 				String letName = letDef.getName();
 				out.append(letName.replace('!', '_'));
 
@@ -938,7 +1006,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		 ***********************************************************************/
 		case OPCODE_nrfs:
 		case OPCODE_fc: // Represents [x \in S |-> e].
-		{
+		case OPCODE_rfs: {
 			out.append("%");
 			FormalParamNode[][] vars = n.getBdedQuantSymbolLists();
 			for (int i = 0; i < vars.length; i++) {
@@ -1166,7 +1234,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		 ************************************************************************/
 		case OPCODE_unchanged:
 			Boolean b = (Boolean) n.getToolObject(USED);
-			if(b != null){
+			if (b != null) {
 				return new ExprReturn("TRUE = TRUE", P_equals);
 			}
 			OpApplNode k = (OpApplNode) n.getArgs()[0];
@@ -1210,13 +1278,14 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		case 0: {
 			return evalBBuiltIns(n, d, expected);
 		}
+
 		case OPCODE_sa: // []_
 		case OPCODE_box: // []
 		case OPCODE_diamond: // <>
 		case OPCODE_wf: // weak fairness
 		{
-			// TODO
-			return new ExprReturn(out);
+			throw new RuntimeException("Not supported operator: "
+					+ n.toString(2));
 		}
 
 		}
@@ -1423,21 +1492,16 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out);
 		}
 
-		case B_OPCODE_subseq: { // SubSeq(s,m,n) //TODO evaluate
+		case B_OPCODE_subseq: { // SubSeq(s,m,n)
 			StringBuilder s = visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out;
 			out.append("(");
 			out.append(s);
-			out.append("\\|/"); // drop first elements
-			out.append(visitExprOrOpArgNode(n.getArgs()[1], d, NOBOOL).out);
-			out.append("-1)");
-			out.append("/|\\");
+			out.append("/|\\"); // taking first n elements
 			out.append(visitExprOrOpArgNode(n.getArgs()[2], d, NOBOOL).out);
-			out.append("-");
-			out.append(brackets(
-					visitExprOrOpArgNode(n.getArgs()[1], d, NOBOOL), P_minus,
-					false));
-			out.append("+1");
-			return new ExprReturn(out, P_take_first);
+			out.append(")\\|/"); // dropping first m-1 elements
+			out.append(visitExprOrOpArgNode(n.getArgs()[1], d, NOBOOL).out);
+			out.append("-1");
+			return new ExprReturn(out, P_drop_last);
 		}
 
 		/***********************************************************************

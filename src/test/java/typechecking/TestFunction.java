@@ -118,7 +118,28 @@ public class TestFunction {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 	}
+	
+	/**********************************************************************
+	 * recursive Function
+	 **********************************************************************/
+	@Test
+	public void testRecursiveFunction() throws FrontEndException, MyException {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals \n"
+				+ "CONSTANTS k, k2, k3 \n"
+				+ "fact[n \\in {1,2}] == IF n = 0 THEN 1 ELSE n+ fact[n-1] \n"
+				+ "ASSUME k = fact /\\ fact[k2] = k3 \n"
+				+ "=================================";
 
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("POW(INTEGER*INTEGER)", t.constants.get("k").toString());
+		assertEquals("INTEGER", t.constants.get("k2").toString());
+		assertEquals("INTEGER", t.constants.get("k3").toString());
+	}
+	
 	/**********************************************************************
 	 * Function call
 	 **********************************************************************/
@@ -422,4 +443,5 @@ public class TestFunction {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 	}
+	
 }

@@ -14,16 +14,14 @@ public class Main {
 	public static void main(String[] args) throws exceptions.FrontEndException,
 			MyException {
 		char fileseparator = FileUtil.separatorChar;
-		String path = "Examples/";
+		String path = "C:\\Temp\\";
 		path = path.replace('/', fileseparator);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 		ToolIO.reset();
 
+		StringBuilder sb = Main.start("SimpleAllocator", "SimpleAllocator", false);
 
-		 StringBuilder sb = Main.start("SynodSpec", "SynodSpec" ,
-		 false);
-	
 		System.out.println(sb);
 	}
 
@@ -43,7 +41,7 @@ public class Main {
 			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
 			configAst.parse();
 
-			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
+			ConfigTypeChecker2 configTC = new ConfigTypeChecker2(configAst,
 					moduleNode);
 			configTC.start();
 			con = new ModuleContext(moduleNode, configTC);
