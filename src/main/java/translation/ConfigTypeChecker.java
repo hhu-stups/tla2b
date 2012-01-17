@@ -180,7 +180,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				 * same as the name of constants, then the constant declaration
 				 * in the resulting B machine disappears
 				 **/
-				if (symbolName.equals(symbolValue)) {
+				if (symbolName.equals(symbolValue.toString())) {
 					bConstants.remove(symbolName);
 				}
 			} else if (definitions.containsKey(symbolName)) {

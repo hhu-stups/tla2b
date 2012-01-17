@@ -286,7 +286,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 					res = pair.getSecond().unify(expected);
 				} catch (UnificationException e) {
 					throw new TypeErrorException("Can not unify "
-							+ pair.getSecond() + " and " + expected + "\n"+ a.getLocation());
+							+ pair.getSecond() + " and " + expected + "\n"
+							+ a.getLocation());
 				}
 				return res;
 			}
@@ -719,6 +720,44 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		// TODO add BSeq to tla standard modules
+
+		/**********************************************************************
+		 * Standard Module TLA2B
+		 **********************************************************************/
+
+		case B_OPCODE_min: // MinOfSet(S)
+		case B_OPCODE_max: // MaxOfSet(S)
+		case B_OPCODE_setprod: // SetProduct(S)
+		case B_OPCODE_setsum: // SetSummation(S)
+		{
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0], new PowerSetType(
+					IntType.getInstance()));
+			return IntType.getInstance();
+		}
+
+		case B_OPCODE_permseq: // PermutedSequences(S)
+		{
+			PowerSetType argType = (PowerSetType) visitExprOrOpArgNode(
+					n.getArgs()[0], new PowerSetType(new Untyped()));
+			
+			PowerSetType found = new PowerSetType(new PowerSetType(
+					new PairType(IntType.getInstance(), argType.getSubType())));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at 'PermutedSequences',\n%s",
+						expected, found, n.getLocation()));
+			}
+			return found;
+		}
 
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs

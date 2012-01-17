@@ -59,6 +59,18 @@ public interface BBuildIns {
 			.uniqueStringOf("SubSeq");
 	public static final UniqueString OP_conc = UniqueString
 	.uniqueStringOf("\\o");
+	
+	//TLA2B
+	public static final UniqueString OP_min = UniqueString
+			.uniqueStringOf("MinOfSet");
+	public static final UniqueString OP_max = UniqueString
+			.uniqueStringOf("MaxOfSet");
+	public static final UniqueString OP_setprod = UniqueString
+			.uniqueStringOf("SetProduct");
+	public static final UniqueString OP_setsum = UniqueString
+			.uniqueStringOf("SetSummation");
+	public static final UniqueString OP_permseq = UniqueString
+			.uniqueStringOf("PermutedSequences");
 
 	public static final int B_OPCODE_dotdot = 1;
 	public static final int B_OPCODE_plus = 2;
@@ -92,4 +104,10 @@ public interface BBuildIns {
 	public static final int B_OPCODE_subseq = B_OPCODE_card + 6;
 	public static final int B_OPCODE_conc = B_OPCODE_card + 7;
 
+	public static final int B_OPCODE_min = B_OPCODE_conc + 1;
+	public static final int B_OPCODE_max = B_OPCODE_conc + 2;
+	public static final int B_OPCODE_setprod = B_OPCODE_conc + 3;
+	public static final int B_OPCODE_setsum = B_OPCODE_conc + 4;
+	public static final int B_OPCODE_permseq = B_OPCODE_conc + 5;
+	
 }

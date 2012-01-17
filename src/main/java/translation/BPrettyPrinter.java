@@ -432,11 +432,11 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		}
 		OpDeclNode[] cons = module.getConstantDecls();
 		out.append("PROPERTIES\n ");
-		boolean flag = false;
+		boolean notFirst = false;
 		for (int i = 0; i < cons.length; i++) {
 			String conName = cons[i].getName().toString();
 			if (moduleContext.getBConstants().contains(conName)) {
-				if (flag) {
+				if (notFirst) {
 					out.append(" & ");
 				}
 				if (moduleContext.conObjs != null
@@ -466,7 +466,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 							cons[i].getToolObject(toolId)));
 				}
 
-				flag = true;
+				notFirst = true;
 			}
 		}
 		out.append(evalAssumptions());
@@ -1504,6 +1504,38 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out, P_drop_last);
 		}
 
+		/**********************************************************************
+		 * Standard Module Sequences
+		 **********************************************************************/
+		case B_OPCODE_min: { // MinOfSet(s)
+			out.append("min(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append(")");
+			return new ExprReturn(out);
+		}
+		
+		case B_OPCODE_max: { // MaxOfSet(s)
+			out.append("max(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append(")");
+			return new ExprReturn(out);
+		}
+		
+		case B_OPCODE_setprod: { // SetProduct(s)
+			out.append("PI(z_).(z_:");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append("|z_)");
+			return new ExprReturn(out);
+		}
+		
+		case B_OPCODE_setsum: { // SetSummation(s)
+			out.append("SIGMA(z_).(z_:");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append("|z_)");
+			return new ExprReturn(out);
+		}
+		
+		
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
 		 ***********************************************************************/

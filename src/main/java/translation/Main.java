@@ -14,13 +14,13 @@ public class Main {
 	public static void main(String[] args) throws exceptions.FrontEndException,
 			MyException {
 		char fileseparator = FileUtil.separatorChar;
-		String path = "C:\\Temp\\";
+		String path = "Examples\\";
 		path = path.replace('/', fileseparator);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 		ToolIO.reset();
 
-		StringBuilder sb = Main.start("SimpleAllocator", "SimpleAllocator", false);
+		StringBuilder sb = Main.start("test", "test", false);
 
 		System.out.println(sb);
 	}
