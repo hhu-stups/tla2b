@@ -1535,6 +1535,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out);
 		}
 		
+		case B_OPCODE_permseq: { // PermutedSequences(s)
+			out.append("perm(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append(")");
+			return new ExprReturn(out);
+		}
+		
 		
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs

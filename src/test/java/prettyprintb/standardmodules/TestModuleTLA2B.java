@@ -69,4 +69,22 @@ public class TestModuleTLA2B {
 				+ "PROPERTIES SIGMA(z_).(z_:{1, 2, 3}|z_) = 6 \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
+	
+	/**********************************************************************
+	 * SetSummation
+	 **********************************************************************/
+	@Test
+	public void testPerm() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "PermutedSequences(a) == {} \n"
+				+ "ASSUME PermutedSequences({1,2}) = {<<1,2>>,<<2,1>>} \n"
+				+ "=================================";
+		
+		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES perm({1, 2}) = {[1, 2], [2, 1]} \n" + "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
 }
