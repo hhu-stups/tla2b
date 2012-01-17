@@ -27,6 +27,7 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
+import tlc2.tool.Defns;
 import tlc2.tool.ToolGlobals;
 import util.StandardModules;
 
@@ -616,21 +617,28 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 		}
 
 		case UserDefinedOpKind: {
-			if (BBuiltInOPs.contains(node.getOperator().getName())) {
+			OpDefNode def;
+			if(node.getOperator().getToolObject(DEF_OBJECT)!= null){
+				def = (OpDefNode) node.getOperator().getToolObject(DEF_OBJECT);
+			}else{
+				def = (OpDefNode) node.getOperator();
+			}
+			
+			if (BBuiltInOPs.contains(def.getName())) {
 				visitBuiltInKind(node, prefix,
 						new ArrayList<String>(parameters));
 				return;
 			}
 
 			String defName;
-			String name = node.getOperator().getName().toString();
-			if (node.getOperator().getName().toString().toString()
+			String name = def.getName().toString();
+			if (def.getName().toString().toString()
 					.startsWith(prefix)) {
-				defName = node.getOperator().getName().toString();
+				defName = def.getName().toString();
 			} else {
-				defName = prefix + node.getOperator().getName().toString();
+				defName = prefix + def.getName().toString();
 			}
-
+			
 			String newPrefix = defName.substring(0,
 					defName.lastIndexOf('!') + 1);
 
@@ -639,16 +647,16 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 				if(this.definitions.containsKey(name)){
 					defName = name;
 				}else{
-					OpDefNode def = (OpDefNode) node.getOperator();
-					visitExprNode(def.getBody(), newPrefix, new ArrayList<String>(
+					OpDefNode def2 = (OpDefNode) node.getOperator();
+					visitExprNode(def2.getBody(), newPrefix, new ArrayList<String>(
 							parameters));
 					return;
 				}
 			}
-
-			OpDefNode def = definitions.get(defName);
-			def.setToolObject(PRINT_DEFINITION, true);
-			visitExprNode(def.getBody(), newPrefix, getParams(def));
+			// def2 is the instanced definition if there is one
+			OpDefNode def2 = definitions.get(defName);
+			def2.setToolObject(PRINT_DEFINITION, true);
+			visitExprNode(def2.getBody(), newPrefix, getParams(def));
 			return;
 		}
 

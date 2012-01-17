@@ -14,13 +14,13 @@ public class Main {
 	public static void main(String[] args) throws exceptions.FrontEndException,
 			MyException {
 		char fileseparator = FileUtil.separatorChar;
-		String path = "Examples\\";
+		String path = "C:\\Users\\Dominik\\Desktop\\svn TLA Beispiele\\TLA_Distribution\\allocator";
 		path = path.replace('/', fileseparator);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 		ToolIO.reset();
 
-		StringBuilder sb = Main.start("test", "test", false);
+		StringBuilder sb = Main.start("McSchedulingAllocator", "McSchedulingAllocator", false);
 
 		System.out.println(sb);
 	}

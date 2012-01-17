@@ -285,14 +285,14 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		OpDefNode[] opDefs = module.getOpDefs();
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
-			// Definition in this module
-			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-					.getName().toString())
-					|| StandardModules.contains(def.getSource()
-							.getOriginallyDefinedInModuleNode().getName()
-							.toString())) {
-				continue;
-			}
+//			// Definition in this module
+//			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
+//					.getName().toString())
+//					|| StandardModules.contains(def.getSource()
+//							.getOriginallyDefinedInModuleNode().getName()
+//							.toString())) {
+//				continue;
+//			}
 			Boolean usedDefintion = (Boolean) def
 					.getToolObject(PRINT_DEFINITION);
 			if (usedDefintion != null && usedDefintion) {
@@ -700,12 +700,18 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		}
 
 		case UserDefinedOpKind: {
+			OpDefNode def;
+			if(n.getOperator().getToolObject(DEF_OBJECT)!=null){
+				def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
+			}else{
+				def = (OpDefNode) n.getOperator();
+			}
+			
 			// Operator ist ein B-BuiltIn-Operator
-			if (BBuiltInOPs.contains(n.getOperator().getName())) {
+			if (BBuiltInOPs.contains(def.getName())) {
 				return evalBBuiltIns(n, d, expected);
 			}
-
-			OpDefNode def = (OpDefNode) n.getOperator();
+			
 			String defName = d.getPrefix() + def.getName().toString();
 
 			if (!moduleContext.definitions.containsKey(defName)
@@ -1336,9 +1342,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 	}
 
 	private ExprReturn evalBBuiltIns(OpApplNode n, DContext d, int expected) {
-
 		UniqueString name = n.getOperator().getName();
 		StringBuilder out = new StringBuilder();
+		if(n.getOperator().getToolObject(DEF_OBJECT)!=null){
+			OpDefNode def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
+			name = def.getName();
+		}
+
 
 		switch (BBuiltInOPs.getOpcode(name)) {
 

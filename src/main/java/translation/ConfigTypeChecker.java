@@ -204,8 +204,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 
 	@SuppressWarnings("unchecked")
 	private void evalConstantOverrides() throws ConfigFileErrorException {
-		overrides = configAst.getOverrides();
-		Iterator<Map.Entry<String, String>> it = overrides.entrySet()
+		overrides =(Hashtable<String, String>) configAst.getOverrides().clone();
+		Iterator<Map.Entry<String, String>> it = configAst.getOverrides().entrySet()
 				.iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, String> entry = it.next();
@@ -228,8 +228,11 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				}
 			} else if (definitions.containsKey(left)) {
 				OpDefNode def = definitions.get(left);
+				//TODO remove conObj
 				ConstantObj conObj = new ConstantObj(right, new Untyped());
 				def.setToolObject(CONSTANT_OBJECT, conObj);
+				def.setToolObject(DEF_OBJECT, definitions.get(right));
+				overrides.remove(entry.getKey());
 			} else {
 				// every constants in the config file must appear in the TLA+
 				// module
@@ -281,7 +284,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 					}
 				}
 				Iterator<String> it = e.modelvalues.iterator();
-				while(it.hasNext()){
+				while (it.hasNext()) {
 					enumeratedTypes.put(it.next(), e);
 				}
 				elemType = e;
@@ -356,7 +359,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		return enumeratedSet;
 	}
 
-	public LinkedHashMap<String, EnumType> getEnumeratedTypes(){
+	public LinkedHashMap<String, EnumType> getEnumeratedTypes() {
 		return enumeratedTypes;
 	}
 }

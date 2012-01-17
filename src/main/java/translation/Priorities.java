@@ -22,6 +22,7 @@ public interface Priorities {
 	
 	public static final int P_take_first = 160;
 	public static final int P_drop_last = 160;
+	public static final int P_conc = 160;
 	
 	public static final int P_intersect = 140;
 	public static final int P_union = 140;
@@ -33,7 +34,7 @@ public interface Priorities {
 	
 	public static final int P_comma = 115;
 	
-	public static final int P_conc = 110;
+
 	
 	public static final int P_rel_overriding = 90;
 	
