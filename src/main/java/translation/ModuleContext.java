@@ -7,6 +7,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import exceptions.ConfigFileErrorException;
 import exceptions.FrontEndException;
 import exceptions.SemanticErrorException;
@@ -32,7 +34,8 @@ import tlc2.tool.ToolGlobals;
 import util.StandardModules;
 
 // contains the content of a tla+ module
-public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlobals {
+public class ModuleContext implements ASTConstants, ToolGlobals,
+		TranslationGlobals {
 	private final ModuleNode moduleNode;
 	protected final int letParamsId;
 	protected Hashtable<String, OpDefNode> definitions;
@@ -49,7 +52,9 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 	protected ArrayList<BOperation> bOperations;
 	protected ArrayList<BInit> inits;
 	protected ExprNode next;
-	
+
+	protected ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
+
 	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
 			throws FrontEndException, ConfigFileErrorException,
 			SemanticErrorException {
@@ -178,13 +183,13 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 	private void processConfigSpec(ExprNode exprNode, String prefix)
 			throws SemanticErrorException, FrontEndException {
-		
-		if(exprNode instanceof SubstInNode){
+
+		if (exprNode instanceof SubstInNode) {
 			SubstInNode substInNode = (SubstInNode) exprNode;
 			processConfigSpec(substInNode.getBody(), prefix);
 			return;
 		}
-		
+
 		if (exprNode instanceof OpApplNode) {
 			OpApplNode opApp = (OpApplNode) exprNode;
 			ExprOrOpArgNode[] args = opApp.getArgs();
@@ -197,7 +202,9 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 						inits.add(new BInit(prefix, exprNode));
 					} else {
 						String defName = def.getName().toString();
-						String newPrefix = prefix +defName.substring(0, defName.lastIndexOf('!') + 1);
+						String newPrefix = prefix
+								+ defName.substring(0,
+										defName.lastIndexOf('!') + 1);
 						processConfigSpec(body, newPrefix);
 					}
 					return;
@@ -209,7 +216,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			int opcode = BuiltInOPs.getOpCode(opApp.getOperator().getName());
 			if (opcode == OPCODE_cl || opcode == OPCODE_land) {
 				for (int i = 0; i < args.length; i++) {
-					this.processConfigSpec((ExprNode) args[i],prefix);
+					this.processConfigSpec((ExprNode) args[i], prefix);
 				}
 				return;
 			}
@@ -221,7 +228,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 								.getOperator().getName()) == OPCODE_sa) {
 					ExprNode next = (ExprNode) ((OpApplNode) boxArg).getArgs()[0];
 					this.next = next;
-					findOperations(next, prefix+"Next");
+					findOperations(next, prefix + "Next");
 					return;
 				}
 			}
@@ -259,7 +266,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			}
 		}
 		Arrays.sort(opDefs, new OpDefNodeComparator());
-		
+
 		definitions = new Hashtable<String, OpDefNode>();
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
@@ -525,7 +532,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 		for (int i = 0; i < inits.size(); i++) {
 			BInit bInit = inits.get(i);
-			visitExprNode(bInit.getNode(), bInit.getPrefix(), new ArrayList<String>());
+			visitExprNode(bInit.getNode(), bInit.getPrefix(),
+					new ArrayList<String>());
 		}
 
 		for (int i = 0; i < bOperations.size(); i++) {
@@ -595,7 +603,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 			SubstInNode substInNode = (SubstInNode) node;
 			Subst[] substs = substInNode.getSubsts();
 			for (int i = 0; i < substs.length; i++) {
-				visitExprOrOpArgNode(substs[i].getExpr(), prefix, new ArrayList<String>(parameters));
+				visitExprOrOpArgNode(substs[i].getExpr(), prefix,
+						new ArrayList<String>(parameters));
 			}
 			visitExprNode(substInNode.getBody(), prefix, new ArrayList<String>(
 					parameters));
@@ -618,12 +627,12 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 		case UserDefinedOpKind: {
 			OpDefNode def;
-			if(node.getOperator().getToolObject(DEF_OBJECT)!= null){
+			if (node.getOperator().getToolObject(DEF_OBJECT) != null) {
 				def = (OpDefNode) node.getOperator().getToolObject(DEF_OBJECT);
-			}else{
+			} else {
 				def = (OpDefNode) node.getOperator();
 			}
-			
+
 			if (BBuiltInOPs.contains(def.getName())) {
 				visitBuiltInKind(node, prefix,
 						new ArrayList<String>(parameters));
@@ -632,31 +641,35 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 
 			String defName;
 			String name = def.getName().toString();
-			if (def.getName().toString().toString()
-					.startsWith(prefix)) {
+			if (def.getName().toString().toString().startsWith(prefix)) {
 				defName = def.getName().toString();
 			} else {
 				defName = prefix + def.getName().toString();
 			}
-			
+
 			String newPrefix = defName.substring(0,
 					defName.lastIndexOf('!') + 1);
 
 			// let
 			if (!this.definitions.containsKey(defName)) {
-				if(this.definitions.containsKey(name)){
+				if (this.definitions.containsKey(name)) {
 					defName = name;
-				}else{
+				} else {
 					OpDefNode def2 = (OpDefNode) node.getOperator();
-					visitExprNode(def2.getBody(), newPrefix, new ArrayList<String>(
-							parameters));
+					visitExprNode(def2.getBody(), newPrefix,
+							new ArrayList<String>(parameters));
 					return;
 				}
 			}
 			// def2 is the instanced definition if there is one
 			OpDefNode def2 = definitions.get(defName);
-			def2.setToolObject(PRINT_DEFINITION, true);
-			visitExprNode(def2.getBody(), newPrefix, getParams(def));
+			Boolean b = (Boolean) def2.getToolObject(PRINT_DEFINITION);
+			if (b == null || b == true) {
+				def2.setToolObject(PRINT_DEFINITION, true);
+				visitExprNode(def2.getBody(), newPrefix, getParams(def));
+			}
+			
+			
 			return;
 		}
 
@@ -721,12 +734,11 @@ public class ModuleContext implements ASTConstants, ToolGlobals, TranslationGlob
 		if (n instanceof ExprNode) {
 			visitExprNode((ExprNode) n, prefix, new ArrayList<String>(
 					parameters));
-		} else if (n instanceof OpArgNode){
+		} else if (n instanceof OpArgNode) {
 			OpArgNode opArgNode = (OpArgNode) n;
-			
+
 			String defName;
-			if (opArgNode.getName().toString().toString()
-					.startsWith(prefix)) {
+			if (opArgNode.getName().toString().toString().startsWith(prefix)) {
 				defName = opArgNode.getName().toString();
 			} else {
 				defName = prefix + opArgNode.getName().toString();

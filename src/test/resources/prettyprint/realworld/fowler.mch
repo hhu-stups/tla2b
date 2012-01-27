@@ -4,8 +4,7 @@ DEFINITIONS
 	 & light = "off"
 	 & draw = "closed"
 	 & door = "unlocked"
-	 & panel = "locked";
-
+	 & panel = "locked"
 VARIABLES state, light, draw, panel, door
 INVARIANT
  state : STRING
@@ -17,14 +16,14 @@ INITIALISATION
  state, light, draw, panel, door:(Init)
 OPERATIONS
  CloseDoor_Op = ANY state_n, door_n
-	WHERE door = "unlocked"
+	WHERE state_n : STRING & door_n : STRING & door = "unlocked"
 	 & door_n = "locked"
 	 & state_n = "active"
 	 & TRUE = TRUE
 	THEN state, door := state_n, door_n END;
 
  LightOn_Op = ANY state_n, light_n, panel_n, door_n
-	WHERE light = "off"
+	WHERE state_n : STRING & light_n : STRING & panel_n : STRING & door_n : STRING & light = "off"
 	 & light_n = "on"
 	 & ((draw = "opened" 
 	  => state_n = "unlockedPanel" & panel_n = "unlocked" & door_n = "locked") 
@@ -35,7 +34,7 @@ OPERATIONS
 	THEN state, light, panel, door := state_n, light_n, panel_n, door_n END;
 
  OpenDraw_Op = ANY state_n, draw_n, panel_n, door_n
-	WHERE draw = "closed"
+	WHERE state_n : STRING & draw_n : STRING & panel_n : STRING & door_n : STRING & draw = "closed"
 	 & draw_n = "opened"
 	 & ((light = "on" 
 	  => state_n = "unlockedPanel" & panel_n = "unlocked" & door_n = "locked") 
@@ -46,7 +45,7 @@ OPERATIONS
 	THEN state, draw, panel, door := state_n, draw_n, panel_n, door_n END;
 
  ClosePanel_Op = ANY state_n, light_n, draw_n, panel_n, door_n
-	WHERE panel = "unlocked"
+	WHERE state_n : STRING & light_n : STRING & draw_n : STRING & panel_n : STRING & door_n : STRING & panel = "unlocked"
 	 & panel_n = "locked"
 	 & light_n = "off"
 	 & draw_n = "closed"

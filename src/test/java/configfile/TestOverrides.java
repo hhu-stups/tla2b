@@ -37,6 +37,7 @@ public class TestOverrides {
 				+ "Next == c' = c + k \n"
 				+ "=================================";
 		StringBuilder sb = Main.start(module, "overrides", true);
+		System.out.println(sb);
 		String expected = fileToString(path + "overrides.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

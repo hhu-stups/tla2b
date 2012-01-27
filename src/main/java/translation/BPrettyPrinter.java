@@ -32,14 +32,13 @@ import types.EnumType;
 import types.IType;
 import types.PowerSetType;
 import types.StructType;
-import util.StandardModules;
 import util.UniqueString;
 
 public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		BBuildIns, Priorities, TranslationGlobals {
 	private ModuleNode module;
 	private ModuleContext moduleContext;
-	private int toolId = 5;
+	private int TYPE_ID = 5;
 	private int substitutionId = 10;
 
 	private final int NOBOOL = 0;
@@ -82,38 +81,43 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 	 */
 	private StringBuilder evalEnumeratedSets() {
 		StringBuilder out = new StringBuilder();
-		if (moduleContext.getEnum()== null)
+		if (moduleContext.getEnum() == null)
 			return out;
 		out.append("SETS\n ");
-		
 		ArrayList<EnumType> printed = new ArrayList<EnumType>();
 		int counter = 1;
-		Iterator<ConstantObj> it =moduleContext.conObjs.values().iterator();
+		
+		OpDeclNode[] cons = module.getConstantDecls();
 		boolean first = true;
-		while (it.hasNext()) {
-			BType type = it.next().getType();
+		for (int i = 0; i < cons.length; i++) {
+			BType type = (BType)cons[i].getToolObject(TYPE_ID);
 			EnumType e = null;
-			if(type instanceof PowerSetType){
-				if(((PowerSetType) type).getSubType() instanceof EnumType){
+			if (type instanceof PowerSetType) {
+				if (((PowerSetType) type).getSubType() instanceof EnumType) {
 					e = (EnumType) ((PowerSetType) type).getSubType();
-				}else continue;
-					
-			}else if((type instanceof EnumType)){
+				} else
+					continue;
+
+			} else if ((type instanceof EnumType)) {
 				e = (EnumType) type;
-			}else continue;
-			
-			if(!printed.contains(e)){
+			} else
+				continue;
+
+			if (!printed.contains(e)) {
 				e.id = counter;
-				if(!first){
-					out.append("; ");					
+				if (!first) {
+					out.append("; ");
 				}
-				out.append("ENUM"+counter+" = {");
+				out.append("ENUM" + counter + " = {");
 				Iterator<String> it2 = e.modelvalues.iterator();
 				while (it2.hasNext()) {
 					out.append(it2.next());
-					if(it2.hasNext()){
+					if (it2.hasNext()) {
 						out.append(", ");
 					}
+				}
+				if(e.hasNoVal()){
+					out.append(", noVal"+counter);
 				}
 				out.append("}");
 				printed.add(e);
@@ -125,14 +129,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return out;
 	}
 
-
 	private StringBuilder evalInvariants() {
 		StringBuilder out = new StringBuilder();
 		OpDeclNode[] vars = module.getVariableDecls();
 		if (vars.length > 0) {
 			out.append("INVARIANT\n ");
 			for (int i = 0; i < vars.length; i++) {
-				BType varType = (BType) vars[i].getToolObject(toolId);
+				BType varType = (BType) vars[i].getToolObject(TYPE_ID);
 				out.append(vars[i].getName().toString() + " : " + varType
 						+ "\n");
 				if (i != vars.length - 1)
@@ -217,6 +220,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				}
 				out.append("\n\t ");
 			}
+			for (int j = 0; j < vars.length; j++) {
+				String varName = vars[j].getName().toString();
+				if (op.getUnchangedVariables().contains(varName))
+					continue;
+				out.append(varName + "_n : " + vars[j].getToolObject(TYPE_ID));
+				out.append(" & ");
+			}
 			out.append(visitExprOrOpArgNode(op.getNode(), d, PREDICATE).out);
 
 			for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr
@@ -281,46 +291,24 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 	private StringBuilder evalDefinition() {
 		StringBuilder out = new StringBuilder();
-		boolean first = true;
-		OpDefNode[] opDefs = module.getOpDefs();
-		for (int i = 0; i < opDefs.length; i++) {
-			OpDefNode def = opDefs[i];
-//			// Definition in this module
-//			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-//					.getName().toString())
-//					|| StandardModules.contains(def.getSource()
-//							.getOriginallyDefinedInModuleNode().getName()
-//							.toString())) {
-//				continue;
-//			}
-			Boolean usedDefintion = (Boolean) def
-					.getToolObject(PRINT_DEFINITION);
-			if (usedDefintion != null && usedDefintion) {
-				ConstantObj conObj = (ConstantObj) def
-						.getToolObject(CONSTANT_OBJECT);
-				if (conObj != null) {
-					if (def.getName().toString().equals(conObj.getValue())) {
-						// defname equals modelvalues
-						continue;
-					}
-				}
-				if (first) {
-					out.append("DEFINITIONS\n");
-					first = false;
-				}
-				out.append(visitOpDefNode(def));
-			}
+
+		BDefinitions definitions = new BDefinitions(module.getOpDefs());
+		ArrayList<OpDefNode> bDefs = definitions.getBDefinitions();
+		if (bDefs.size() + moduleContext.globalLets.size() == 0)
+			return out;
+		out.append("DEFINITIONS\n");
+		for (int i = 0; i < bDefs.size(); i++) {
+			out.append(visitOpDefNode(bDefs.get(i)));
+			if (!(i == bDefs.size() - 1 && moduleContext.globalLets.size() == 0))
+				out.append(";\n\n");
 		}
 
-		if (moduleContext.globalLets.size() > 0) {
-			if (first) {
-				out.append("DEFINITIONS\n");
-				first = false;
-			}
-			for (int i = 0; i < moduleContext.globalLets.size(); i++) {
-				out.append(evalLet(moduleContext.globalLets.get(i)));
-			}
+		for (int i = 0; i < moduleContext.globalLets.size(); i++) {
+			out.append(evalLet(moduleContext.globalLets.get(i)));
+			if(i != moduleContext.globalLets.size()-1)
+				out.append(";\n");
 		}
+		out.append("\n");
 		return out;
 	}
 
@@ -355,7 +343,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		d.localDefinitions = letDef.getlocalDefinition();
 		out.append(visitExprNode(letDef.getNode().getBody(), d,
 				VALUEORPREDICATE).out);
-		out.append(";\n");
 		return out;
 
 	}
@@ -370,7 +357,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		if (conObj != null) {
 			// config substitution
 			out.append(" " + defName.replace('!', '_'));
-			out.append(" == " + conObj.getValue() + ";\n\n");
+			out.append(" == " + conObj.getValue());
 			return out;
 		}
 
@@ -381,6 +368,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		for (Iterator<LetDef> itr = d.localDefinitions.values().iterator(); itr
 				.hasNext();) {
 			out.append(evalLet(itr.next()));
+			out.append(";\n");
 		}
 
 		defName = defName.replace('!', '_');
@@ -397,7 +385,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		}
 		out.append(" == ");
 		out.append(body);
-		out.append(";\n\n");
 		return out;
 	}
 
@@ -407,7 +394,8 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		OpDeclNode[] cons = module.getConstantDecls();
 		if (bCons.size() == 0)
 			return out;
-		out.append("CONSTANTS ");
+		out.append("ABSTRACT_CONSTANTS ");
+		//out.append("CONSTANTS ");
 		boolean flag = false;
 		for (int i = 0; i < cons.length; i++) {
 
@@ -444,26 +432,28 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 					ConstantObj c = moduleContext.conObjs.get(conName);
 					BType t = c.getType();
 					boolean isEnum = false;
-					if (t instanceof PowerSetType){
-						BType sub = ((PowerSetType)t).getSubType(); 
-						if (sub instanceof EnumType){
-							EnumType en = (EnumType)sub;
+					if (t instanceof PowerSetType) {
+						BType sub = ((PowerSetType) t).getSubType();
+						if (sub instanceof EnumType) {
+							EnumType en = (EnumType) sub;
 							SetEnumValue set = (SetEnumValue) c.getValue();
-							if (set.elems.size()==en.modelvalues.size()){
+							if (set.elems.size() == en.modelvalues.size()) {
 								isEnum = true;
 							}
-							
+
 						}
 					}
-					if(isEnum){
-						out.append(String.format("%s = %s\n", conName, ((PowerSetType)t).getSubType()));
-					}else{
-						out.append(String.format("%s = %s\n", conName, c.getValue().toString()));
+					if (isEnum) {
+						out.append(String.format("%s = %s\n", conName,
+								((PowerSetType) t).getSubType()));
+					} else {
+						out.append(String.format("%s = %s\n", conName, c
+								.getValue().toString()));
 					}
 
 				} else {
 					out.append(String.format("%s : %s\n", conName,
-							cons[i].getToolObject(toolId)));
+							cons[i].getToolObject(TYPE_ID)));
 				}
 
 				notFirst = true;
@@ -577,7 +567,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			AtNode at = (AtNode) n;
 			String base = visitExprNode(at.getAtBase(), d, NOBOOL).out
 					.toString();
-			BType t = (BType) at.getExceptRef().getToolObject(toolId);
+			BType t = (BType) at.getExceptRef().getToolObject(TYPE_ID);
 			if (t.getKind() == STRUCT) {
 				out.append(base + "'");
 				StringNode stringNode = (StringNode) ((OpApplNode) at
@@ -701,17 +691,17 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 		case UserDefinedOpKind: {
 			OpDefNode def;
-			if(n.getOperator().getToolObject(DEF_OBJECT)!=null){
+			if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
 				def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
-			}else{
+			} else {
 				def = (OpDefNode) n.getOperator();
 			}
-			
+
 			// Operator ist ein B-BuiltIn-Operator
 			if (BBuiltInOPs.contains(def.getName())) {
 				return evalBBuiltIns(n, d, expected);
 			}
-			
+
 			String defName = d.getPrefix() + def.getName().toString();
 
 			if (!moduleContext.definitions.containsKey(defName)
@@ -756,7 +746,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 					out.append(")");
 
 				}
-				BType defType = (BType) n.getToolObject(toolId);
+				BType defType = (BType) n.getToolObject(TYPE_ID);
 				if (defType.getKind() == BOOL) {
 					return makeBoolValue(out, expected, P_max);
 				}
@@ -774,7 +764,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				out.append(")");
 
 			}
-			BType defType = (BType) n.getToolObject(toolId);
+			BType defType = (BType) n.getToolObject(TYPE_ID);
 			if (defType.getKind() == BOOL) {
 				return makeBoolValue(out, expected, P_max);
 			}
@@ -1077,7 +1067,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		 **********************************************************************/
 		case OPCODE_exc: // Except
 		{
-			BType t = (BType) n.getToolObject(toolId);
+			BType t = (BType) n.getToolObject(TYPE_ID);
 			if (t.getKind() == STRUCT) {
 				Hashtable<String, String> temp = new Hashtable<String, String>();
 				for (int i = 1; i < n.getArgs().length; i++) {
@@ -1153,11 +1143,56 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		 * Records
 		 ***********************************************************************/
 		case OPCODE_sor: { // $SetOfRcds [L1 : e1, L2 : e2]
-			return evalStructOrRec("struct", n, d);
+			PowerSetType pow = (PowerSetType) n.getToolObject(TYPE_ID);
+			StructType struct = (StructType) pow.getSubType();
+			Hashtable<String, StringBuilder> pairs = new Hashtable<String, StringBuilder>();
+			ExprOrOpArgNode[] args = n.getArgs();
+			for (int i = 0; i < args.length; i++) {
+				OpApplNode pair = (OpApplNode) args[i];
+				StringNode stringNode = (StringNode) pair.getArgs()[0];
+				pairs.put(stringNode.getRep().toString(), visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE).out);
+			}
+			out.append("struct(");
+			for (int i = 0; i < struct.getFields().size(); i++) {
+				String fieldName = struct.getFields().get(i);
+				out.append(fieldName);
+				out.append(" : ");
+				if(pairs.containsKey(fieldName)){
+					out.append(pairs.get(fieldName));
+				}else{
+					out.append(struct.getType(fieldName));
+				}
+				if (i<struct.getFields().size()-1)
+					out.append(",");
+			}
+			out.append(")");
+			return new ExprReturn(out, P_max);
 		}
 
 		case OPCODE_rc: { // [h_1 |-> 1, h_2 |-> 2]
-			return evalStructOrRec("rec", n, d);
+			StructType struct = (StructType) n.getToolObject(TYPE_ID);
+			Hashtable<String, StringBuilder> pairs = new Hashtable<String, StringBuilder>();
+			ExprOrOpArgNode[] args = n.getArgs();
+			for (int i = 0; i < args.length; i++) {
+				OpApplNode pair = (OpApplNode) args[i];
+				StringNode stringNode = (StringNode) pair.getArgs()[0];
+				pairs.put(stringNode.getRep().toString(), visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE).out);
+			}
+			out.append("rec(");
+			for (int i = 0; i < struct.getFields().size(); i++) {
+				String fieldName = struct.getFields().get(i);
+				out.append(fieldName);
+				out.append(" : ");
+				if(pairs.containsKey(fieldName)){
+					out.append(pairs.get(fieldName));
+				}else{
+					out.append(getDummy(struct.getType(fieldName)));
+				}
+				if (i<struct.getFields().size()-1)
+					out.append(",");
+			}
+			out.append(")");
+			return new ExprReturn(out, P_max);
 		}
 
 		case OPCODE_rs: { // $RcdSelect r.c
@@ -1178,7 +1213,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		case OPCODE_ite: // IF THEN ELSE
 		{
 
-			BType t = (BType) n.getToolObject(toolId);
+			BType t = (BType) n.getToolObject(TYPE_ID);
 
 			if (t.getKind() == BOOL) {
 				d.indent.append(" ");
@@ -1344,11 +1379,11 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 	private ExprReturn evalBBuiltIns(OpApplNode n, DContext d, int expected) {
 		UniqueString name = n.getOperator().getName();
 		StringBuilder out = new StringBuilder();
-		if(n.getOperator().getToolObject(DEF_OBJECT)!=null){
-			OpDefNode def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
+		if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
+			OpDefNode def = (OpDefNode) n.getOperator().getToolObject(
+					DEF_OBJECT);
 			name = def.getName();
 		}
-
 
 		switch (BBuiltInOPs.getOpcode(name)) {
 
@@ -1523,36 +1558,35 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			out.append(")");
 			return new ExprReturn(out);
 		}
-		
+
 		case B_OPCODE_max: { // MaxOfSet(s)
 			out.append("max(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append(")");
 			return new ExprReturn(out);
 		}
-		
+
 		case B_OPCODE_setprod: { // SetProduct(s)
 			out.append("PI(z_).(z_:");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append("|z_)");
 			return new ExprReturn(out);
 		}
-		
+
 		case B_OPCODE_setsum: { // SetSummation(s)
 			out.append("SIGMA(z_).(z_:");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append("|z_)");
 			return new ExprReturn(out);
 		}
-		
+
 		case B_OPCODE_permseq: { // PermutedSequences(s)
 			out.append("perm(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append(")");
 			return new ExprReturn(out);
 		}
-		
-		
+
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
 		 ***********************************************************************/
@@ -1641,4 +1675,26 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return res;
 	}
 
+	private String getDummy(BType type){
+		switch (type.getKind()) {
+		case INTEGER:
+			return "0";
+
+		case STRING:
+			return "\"\"";
+		
+		case POW:
+			return "{}";
+			
+		case BOOL:
+			return "FALSE";
+		case MODELVALUE:
+			EnumType e = (EnumType) type;
+			return "noVal"+e.id;
+		default:
+			break;
+		}
+		return null;
+		
+	}
 }

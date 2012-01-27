@@ -127,11 +127,11 @@ public class TestStruct {
 		assertEquals("struct(a:INTEGER,b:BOOL)", t.constants.get("k").toString());
 	}
 	
-	@Test (expected = TypeErrorException.class)
+	@Test// (expected = TypeErrorException.class)
 	public void testRecordException() throws FrontEndException, MyException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "ASSUME 1 = [a |-> 1, b |-> TRUE] \n"
+				+ "ASSUME 1 = [b |-> 1, a |-> TRUE] \n"
 				+ "=================================";
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
@@ -209,6 +209,29 @@ public class TestStruct {
 		assertEquals("POW(BOOL)", t.constants.get("k3").toString());
 	}
 	
+	@Test //(expected = TypeErrorException.class)
+	public void testRecordSelectException3() throws FrontEndException, MyException {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k \n"
+				+ "ASSUME k = [a |-> 1] /\\ TRUE = k.b \n"
+				+ "=================================";
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+	}
+	
+	
+	@Test 
+	public void testRecordSelect5() throws FrontEndException, MyException {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k \n"
+				+ "ASSUME 1 = k.a /\\ TRUE = k.b  /\\ k = [a |-> 1] \n"
+				+ "=================================";
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("struct(a:INTEGER,b:BOOL)", t.constants.get("k").toString());
+	}
 	
 	@Test (expected = TypeErrorException.class)
 	public void testRecordSelectException() throws FrontEndException, MyException {
@@ -221,27 +244,7 @@ public class TestStruct {
 		t.start();
 	}
 	
-	@Test (expected = TypeErrorException.class)
-	public void testRecordSelectException2() throws FrontEndException, MyException {
-		ToolIO.reset();
-		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "CONSTANTS k \n"
-				+ "ASSUME 1 = k.a /\\ TRUE = k.b  /\\ k = [a |-> 1] \n"
-				+ "=================================";
-		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
-		t.start();
-	}
 	
-	@Test (expected = TypeErrorException.class)
-	public void testRecordSelectException3() throws FrontEndException, MyException {
-		ToolIO.reset();
-		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "CONSTANTS k \n"
-				+ "ASSUME k = [a |-> 1] /\\ TRUE = k.b \n"
-				+ "=================================";
-		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
-		t.start();
-	}
 	
 	@Test (expected = TypeErrorException.class)
 	public void testRecordSelectException4() throws FrontEndException, MyException {

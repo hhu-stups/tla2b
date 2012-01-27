@@ -15,6 +15,7 @@ import tlc2.tool.ModelConfig;
 import tlc2.util.Vect;
 import tlc2.value.ModelValue;
 import tlc2.value.SetEnumValue;
+import types.AbstractHasFollowers;
 import types.BType;
 import types.BoolType;
 import types.IType;
@@ -53,7 +54,6 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 	}
 
 	public void start() throws ConfigFileErrorException {
-
 		// next declaration
 		evalNext();
 
@@ -169,9 +169,11 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 			String symbolName = symbol.elementAt(0).toString();
 			Object symbolValue = symbol.elementAt(symbol.size() - 1);
 			BType symbolType = conGetType(symbol.elementAt(symbol.size() - 1));
-
 			if (constants.containsKey(symbolName)) {
 				OpDeclNode c = constants.get(symbolName);
+				if (symbolType instanceof AbstractHasFollowers) {
+					((AbstractHasFollowers) symbolType).addFollower(c);
+				}
 				ConstantObj conObj = new ConstantObj(symbolValue, symbolType);
 				conObjs.put(symbolName, conObj);
 				c.setToolObject(CONSTANT_OBJECT, conObj);
@@ -182,15 +184,13 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				 **/
 				if (symbolName.equals(symbolValue.toString())) {
 					bConstants.remove(symbolName);
+					conObjs.put(symbolName, conObj);
 				}
 			} else if (definitions.containsKey(symbolName)) {
 				OpDefNode def = definitions.get(symbolName);
 				ConstantObj conObj = new ConstantObj(symbolValue, symbolType);
 				def.setToolObject(CONSTANT_OBJECT, conObj);
-				if (symbolName.equals(symbolValue)) {
-					def.setToolObject(PRINT_DEFINITION, false);
-				}
-				if (symbolName.equals(symbolValue)) {
+				if (symbolName.equals(symbolValue.toString())) {
 					def.setToolObject(PRINT_DEFINITION, false);
 				}
 			} else {

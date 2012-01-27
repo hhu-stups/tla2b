@@ -1,5 +1,5 @@
 MACHINE InstanceNoName
-CONSTANTS start
+ABSTRACT_CONSTANTS start
 PROPERTIES
  start : INTEGER
 DEFINITIONS
@@ -14,6 +14,6 @@ INITIALISATION
  c:(Init)
 OPERATIONS
  Next_Op = ANY c_n
-	WHERE c_n = c + val
+	WHERE c_n : INTEGER & c_n = c + val
 	THEN c := c_n END
 END

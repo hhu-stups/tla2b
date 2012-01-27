@@ -30,7 +30,7 @@ public class TestSet {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER) & k = {1,2,3} \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -44,7 +44,7 @@ public class TestSet {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(BOOL) & k = {TRUE, bool(1=1)} \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

@@ -1,5 +1,5 @@
 MACHINE Queens
-CONSTANTS N
+ABSTRACT_CONSTANTS N
 PROPERTIES
  N : INTEGER
  & N : NATURAL - {0}
@@ -22,7 +22,7 @@ INITIALISATION
  todo, sols:(Init)
 OPERATIONS
  PlaceQueen_Op(queens) = ANY todo_n, sols_n
-	WHERE queens : todo & 
+	WHERE queens : todo & todo_n : POW(POW(INTEGER*INTEGER)) & sols_n : POW(POW(INTEGER*INTEGER)) &
 	 (nxtQ(queens) = N 
 	  => todo_n = todo - {queens}
 	  & sols_n = sols \/ exts(queens)) 

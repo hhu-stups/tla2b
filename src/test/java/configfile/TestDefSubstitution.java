@@ -50,6 +50,7 @@ public class TestDefSubstitution {
 				+ "Next == c' = foo \n"
 				+ "=================================";
 		StringBuilder sb = Main.start(module, "DefOverriding", true);
+		System.out.println(sb);
 		String expected = fileToString(path + "DefOverriding.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

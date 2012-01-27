@@ -38,7 +38,6 @@ public class TestInit {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, "config", true);
-		System.out.println(sb);
 		String expected = fileToString(path + "ConfigFile.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

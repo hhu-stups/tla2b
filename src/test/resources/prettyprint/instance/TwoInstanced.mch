@@ -1,5 +1,5 @@
 MACHINE TwoInstanced
-CONSTANTS start
+ABSTRACT_CONSTANTS start
 PROPERTIES
  start : INTEGER
 DEFINITIONS
@@ -23,10 +23,10 @@ INITIALISATION
  c, c2:(count_Init & count2_Init)
 OPERATIONS
  Next1_Op = ANY c_n
-	WHERE count_Next & TRUE = TRUE
+	WHERE c_n : INTEGER & count_Next & TRUE = TRUE
 	THEN c := c_n END;
 
  Next2_Op = ANY c2_n
-	WHERE count2_Next & TRUE = TRUE
+	WHERE c2_n : INTEGER & count2_Next & TRUE = TRUE
 	THEN c2 := c2_n END
 END

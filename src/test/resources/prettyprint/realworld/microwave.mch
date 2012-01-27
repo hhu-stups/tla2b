@@ -35,7 +35,7 @@ INITIALISATION
  magnetron_running, door_open, button_locked, time, error:(Init)
 OPERATIONS
  Action_Open_Door_Op = ANY door_open_n
-	WHERE button_locked = FALSE
+	WHERE door_open_n : BOOL & button_locked = FALSE
 	 & magnetron_running = FALSE
 	 & door_open = FALSE
 	 & door_open_n = TRUE
@@ -43,13 +43,13 @@ OPERATIONS
 	THEN door_open := door_open_n END;
 
  Action_Close_Door_Op = ANY door_open_n
-	WHERE door_open = TRUE
+	WHERE door_open_n : BOOL & door_open = TRUE
 	 & door_open_n = FALSE
 	 & TRUE = TRUE
 	THEN door_open := door_open_n END;
 
  Action_Change_Time_Op = ANY time_n
-	WHERE magnetron_running = FALSE
+	WHERE time_n : INTEGER & magnetron_running = FALSE
 	 & (time = 180
 	 & time_n = 120
 	 or (time = 120
@@ -68,20 +68,20 @@ OPERATIONS
 	THEN time := time_n END;
 
  Action_Button_S_Op = ANY magnetron_running_n, door_open_n, button_locked_n, time_n, error_n
-	WHERE (magnetron_running = FALSE 
+	WHERE magnetron_running_n : BOOL & door_open_n : BOOL & button_locked_n : BOOL & time_n : INTEGER & error_n : BOOL & (magnetron_running = FALSE 
 	  => Action_Start) 
 	 & (not(magnetron_running = FALSE) 
 	  => Action_Stop)
 	THEN magnetron_running, door_open, button_locked, time, error := magnetron_running_n, door_open_n, button_locked_n, time_n, error_n END;
 
  Action_Error_Op = ANY magnetron_running_n, error_n
-	WHERE error_n = TRUE
+	WHERE magnetron_running_n : BOOL & error_n : BOOL & error_n = TRUE
 	 & magnetron_running_n = FALSE
 	 & TRUE = TRUE
 	THEN magnetron_running, error := magnetron_running_n, error_n END;
 
  Action_Tick_Op = ANY magnetron_running_n, door_open_n, button_locked_n, time_n, error_n
-	WHERE magnetron_running = TRUE
+	WHERE magnetron_running_n : BOOL & door_open_n : BOOL & button_locked_n : BOOL & time_n : INTEGER & error_n : BOOL & magnetron_running = TRUE
 	 & ((time /= 1 
 	  => time_n = time - 1
 	  & door_open_n = door_open & magnetron_running_n = magnetron_running & button_locked_n = button_locked & error_n = error) 

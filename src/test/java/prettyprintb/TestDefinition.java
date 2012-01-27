@@ -29,7 +29,7 @@ public class TestDefinition {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER  & foo(1) \n"
 				+ "DEFINITIONS foo(a) == k = a \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -45,7 +45,7 @@ public class TestDefinition {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER  & TRUE = bool(foo(1)) \n"
 				+ "DEFINITIONS foo(a) == k = a \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));

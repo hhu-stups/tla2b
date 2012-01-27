@@ -30,7 +30,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*BOOL) & k = %x.(x : {1}| bool(TRUE = TRUE)) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -46,7 +46,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER*INTEGER) & k = %x,y.(x : {1} & y : {1}| 1) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -62,7 +62,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*BOOL*INTEGER) & k = %x,y.(x : {1} & y : BOOL| 1) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -84,7 +84,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k,k2,k3\n"
+				+ "ABSTRACT_CONSTANTS k,k2,k3\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) & k2 : INTEGER & k3 : INTEGER \n"
 				+ " & k = fact & fact(k2) = k3 \n"
 				+ "DEFINITIONS fact == %n.(n : {1, 2}| (%t_.( t_ = 0 & n = 0 | 1 )\\/%t_.( t_ = 0 & not(n = 0) | n + fact(n - 1) ))(0)); \n"
@@ -105,7 +105,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*INTEGER*INTEGER)"
 				+ "& k = %x,y.(x : {1} & y : {1}| x + y) & k(1, 2) = 1" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -121,7 +121,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*BOOL)"
 				+ "& k = %x.(x : {1}| TRUE) & k(1) = TRUE\n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -140,7 +140,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*INTEGER)"
 				+ "& k = %x.(x : {1}| x) & dom(k) = {1}" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -158,7 +158,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(POW(BOOL*INTEGER))"
 				+ "& k = BOOL --> {1}" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -176,7 +176,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + " k : POW(BOOL*INTEGER)"
 				+ "& k = k <+ {TRUE |-> 0, FALSE |-> 0}" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -196,7 +196,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) &  k2 : POW(INTEGER*INTEGER) & k = %x.(x : {1, 2}| x) & k2 = k <+ {1 |-> k(1) + 1} \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -213,7 +213,7 @@ public class TestFunction {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES  k : POW(INTEGER*INTEGER*INTEGER) &  k2 : POW(INTEGER*INTEGER*INTEGER) & k = %x,y.(x : {1, 2} & y : {1, 2}| x + y) & k2 = k <+ {(1, 1) |-> k(1, 1) + 4} \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));

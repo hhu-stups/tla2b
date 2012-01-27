@@ -37,7 +37,7 @@ import util.StandardModules;
 public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
 
-	private final int toolId;
+	private final int TYPE_ID;
 	private final int tempId;
 	private int paramId;
 
@@ -49,13 +49,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	public TypeChecker(ModuleNode n, ModuleContext moduleContext) {
 		this.moduleContext = moduleContext;
 		root = n;
-		toolId = 5;// FrontEnd.getToolId();
+		TYPE_ID = 5;// FrontEnd.getToolId();
 		tempId = 6;
-		paramId = toolId;
+		paramId = TYPE_ID;
 	}
 
 	public int getToolId() {
-		return toolId;
+		return TYPE_ID;
 	}
 
 	public void start() throws MyException {
@@ -71,10 +71,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			if (moduleContext.conObjs != null
 					&& moduleContext.conObjs.get(conName) != null) {
 				BType t = moduleContext.conObjs.get(conName).getType();
-				con.setToolObject(toolId, t);
+				con.setToolObject(TYPE_ID, t);
 			} else {
 				Untyped u = new Untyped();
-				con.setToolObject(toolId, u);
+				con.setToolObject(TYPE_ID, u);
 				u.addFollower(con);
 			}
 		}
@@ -83,7 +83,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		for (int i = 0; i < vars.length; i++) {
 			OpDeclNode var = vars[i];
 			Untyped u = new Untyped();
-			var.setToolObject(toolId, u);
+			var.setToolObject(TYPE_ID, u);
 			u.addFollower(var);
 		}
 
@@ -102,7 +102,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		for (int i = 0; i < vars.length; i++) {
 			OpDeclNode var = vars[i];
-			BType varType = (BType) var.getToolObject(toolId);
+			BType varType = (BType) var.getToolObject(TYPE_ID);
 			if (varType.isUntyped()) {
 				throw new TypeErrorException("Variable " + var.getName()
 						+ " has no Type");
@@ -111,12 +111,39 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		for (int i = 0; i < cons.length; i++) {
 			OpDeclNode con = cons[i];
-			BType conType = (BType) con.getToolObject(toolId);
+			BType conType = (BType) con.getToolObject(TYPE_ID);
 			if (conType.isUntyped()) {
-				throw new TypeErrorException("Constant " + con.getName()
-						+ " has no Type");
+				throw new TypeErrorException("The type of Constant "
+						+ con.getName() + " is still untyped: " + conType);
 			}
 		}
+
+		evalRecList();
+	}
+
+	/**
+	 * 
+	 */
+	private void evalRecList() {
+		for (int i = 0; i < moduleContext.recList.size(); i++) {
+			OpApplNode n = moduleContext.recList.get(i);
+			StructType struct = (StructType) n.getToolObject(TYPE_ID);
+			ArrayList<String> fieldNames = new ArrayList<String>();
+			ExprOrOpArgNode[] args = n.getArgs();
+			for (int j = 0; j < args.length; j++) {
+				OpApplNode pair = (OpApplNode) args[j];
+				StringNode stringNode = (StringNode) pair.getArgs()[0];
+				fieldNames.add(stringNode.getRep().toString());
+			}
+			for (int j = 0; j < struct.getFields().size(); j++) {
+				String fieldName = struct.getFields().get(j);
+				if(!fieldNames.contains(fieldName)&& struct.getType(fieldName).getKind()==MODELVALUE){
+					EnumType e = (EnumType) struct.getType(fieldName);
+					e.setNoVal();
+				}
+			}
+		}
+		
 	}
 
 	private void evalOverrides(OpDeclNode[] cons) throws UnificationException,
@@ -139,13 +166,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			String right = entry.getValue();
 			BType leftType = new Untyped();
 			OpDefNode rightDef = moduleContext.definitions.get(right);
-			BType rightType = (BType) rightDef.getToolObject(toolId);
+			BType rightType = (BType) rightDef.getToolObject(TYPE_ID);
 			if (moduleCons.containsKey(left)) {
 				OpDeclNode leftCon = moduleCons.get(left);
-				leftType = (BType) leftCon.getToolObject(toolId);
+				leftType = (BType) leftCon.getToolObject(TYPE_ID);
 			} else if (moduleContext.definitions.containsKey(left)) {
 				OpDefNode leftDef = moduleContext.definitions.get(left);
-				leftType = (BType) leftDef.getToolObject(toolId);
+				leftType = (BType) leftDef.getToolObject(TYPE_ID);
 			}
 			try {
 				leftType.unify(rightType);
@@ -189,7 +216,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	private void visitOpDefNode(OpDefNode def) throws MyException {
 		ConstantObj conObj = (ConstantObj) def.getToolObject(CONSTANT_OBJECT);
 		if (conObj != null) {
-			def.setToolObject(toolId, conObj.getType());
+			def.setToolObject(TYPE_ID, conObj.getType());
 			if (conObj.getType() instanceof AbstractHasFollowers) {
 				((AbstractHasFollowers) conObj.getType()).addFollower(def);
 			}
@@ -204,7 +231,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		BType defType = visitExprNode(def.getBody(), new Untyped());
-		def.setToolObject(toolId, defType);
+		def.setToolObject(TYPE_ID, defType);
 		if (defType instanceof AbstractHasFollowers) {
 			((AbstractHasFollowers) defType).addFollower(def);
 		}
@@ -321,13 +348,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				BType exprType;
 				if (expr instanceof OpArgNode) {
 					OpArgNode opArgNode = (OpArgNode) expr;
-					exprType = (BType) opArgNode.getOp().getToolObject(toolId);
+					exprType = (BType) opArgNode.getOp().getToolObject(TYPE_ID);
 					if (exprType == null)
 						exprType = new Untyped();
 				} else {
 					exprType = visitExprOrOpArgNode(expr, new Untyped());
 				}
-				op.setToolObject(toolId, exprType);
+				op.setToolObject(TYPE_ID, exprType);
 				if (exprType instanceof AbstractHasFollowers) {
 					((AbstractHasFollowers) exprType).addFollower(op);
 				}
@@ -355,13 +382,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		switch (symbolNode.getKind()) {
 		case ConstantDeclKind: {
 			String cName = symbolNode.getName().toString();
-			BType c = (BType) symbolNode.getToolObject(toolId);
+			BType c = (BType) symbolNode.getToolObject(TYPE_ID);
 			if (c == null) {
 				throw new RuntimeException(cName + " has no type yet!");
 			}
 			try {
 				BType result = expected.unify(c);
-				symbolNode.setToolObject(toolId, result);
+				symbolNode.setToolObject(TYPE_ID, result);
 				return result;
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
@@ -374,13 +401,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		case VariableDeclKind: {
 			String vName = symbolNode.getName().toString();
-			BType v = (BType) symbolNode.getToolObject(toolId);
+			BType v = (BType) symbolNode.getToolObject(TYPE_ID);
 			if (v == null) {
 				throw new RuntimeException(vName + " has no type yet!");
 			}
 			try {
 				BType result = expected.unify(v);
-				symbolNode.setToolObject(toolId, result);
+				symbolNode.setToolObject(TYPE_ID, result);
 				return result;
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
@@ -397,7 +424,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			String pName = symbolNode.getName().toString();
 			BType t = (BType) symbolNode.getToolObject(paramId);
 			if (t == null) {
-				t = (BType) symbolNode.getToolObject(toolId);
+				t = (BType) symbolNode.getToolObject(TYPE_ID);
 			}
 			try {
 				BType result = expected.unify(t);
@@ -416,7 +443,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				return evalBBuiltIns(n, expected);
 			}
 			OpDefNode def = (OpDefNode) n.getOperator();
-			BType found = ((BType) def.getToolObject(toolId));
+			BType found = ((BType) def.getToolObject(TYPE_ID));
 			if (found == null)
 				found = new Untyped();
 			// throw new RuntimeException(def.getName() + " has no type yet!");
@@ -435,7 +462,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				// set/changed at
 				// a definition call
 				FormalParamNode p = params[i];
-				BType pType = ((BType) p.getToolObject(toolId));
+				BType pType = ((BType) p.getToolObject(TYPE_ID));
 				if (pType == null) {
 					pType = new Untyped();
 					// throw new RuntimeException("Parameter " + p.getName()
@@ -453,10 +480,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				// evaluate the body of the definition again
 				paramId = tempId;
 				found = visitExprNode(def.getBody(), found);
-				paramId = toolId;
+				paramId = TYPE_ID;
 			}
 
-			n.setToolObject(toolId, found);
+			n.setToolObject(TYPE_ID, found);
 
 			return found;
 
@@ -737,8 +764,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						"Expected %s, found INTEGER at '%s',\n%s", expected, n
 								.getOperator().getName(), n.getLocation()));
 			}
-			visitExprOrOpArgNode(n.getArgs()[0], new PowerSetType(
-					IntType.getInstance()));
+			visitExprOrOpArgNode(n.getArgs()[0],
+					new PowerSetType(IntType.getInstance()));
 			return IntType.getInstance();
 		}
 
@@ -746,7 +773,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		{
 			PowerSetType argType = (PowerSetType) visitExprOrOpArgNode(
 					n.getArgs()[0], new PowerSetType(new Untyped()));
-			
+
 			PowerSetType found = new PowerSetType(new PowerSetType(
 					new PairType(IntType.getInstance(), argType.getSubType())));
 			try {
@@ -965,7 +992,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			BType xType = S.getSubType();
 
 			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
-			x.setToolObject(toolId, xType);
+			x.setToolObject(TYPE_ID, xType);
 			if (xType instanceof AbstractHasFollowers) {
 				((AbstractHasFollowers) xType).addFollower(x);
 			}
@@ -1082,7 +1109,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				BType pType = S.getSubType();
 				for (int j = 0; j < params[i].length; j++) {
 					FormalParamNode p = params[i][j];
-					p.setToolObject(toolId, pType);
+					p.setToolObject(TYPE_ID, pType);
 					if (pType instanceof AbstractHasFollowers) {
 						((AbstractHasFollowers) pType).addFollower(p);
 					}
@@ -1101,7 +1128,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						expected, found, n.getLocation()));
 			}
 			FormalParamNode recFunc = n.getUnbdedQuantSymbols()[0];
-			recFunc.setToolObject(toolId, found);
+			recFunc.setToolObject(TYPE_ID, found);
 			found.addFollower(recFunc);
 
 			PairType pair = (PairType) found.getSubType();
@@ -1127,7 +1154,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				BType pType = S.getSubType();
 				for (int j = 0; j < params[i].length; j++) {
 					FormalParamNode p = params[i][j];
-					p.setToolObject(toolId, pType);
+					p.setToolObject(TYPE_ID, pType);
 					if (pType instanceof AbstractHasFollowers) {
 						((AbstractHasFollowers) pType).addFollower(p);
 					}
@@ -1228,7 +1255,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		case OPCODE_exc: // Except
 		{
 			BType t = visitExprOrOpArgNode(n.getArgs()[0], expected);
-			n.setToolObject(toolId, t);
+			n.setToolObject(TYPE_ID, t);
 			if (t instanceof AbstractHasFollowers) {
 				((AbstractHasFollowers) t).addFollower(n);
 			}
@@ -1349,7 +1376,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						pair.getArgs()[1], new PowerSetType(new Untyped()));
 				struct.add(field.getRep().toString(), fieldType.getSubType());
 			}
-			struct.setHasOrderedFields();
 
 			PowerSetType found = new PowerSetType(struct);
 			try {
@@ -1358,6 +1384,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				throw new TypeErrorException(String.format(
 						"Expected %s, found %s at Set of Records,\n%s",
 						expected, found, n.getLocation()));
+			}
+			n.setToolObject(TYPE_ID, found);
+			if (found instanceof AbstractHasFollowers) {
+				((AbstractHasFollowers) found).addFollower(n);
 			}
 			return found;
 		}
@@ -1372,7 +1402,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						new Untyped());
 				found.add(field.getRep().toString(), fieldType);
 			}
-			found.setHasOrderedFields();
 			try {
 				found = found.unify(expected);
 			} catch (UnificationException e) {
@@ -1380,31 +1409,32 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						"Expected %s, found %s at Record,\n%s", expected,
 						found, n.getLocation()));
 			}
+			n.setToolObject(TYPE_ID, found);
+			if (found instanceof AbstractHasFollowers) {
+				((AbstractHasFollowers) found).addFollower(n);
+			}
+			moduleContext.recList.add(n);
 			return found;
 
 		}
 
 		case OPCODE_rs: // $RcdSelect r.c
 		{
-			String field = ((StringNode) n.getArgs()[1]).getRep().toString();
+			String fieldName = ((StringNode) n.getArgs()[1]).getRep()
+					.toString();
 			StructType r = (StructType) visitExprOrOpArgNode(n.getArgs()[0],
 					new StructType());
 
-			StructType struct = new StructType();
-			struct.add(field, new Untyped());
+			StructType expectedStruct = new StructType();
+			expectedStruct.add(fieldName, expected);
 
 			try {
-				r = r.unify(struct);
+				r = r.unify(expectedStruct);
+				return r.getType(fieldName);
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
-						"Record has no field %s,\n%s", field, n.getLocation()));
-			}
-			try {
-				return r.getType(field).unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found %s at field '%s' of record,\n%s",
-						expected, r.getType(field), field, n.getLocation()));
+						"Struct has no field %s with type %s: %s\n%s",
+						fieldName, r.getType(fieldName), r, n.getLocation()));
 			}
 		}
 
@@ -1416,7 +1446,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			visitExprOrOpArgNode(n.getArgs()[0], BoolType.getInstance());
 			BType then = visitExprOrOpArgNode(n.getArgs()[1], expected);
 			BType eelse = visitExprOrOpArgNode(n.getArgs()[2], then);
-			n.setToolObject(toolId, eelse);
+			n.setToolObject(TYPE_ID, eelse);
 			if (eelse instanceof AbstractHasFollowers) {
 				((AbstractHasFollowers) eelse).addFollower(n);
 			}
@@ -1493,7 +1523,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			BType pType = S.getSubType();
 			for (int j = 0; j < params[i].length; j++) {
 				FormalParamNode p = params[i][j];
-				p.setToolObject(toolId, pType);
+				p.setToolObject(TYPE_ID, pType);
 				if (pType instanceof AbstractHasFollowers) {
 					((AbstractHasFollowers) pType).addFollower(p);
 				}

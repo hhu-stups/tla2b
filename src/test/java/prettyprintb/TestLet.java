@@ -31,6 +31,7 @@ public class TestLet {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		getTreeAsString(sb.toString());
 //		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
 //				+ "PROPERTIES k : INTEGER  & foo(1) \n"
@@ -49,7 +50,6 @@ public class TestLet {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		getTreeAsString(sb.toString());
 //		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
 //				+ "PROPERTIES k : INTEGER  & foo(1) \n"

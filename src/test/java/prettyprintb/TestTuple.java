@@ -30,7 +30,7 @@ public class TestTuple {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*BOOL) & k = [TRUE,FALSE,TRUE] \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -47,7 +47,7 @@ public class TestTuple {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n"+ "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n"+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(BOOL*INTEGER) & k = BOOL*{1} \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -61,7 +61,7 @@ public class TestTuple {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n"+ "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n"+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(BOOL*(INTEGER*BOOL)) & k = BOOL*({1}*BOOL) \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

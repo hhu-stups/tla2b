@@ -4,36 +4,27 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import tlc2.util.BitVector.Iter;
 
 import exceptions.UnificationException;
 
 public class StructType extends AbstractHasFollowers {
-	private ArrayList<String> fields;
-	private Hashtable<String, BType> types;
-	private boolean hasOrderedFields;
+	private LinkedHashMap<String, BType> types;
 
 	public StructType() {
 		super(STRUCT);
-		hasOrderedFields = false;
-		fields = new ArrayList<String>();
-		types = new Hashtable<String, BType>();
+		types = new LinkedHashMap<String, BType>();
 	}
 
-	
-	public void setHasOrderedFields(){
-		hasOrderedFields = true;
-	}
-	
-	
-
-	public BType getType(String field) {
-		return types.get(field);
+	public BType getType(String fieldName) {
+		return types.get(fieldName);
 	}
 
 	public void add(String name, BType type) {
-		fields.add(name);
 		if (type instanceof AbstractHasFollowers) {
 			// set new reference
 			((AbstractHasFollowers) type).addFollower(this);
@@ -49,121 +40,60 @@ public class StructType extends AbstractHasFollowers {
 			Entry<String, BType> entry = iterator.next();
 			if (entry.getValue() == old) {
 				String key = entry.getKey();
-				types.put(key, New);
 				if (New instanceof AbstractHasFollowers) {
 					// set new reference
 					((AbstractHasFollowers) New).addFollower(this);
 				}
+				types.put(key, New);
 			}
 		}
 	}
 
 	@Override
 	public String toString() {
-		if (hasOrderedFields) {
-			String res = "struct(";
-			for (int i = 0; i < fields.size(); i++) {
-				String field = fields.get(i);
-				res += field + ":" + types.get(field);
-				if (i < fields.size() - 1) {
-					res += ",";
-				}
-			}
-			res += ")";
-			return res;
-		} else {
-			String res = "struct(";
-			Enumeration<String> keys = this.types.keys();
-			while (keys.hasMoreElements()){
-				String field = keys.nextElement();
-				res+= field + ":" + this.types.get(field);
-					res+=",";
-			}
-			res += "...)";
-			return res;
+		String res = "struct(";
+		Iterator<String> keys = types.keySet().iterator();
+		while (keys.hasNext()) {
+			String fieldName = (String) keys.next();
+			res += fieldName + ":" + types.get(fieldName);
+			if (keys.hasNext())
+				res += ",";
 		}
-
+		res += ")";
+		return res;
 	}
 
 	@Override
 	public boolean isUntyped() {
-		if (!hasOrderedFields) {
-			return true;
-		}
-		for (int i = 0; i < fields.size(); i++) {
-			String field = fields.get(i);
-			if (types.get(field).isUntyped())
+		Iterator<BType> ts = types.values().iterator();
+		while (ts.hasNext()) {
+			BType bType = (BType) ts.next();
+			if (bType.isUntyped())
 				return true;
 		}
 		return false;
 	}
 
-	@Override
 	public boolean compare(BType o) {
 		if (o.getKind() == UNTYPED)
 			return true;
 		if (o instanceof StructType) {
 			StructType s = (StructType) o;
 
-			// both have ordered fields
-			if (this.hasOrderedFields && s.hasOrderedFields) {
-				if (this.fields.size() != s.fields.size()) {
-					return false;
-				}
-				for (int i = 0; i < fields.size(); i++) {
-					String thisField = this.fields.get(i);
-					String thatField = s.fields.get(i);
-					if (!thisField.equals(thatField)
-							|| !this.types.get(thisField).compare(
-									s.types.get(thatField))) {
+			Iterator<String> thisKeys = types.keySet().iterator();
+			while (thisKeys.hasNext()) {
+				String fieldName = (String) thisKeys.next();
+				if (s.types.containsKey(fieldName)) {
+					if (!this.types.get(fieldName).compare(
+							s.types.get(fieldName))) {
 						return false;
 					}
 				}
-				return true;
 			}
-
-			// both have not ordered fields
-			if (!this.hasOrderedFields && !s.hasOrderedFields) {
-				Enumeration<String> keys = this.types.keys();
-				while (keys.hasMoreElements()) {
-					String field = keys.nextElement();
-					if (s.types.containsKey(field)) {
-						if (!this.types.get(field).compare(s.types.get(field))) {
-							return false;
-						}
-					}
-				}
-				return true;
-			}
-
-			// this has ordered fields, s has not
-			if (this.hasOrderedFields && !s.hasOrderedFields) {
-				Enumeration<String> e = s.types.keys();
-				while (e.hasMoreElements()) {
-					String thatField = e.nextElement();
-					if (this.types.containsKey(thatField)) {
-						if (!this.types.get(thatField).compare(
-								s.types.get(thatField))) {
-							return false;
-						}
-					} else {
-						// this has no field 'thatField'
-						return false;
-					}
-				}
-				return true;
-			}
-			// s has ordered fields, this has not
-			if (!this.hasOrderedFields && s.hasOrderedFields) {
-				return s.compare(this);
-			}
-
 		}
-		// s is no struct type and no untyped
-		return false;
+		return true;
 	}
 
-	@Override
 	public StructType unify(BType o) throws UnificationException {
 		if (!this.compare(o)) {
 			throw new UnificationException();
@@ -173,52 +103,22 @@ public class StructType extends AbstractHasFollowers {
 
 		if (o instanceof StructType) {
 			StructType s = (StructType) o;
-
-			// both have ordered fields
-			if (this.hasOrderedFields && s.hasOrderedFields) {
-				for (int i = 0; i < this.fields.size(); i++) {
-					String field = this.fields.get(i);
-					BType res = this.types.get(field).unify(s.types.get(field));
-					this.types.put(field, res);
-				}
-				return this;
-			}
-
-			// both have not ordered fields
-			if (!this.hasOrderedFields && !s.hasOrderedFields) {
-				Enumeration<String> keys = s.types.keys();
-				while (keys.hasMoreElements()) {
-					String field = keys.nextElement();
-					if (this.types.containsKey(field)) {
-						BType res = this.types.get(field).unify(
-								s.types.get(field));
-						this.types.put(field, res);
-					} else {
-						BType t = s.types.get(field);
-						this.types.put(field, t);
-						if (t instanceof AbstractHasFollowers) {
-							((AbstractHasFollowers) t).addFollower(this);
-						}
+			Iterator<String> keys = s.types.keySet().iterator();
+			while (keys.hasNext()) {
+				String fieldName = (String) keys.next();
+				BType sType = s.types.get(fieldName);
+				if (this.types.containsKey(fieldName)) {
+					BType res = this.types.get(fieldName).unify(sType);
+					this.types.put(fieldName, res);
+				} else {
+					if (sType instanceof AbstractHasFollowers) {
+						// set new reference
+						((AbstractHasFollowers) sType).addFollower(this);
 					}
+					this.types.put(fieldName, s.types.get(fieldName));
 				}
-				return this;
 			}
-
-			// this has ordered fields, s has not
-			if (this.hasOrderedFields && !s.hasOrderedFields) {
-				Enumeration<String> keys = s.types.keys();
-				while (keys.hasMoreElements()) {
-					String field = keys.nextElement();
-					BType res = this.types.get(field).unify(s.types.get(field));
-					this.types.put(field, res);
-				}
-				return this;
-			}
-
-			// s has ordered fields, this has not
-			if (!this.hasOrderedFields && s.hasOrderedFields) {
-				return s.unify(this);
-			}
+			return this;
 		}
 		return this;
 	}
@@ -226,7 +126,7 @@ public class StructType extends AbstractHasFollowers {
 	@Override
 	public StructType cloneBType() {
 		StructType clone = new StructType();
-		
+
 		Set<Entry<String, BType>> set = this.types.entrySet();
 		Iterator<Entry<String, BType>> iterator = set.iterator();
 
@@ -236,12 +136,17 @@ public class StructType extends AbstractHasFollowers {
 			BType type = entry.getValue().cloneBType();
 			clone.add(field, type);
 		}
-		
-		clone.hasOrderedFields = this.hasOrderedFields;
+
 		return clone;
 	}
-	
-	public ArrayList<String> getFields(){
-		return new ArrayList<String>(fields);
+
+	public ArrayList<String> getFields() {
+		ArrayList<String> fields = new ArrayList<String>();
+		Iterator<String> keys = this.types.keySet().iterator();
+		while (keys.hasNext()) {
+			String fieldName = (String) keys.next();
+			fields.add(fieldName);
+		}
+		return fields;
 	}
 }

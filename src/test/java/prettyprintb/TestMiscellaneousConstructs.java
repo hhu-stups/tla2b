@@ -20,13 +20,13 @@ public class TestMiscellaneousConstructs {
 	@Test
 	public void testIfThenElse() throws Exception {
 		ToolIO.reset();
-		final String module = "-------------- MODULE Testing ----------------\n"
+		final String module = "---WHERE c_n : INTEGER & c_n = c + foo(1,2)----------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k\n"
 				+ "ASSUME k = IF 1 = 1 THEN 1 ELSE 2 \n"
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER & k = (%t_.( t_ = 0 & 1 = 1 | 1 )\\/%t_.( t_ = 0 & not(1 = 1) | 2 ))(0) \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -42,7 +42,7 @@ public class TestMiscellaneousConstructs {
 		
 		StringBuilder sb = Main.start(module, null, true);
 		System.out.println(sb);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : BOOL & k = bool( (1 = 1 => TRUE = TRUE) & (not(1=1) => FALSE = TRUE )) \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

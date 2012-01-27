@@ -10,6 +10,9 @@ import static util.TestUtil.getTreeAsString;
 import org.junit.Test;
 
 import translation.Main;
+import types.BoolType;
+import types.IntType;
+import types.StructType;
 import util.ToolIO;
 
 public class TestStruct {
@@ -30,8 +33,23 @@ public class TestStruct {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(struct(a:INTEGER,b:BOOL)) & k = struct(a : {1}, b : BOOL) \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	
+	@Test
+	public void testStruct2() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "ASSUME [a: {2}] = [a : {1}, b : BOOLEAN] \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES struct(a : {2},b : BOOL) = struct(a : {1},b : BOOL) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -49,8 +67,24 @@ public class TestStruct {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : struct(a:INTEGER,b:BOOL) & k = rec(a : 1, b : TRUE) \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	
+	@Test
+	public void testRecord2() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "ASSUME [a|-> 2] = [a |-> 1, b |-> \"abc\"] \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES rec(a : 2,b : \"\") = rec(a : 1,b : \"abc\") \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -68,7 +102,7 @@ public class TestStruct {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES  k : struct(a:INTEGER,b:BOOL) &  k2 : INTEGER & k = rec(a : 1, b : TRUE) & k2 = k'a \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -83,9 +117,8 @@ public class TestStruct {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k\n"
+				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES  k : struct(a:INTEGER,b:BOOL) &  k = rec(a : 1, b : TRUE) & k'b = TRUE \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -104,7 +137,7 @@ public class TestStruct {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES  k : struct(a:INTEGER,b:BOOL) &  k2 : struct(a:INTEGER,b:BOOL) & k = rec(a : 1, b : TRUE) & k2 = rec(a : 2, b : k'b) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -124,7 +157,7 @@ public class TestStruct {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : struct(a:INTEGER,b:BOOL) &  k2 : struct(a:INTEGER,b:BOOL) & k = rec(a : 1, b : TRUE) & k2 = rec(a : k'a + 1, b : k'b) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));

@@ -29,7 +29,7 @@ public class TestLogicOperators {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k, k2\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : BOOL & k2 : INTEGER & k = bool(k2 /= 1)\n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -44,7 +44,7 @@ public class TestLogicOperators {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : BOOL & k = TRUE \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -74,7 +74,7 @@ public class TestLogicOperators {
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS k, k2\n"
+				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : BOOL & k2 : BOOL & k = bool(FALSE = TRUE & k2 = TRUE) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -184,7 +184,7 @@ public class TestLogicOperators {
 		StringBuilder sb = Main.start(module, null, true);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
-				+ "CONSTANTS S\n"
+				+ "ABSTRACT_CONSTANTS S\n"
 				+ "PROPERTIES S : POW(INTEGER) & S = {1, 2, 3} & #u.(u : seq(S) & !s.(s : S => #n.(n : 1 .. size(u) & u(n) = s))) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
