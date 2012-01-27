@@ -7,8 +7,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import exceptions.ConfigFileErrorException;
 import exceptions.FrontEndException;
 import exceptions.SemanticErrorException;
@@ -29,7 +27,6 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
-import tlc2.tool.Defns;
 import tlc2.tool.ToolGlobals;
 import util.StandardModules;
 

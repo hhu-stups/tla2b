@@ -1358,6 +1358,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return makeBoolValue(out, expected, P_max);
 	}
 
+	@SuppressWarnings("unused")
 	private ExprReturn evalStructOrRec(String string, OpApplNode n, DContext d) {
 		StringBuilder out = new StringBuilder();
 		out.append(string);
