@@ -1,14 +1,10 @@
 package types;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import tlc2.util.BitVector.Iter;
 
 import exceptions.UnificationException;
 

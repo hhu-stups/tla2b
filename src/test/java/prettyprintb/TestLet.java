@@ -5,7 +5,7 @@
 package prettyprintb;
 
 import static util.TestUtil.getTreeAsString;
-
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 import translation.Main;
@@ -13,32 +13,44 @@ import util.ToolIO;
 
 public class TestLet {
 
-	
 	static {
 		ToolIO.setMode(ToolIO.TOOL);
 	}
 
 	@Test
-	public void testLet() throws Exception {
+	public void testLetinAssume() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals\n"
 				+ "CONSTANTS k\n"
 				+ " bazz == 2\n"
 				+ "ASSUME LET foo(a) == k = a + bazz  IN foo(1) \n"
-				+ " bar(x) == LET foo(a) == x = a IN foo(1) \n"
-				+ "ASSUME bar(5) /\\ k = 1 \n"
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		getTreeAsString(sb.toString());
-//		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
-//				+ "PROPERTIES k : INTEGER  & foo(1) \n"
-//				+ "DEFINITIONS foo(a) == k = a \n" + "END";
-//		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
+				+ "PROPERTIES  k : INTEGER & foo(1) \n"
+				+ "DEFINITIONS bazz == 2; foo(a) == k = a + bazz \n" + "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
+
+	@Test
+	public void testLetinDefinition() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals\n"
+				+ " bar(x) == LET foo(a) == x = a IN foo(1) \n"
+				+ "ASSUME bar(5) \n" + "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		getTreeAsString(sb.toString());
+		final String expected = "MACHINE Testing\n" + "PROPERTIES bar(5) \n"
+				+ "DEFINITIONS  foo(a, x) == x = a; bar(x) == foo(1, x) \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+
 	@Test
 	public void testLetInNext() throws Exception {
 		ToolIO.reset();
@@ -51,12 +63,17 @@ public class TestLet {
 
 		StringBuilder sb = Main.start(module, null, true);
 		getTreeAsString(sb.toString());
-//		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
-//				+ "PROPERTIES k : INTEGER  & foo(1) \n"
-//				+ "DEFINITIONS foo(a) == k = a \n" + "END";
-//		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		final String expected = "MACHINE Testing\n"
+				+ "DEFINITIONS foo(a) == a \n"
+				+ "VARIABLES x \n"
+				+ "INVARIANT x:INTEGER\n"
+				+ "INITIALISATION x:(x=1)\n"
+				+ "OPERATIONS Next1_Op = ANY x_n WHERE x_n : INTEGER & x_n = foo(2)	THEN x := x_n END;\n"
+				+ "Next2_Op = ANY x_n WHERE x_n : INTEGER & x_n = foo(3) THEN x := x_n END\n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
+
 	@Test
 	public void testLetInOperation() throws Exception {
 		ToolIO.reset();
@@ -71,13 +88,31 @@ public class TestLet {
 
 		StringBuilder sb = Main.start(module, null, true);
 		getTreeAsString(sb.toString());
-		//System.out.println(sb);
-//		final String expected = "MACHINE Testing\n" + "CONSTANTS k\n"
-//				+ "PROPERTIES k : INTEGER  & foo(1) \n"
-//				+ "DEFINITIONS foo(a) == k = a \n" + "END";
-//		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		final String expected = "MACHINE Testing\n"
+				+ "DEFINITIONS val == 1; val1 == 1 \n"
+				+ "VARIABLES x INVARIANT x : INTEGER INITIALISATION x:(x = 1)\n"
+				+ "OPERATIONS bar_Op = ANY x_n WHERE x_n : INTEGER & x = 1 & x_n = val + val THEN x := x_n END; \n"
+				+ "bazz_Op = ANY x_n WHERE x_n : INTEGER & x = 2 & x_n = val1 * val1 THEN x := x_n END\n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 	
+
 	
-	
+	@Test
+	public void testLetInQuantification() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals\n"
+				+ "ASSUME \\A x \\in {1,2}: LET d == x+1 IN d > x \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		getTreeAsString(sb.toString());
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES  !x.(x : {1, 2} => d > x) \n"
+				+ "DEFINITIONS d == x + 1 \n" + "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+
 }

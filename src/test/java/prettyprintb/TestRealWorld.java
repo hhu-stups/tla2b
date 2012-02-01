@@ -43,16 +43,16 @@ public class TestRealWorld {
 	public void testFowler() throws Exception {
 		ToolIO.reset();
 		StringBuilder sb = Main.start("fowler", null, false);
-		System.out.println(sb);
 		String expected = fileToString(path + "fowler.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 
-	@Test
-	public void testFastPaxos() throws Exception {
-		ToolIO.reset();
-		StringBuilder sb = Main.start("FastPaxos", "FastPaxos", false);
-		//System.out.println(sb);
-	}
+	//TODO 
+//	@Test
+//	public void testFastPaxos() throws Exception {
+//		ToolIO.reset();
+//		StringBuilder sb = Main.start("FastPaxos", "FastPaxos", false);
+//		System.out.println(sb);
+//	}
 	
 }

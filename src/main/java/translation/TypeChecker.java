@@ -37,29 +37,23 @@ import util.StandardModules;
 public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
 
-	private final int TYPE_ID;
-	private final int tempId;
+	private final int TEMP_TYPE_ID;
 	private int paramId;
 
-	private ModuleNode root;
+	private ModuleNode moduleNode;
 	private ModuleContext moduleContext;
 
 	// MContext moduleContext;
 
 	public TypeChecker(ModuleNode n, ModuleContext moduleContext) {
 		this.moduleContext = moduleContext;
-		root = n;
-		TYPE_ID = 5;// FrontEnd.getToolId();
-		tempId = 6;
+		this.moduleNode = n;
+		TEMP_TYPE_ID = 6;
 		paramId = TYPE_ID;
 	}
 
-	public int getToolId() {
-		return TYPE_ID;
-	}
-
 	public void start() throws MyException {
-		visitModule(root);
+		visitModule(moduleNode);
 	}
 
 	private void visitModule(ModuleNode n) throws MyException {
@@ -473,12 +467,12 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				pType = visitExprOrOpArgNode(n.getArgs()[i], pType);
 				// set types of the arguments of the definition call to the
 				// parameters (position paramID+1) for reevaluation the def body
-				p.setToolObject(tempId, pType);
+				p.setToolObject(TEMP_TYPE_ID, pType);
 			}
 
 			if (def.getToolObject(CONSTANT_OBJECT) == null) {
 				// evaluate the body of the definition again
-				paramId = tempId;
+				paramId = TEMP_TYPE_ID;
 				found = visitExprNode(def.getBody(), found);
 				paramId = TYPE_ID;
 			}
@@ -527,8 +521,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		case B_OPCODE_times: // *
 		case B_OPCODE_div: // /
 		case B_OPCODE_mod: // % modulo
-		case B_OPCODE_exp: // x hoch y, x^y
-		{
+		case B_OPCODE_exp:{ // x hoch y, x^y
 			try {
 				IntType.getInstance().unify(expected);
 			} catch (UnificationException e) {
@@ -1472,6 +1465,32 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			return found;
 
 		}
+		
+		case OPCODE_bc:{ // CHOOSE x \in S: P
+			if (n.isBdedQuantATuple()[0]) {
+				throw new TypeErrorException(
+						"A tuple as parameter within the set constructor is not permitted.\n"
+								+ n.getLocation());
+			}
+			ExprNode[] bounds = n.getBdedQuantBounds();
+			PowerSetType S = (PowerSetType) visitExprNode(bounds[0], new PowerSetType(new Untyped()));
+			BType found = S.getSubType();
+			
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at 'CHOOSE',\n%s", expected, found, n.getLocation()));
+			}
+			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
+			x.setToolObject(TYPE_ID, found);
+			if (found instanceof AbstractHasFollowers) {
+				((AbstractHasFollowers) found).addFollower(x);
+			}
+			visitExprOrOpArgNode(n.getArgs()[0], BoolType.getInstance());
+			return found;
+		}
+		
 
 		case OPCODE_unchanged: {
 			return BoolType.getInstance().unify(expected);

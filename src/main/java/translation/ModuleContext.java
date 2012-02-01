@@ -49,6 +49,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	protected ArrayList<BOperation> bOperations;
 	protected ArrayList<BInit> inits;
 	protected ExprNode next;
+	
+	protected ArrayList<String> definitionMacro = new ArrayList<String>(); 
 
 	protected ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
 
@@ -689,7 +691,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	private void visitBuiltInKind(OpApplNode node, String prefix,
 			ArrayList<String> parameters) {
 		switch (BuiltInOPs.getOpCode(node.getOperator().getName())) {
-
+		
 		case OPCODE_be:
 		case OPCODE_bf:
 		case OPCODE_soa:
@@ -698,17 +700,18 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		case OPCODE_fc: {
 			ExprNode[] in = node.getBdedQuantBounds();
 			for (int i = 0; i < in.length; i++) {
-				visitExprNode(in[i], prefix, new ArrayList<String>(parameters));
+				visitExprNode(in[i], prefix, parameters);
 			}
-			ArrayList<String> ps = new ArrayList<String>();
-			ps.addAll(parameters);
-			ArrayList<OpApplNode> existQuans = new ArrayList<OpApplNode>();
-			existQuans.add(node);
-			ps.addAll(evalQuantorParams(existQuans));
-			visitExprOrOpArgNode(node.getArgs()[0], prefix, ps);
+			visitExprOrOpArgNode(node.getArgs()[0], prefix, parameters);
 			return;
 		}
-
+		
+		
+		case OPCODE_bc:{
+			if(!definitionMacro.contains(CHOOSE)){
+				definitionMacro.add(CHOOSE);
+			}
+		}
 		case OPCODE_unchanged: {
 			return;
 		}

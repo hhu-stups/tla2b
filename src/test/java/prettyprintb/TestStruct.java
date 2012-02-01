@@ -10,9 +10,6 @@ import static util.TestUtil.getTreeAsString;
 import org.junit.Test;
 
 import translation.Main;
-import types.BoolType;
-import types.IntType;
-import types.StructType;
 import util.ToolIO;
 
 public class TestStruct {

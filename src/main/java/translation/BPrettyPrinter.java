@@ -38,7 +38,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		BBuildIns, Priorities, TranslationGlobals {
 	private ModuleNode module;
 	private ModuleContext moduleContext;
-	private int TYPE_ID = 5;
 	private int substitutionId = 10;
 
 	private final int NOBOOL = 0;
@@ -294,9 +293,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 		BDefinitions definitions = new BDefinitions(module.getOpDefs());
 		ArrayList<OpDefNode> bDefs = definitions.getBDefinitions();
-		if (bDefs.size() + moduleContext.globalLets.size() == 0)
+		if (bDefs.size() + moduleContext.globalLets.size() + moduleContext.definitionMacro.size() == 0)
 			return out;
 		out.append("DEFINITIONS\n");
+		for (int i = 0; i < moduleContext.definitionMacro.size(); i++) {
+			out.append(moduleContext.definitionMacro.get(i));
+		}
+		
 		for (int i = 0; i < bDefs.size(); i++) {
 			out.append(visitOpDefNode(bDefs.get(i)));
 			if (!(i == bDefs.size() - 1 && moduleContext.globalLets.size() == 0))
@@ -944,8 +947,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		/**********************************************************************
 		 * Set Constructor
 		 **********************************************************************/
-		case OPCODE_sso: // $SubsetOf Represents {x \in S : P}
-		{
+		case OPCODE_sso:{ // $SubsetOf Represents {x \in S : P}
 			out.append("{");
 			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
 			out.append(x.getName().toString());
@@ -1270,6 +1272,22 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			return new ExprReturn(out);
 		}
 
+		case OPCODE_bc:{ // CHOOSE x \in S: P
+			out.append("CHOOSE({");
+			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
+			out.append(x.getName().toString());
+			out.append("|");
+			out.append(x.getName().toString());
+			out.append(" : ");
+			ExprNode in = n.getBdedQuantBounds()[0];
+			out.append(visitExprNode(in, d, NOBOOL).out);
+			out.append(" & ");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE).out);
+			out.append("})");
+			return new ExprReturn(out);
+			
+		}
+		
 		/***********************************************************************
 		 * UNCHANGED
 		 ************************************************************************/
@@ -1490,9 +1508,10 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 		case B_OPCODE_finite: { // IsFiniteSet
 			ExprReturn exprr = visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL);
-			String res = String
-					.format("#seq_.(seq_ : seq(%s) & !s.(s : %s => #n.(n : 1 .. size(seq_) & seq_(n) = s)))",
-							exprr.out, exprr.out);
+//			String res = String
+//					.format("#seq_.(seq_ : seq(%s) & !s.(s : %s => #n.(n : 1 .. size(seq_) & seq_(n) = s)))",
+//							exprr.out, exprr.out);
+			String res = String.format("%s : FIN(%s)", exprr.out, exprr.out);
 			out.append(res);
 			return makeBoolValue(out, expected, P_max);
 		}
