@@ -37,18 +37,18 @@ import util.StandardModules;
 public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
 
-	private final int TEMP_TYPE_ID;
+	private final int TEMP_TYPE_ID = 6;
 	private int paramId;
 
+	
+	private ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
 	private ModuleNode moduleNode;
 	private ModuleContext moduleContext;
 
-	// MContext moduleContext;
 
 	public TypeChecker(ModuleNode n, ModuleContext moduleContext) {
 		this.moduleContext = moduleContext;
 		this.moduleNode = n;
-		TEMP_TYPE_ID = 6;
 		paramId = TYPE_ID;
 	}
 
@@ -119,8 +119,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * 
 	 */
 	private void evalRecList() {
-		for (int i = 0; i < moduleContext.recList.size(); i++) {
-			OpApplNode n = moduleContext.recList.get(i);
+		for (int i = 0; i < recList.size(); i++) {
+			OpApplNode n = recList.get(i);
 			StructType struct = (StructType) n.getToolObject(TYPE_ID);
 			ArrayList<String> fieldNames = new ArrayList<String>();
 			ExprOrOpArgNode[] args = n.getArgs();
@@ -1406,7 +1406,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			if (found instanceof AbstractHasFollowers) {
 				((AbstractHasFollowers) found).addFollower(n);
 			}
-			moduleContext.recList.add(n);
+			recList.add(n);
 			return found;
 
 		}

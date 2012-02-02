@@ -142,5 +142,6 @@ public class BOperation implements ASTConstants, ToolGlobals, TranslationGlobals
 			}
 		}
 	}
-
+	
+	
 }

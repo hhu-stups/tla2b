@@ -1,8 +1,6 @@
 package translation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -15,12 +13,10 @@ import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
-import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
-import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
@@ -28,31 +24,27 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ToolGlobals;
-import util.StandardModules;
 
 // contains the content of a tla+ module
 public class ModuleContext implements ASTConstants, ToolGlobals,
 		TranslationGlobals {
 	private final ModuleNode moduleNode;
-	protected final int letParamsId;
 	protected Hashtable<String, OpDefNode> definitions;
 
 	// Constants which appear in the resulting B machine
-	private ArrayList<String> bConstants;
-	protected ArrayList<LetDef> globalLets;
-	protected ArrayList<String> letsNames;
+	private ArrayList<String> bConstants = new ArrayList<String>();
+	protected ArrayList<LetDef> globalLets = new ArrayList<LetDef>();
+	protected ArrayList<String> letsNames = new ArrayList<String>();
 
 	protected Hashtable<String, ConstantObj> conObjs;
 	protected Hashtable<String, String> overrides;
 	protected ArrayList<String> setEnumeration;
 	protected ArrayList<String> invariants = new ArrayList<String>();
-	protected ArrayList<BOperation> bOperations;
-	protected ArrayList<BInit> inits;
+	protected ArrayList<BOperation> bOperations = new ArrayList<BOperation>();
+	protected ArrayList<BInit> inits = new ArrayList<BInit>();
 	protected ExprNode next;
-	
-	protected ArrayList<String> definitionMacro = new ArrayList<String>(); 
+	protected ArrayList<String> definitionMacro = new ArrayList<String>();
 
-	protected ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
 
 	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
 			throws FrontEndException, ConfigFileErrorException,
@@ -61,24 +53,18 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		// set root Module
 		this.moduleNode = rootModule;
 
-		this.letParamsId = 13;
+		SymbolSorter.sortDeclNodes(moduleNode.getConstantDecls());
+		SymbolSorter.sortDeclNodes(moduleNode.getVariableDecls());
+		SymbolSorter.sortOpDefNodes(moduleNode.getOpDefs());
 
-		globalLets = new ArrayList<LetDef>();
-		letsNames = new ArrayList<String>();
+		this.definitions = SymbolSorter
+				.getDefsHashTable(moduleNode.getOpDefs());
 
-		evalDefinitions();
-		evalVariables();
-		evalConstants();
-
-		// determine the constants of the module
-		// evalConstants();
-
-		if (ctc.getSpec() != null) {
-			evalSpec(ctc.getSpec());
-		} else {
-			evalInit(ctc.getInit());
-			evalNext(ctc.getNext());
-		}
+		SpecAnalyser specAnalyser = new SpecAnalyser(ctc.getSpec(),
+				ctc.getInit(), ctc.getNext(), this.definitions);
+		specAnalyser.start();
+		this.inits = specAnalyser.getInits();
+		this.next = specAnalyser.getNextExpr();
 
 		if (moduleNode.getVariableDecls().length > 0) {
 			if (inits.size() == 0) {
@@ -86,6 +72,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 						"No initialisation predicate in the configuration file");
 			}
 		}
+
+		findOperations(next, specAnalyser.getNextName());
 
 		overrides = ctc.getOverrides();
 		if (ctc.getEnumeratedSet().size() > 0)
@@ -103,24 +91,21 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		if (ctc.getConObjs().size() > 0)
 			conObjs = ctc.getConObjs();
 
-		evalUsedDefintions();
+		startAnalyse();
 	}
 
 	public ModuleContext(ModuleNode moduleNode) throws FrontEndException,
 			SemanticErrorException, ConfigFileErrorException {
 		this.moduleNode = moduleNode;
 
-		this.letParamsId = 13;
+		SymbolSorter.sortDeclNodes(moduleNode.getConstantDecls());
+		SymbolSorter.sortDeclNodes(moduleNode.getVariableDecls());
+		SymbolSorter.sortOpDefNodes(moduleNode.getOpDefs());
 
-		globalLets = new ArrayList<LetDef>();
-		letsNames = new ArrayList<String>();
+		this.definitions = SymbolSorter
+				.getDefsHashTable(moduleNode.getOpDefs());
 
-		evalDefinitions();
-		evalVariables();
-		evalConstants();
-
-		// every TLA+ Constant is a B constant
-		bConstants = new ArrayList<String>();
+		// every TLA+ constant is a B constant
 		for (int i = 0; i < moduleNode.getConstantDecls().length; i++) {
 			bConstants.add(moduleNode.getConstantDecls()[i].getName()
 					.toString());
@@ -130,12 +115,11 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		 * Conventions: if there is no config file use the 'Next' defintion as
 		 * next state relation, 'Init' as initialisation predicate
 		 */
-		if (definitions.containsKey("Spec")) {
-			evalSpec("Spec");
-		} else {
-			evalInit("Init");
-			evalNext("Next");
-		}
+		SpecAnalyser specAnalyser = new SpecAnalyser("Spec", "Init", "Next",
+				this.definitions);
+		specAnalyser.start();
+		this.inits = specAnalyser.getInits();
+		this.next = specAnalyser.getNextExpr();
 
 		if (moduleNode.getVariableDecls().length > 0) {
 			if (inits.size() == 0) {
@@ -144,161 +128,15 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			}
 		}
 
+		findOperations(next, specAnalyser.getNextName());
+
+		startAnalyse();
+	}
+
+	public void startAnalyse() {
 		evalUsedDefintions();
-	}
-
-	private void evalInit(String defName) {
-		inits = new ArrayList<BInit>();
-		if (defName == null)
-			return;
-
-		if (definitions.containsKey(defName)) {
-			OpDefNode init = definitions.get(defName);
-			init.setToolObject(PRINT_DEFINITION, false);
-			inits.add(new BInit("", init.getBody()));
-		}
-	}
-
-	private void evalNext(String defName) throws FrontEndException {
-		bOperations = new ArrayList<BOperation>();
-		if (defName == null)
-			return;
-
-		if (definitions.containsKey(defName)) {
-			OpDefNode next = definitions.get(defName);
-			next.setToolObject(PRINT_DEFINITION, false);
-			findOperations(next.getBody(), defName);
-		}
-	}
-
-	private void evalSpec(String spec) throws SemanticErrorException,
-			FrontEndException {
-		inits = new ArrayList<BInit>();
-		bOperations = new ArrayList<BOperation>();
-		OpDefNode def = definitions.get(spec);
-		ExprNode e = def.getBody();
-		processConfigSpec(e, "");
-	}
-
-	private void processConfigSpec(ExprNode exprNode, String prefix)
-			throws SemanticErrorException, FrontEndException {
-
-		if (exprNode instanceof SubstInNode) {
-			SubstInNode substInNode = (SubstInNode) exprNode;
-			processConfigSpec(substInNode.getBody(), prefix);
-			return;
-		}
-
-		if (exprNode instanceof OpApplNode) {
-			OpApplNode opApp = (OpApplNode) exprNode;
-			ExprOrOpArgNode[] args = opApp.getArgs();
-			if (args.length == 0) {
-				SymbolNode opNode = opApp.getOperator();
-				if (opNode instanceof OpDefNode) {
-					OpDefNode def = (OpDefNode) opNode;
-					ExprNode body = def.getBody();
-					if (body.getLevel() == 1) {
-						inits.add(new BInit(prefix, exprNode));
-					} else {
-						String defName = def.getName().toString();
-						String newPrefix = prefix
-								+ defName.substring(0,
-										defName.lastIndexOf('!') + 1);
-						processConfigSpec(body, newPrefix);
-					}
-					return;
-				}
-				throw new SemanticErrorException(
-						"Can not handle specification conjunction.");
-			}
-
-			int opcode = BuiltInOPs.getOpCode(opApp.getOperator().getName());
-			if (opcode == OPCODE_cl || opcode == OPCODE_land) {
-				for (int i = 0; i < args.length; i++) {
-					this.processConfigSpec((ExprNode) args[i], prefix);
-				}
-				return;
-			}
-
-			if (opcode == OPCODE_box) {
-				SemanticNode boxArg = args[0];
-				if ((boxArg instanceof OpApplNode)
-						&& BuiltInOPs.getOpCode(((OpApplNode) boxArg)
-								.getOperator().getName()) == OPCODE_sa) {
-					ExprNode next = (ExprNode) ((OpApplNode) boxArg).getArgs()[0];
-					this.next = next;
-					findOperations(next, prefix + "Next");
-					return;
-				}
-			}
-		}
-
-		if (exprNode.getLevel() <= 1) {
-			// init
-			inits.add(new BInit(prefix, exprNode));
-		} else if (exprNode.getLevel() == 3) {
-			// temporal
-
-		} else {
-			throw new SemanticErrorException(
-					"Can not handle specification conjunction.");
-		}
-
-	}
-
-	private void evalDefinitions() {
-		OpDefNode[] opDefs = moduleNode.getOpDefs();
-		class OpDefNodeComparator implements Comparator<OpDefNode> {
-			public int compare(OpDefNode a, OpDefNode b) {
-				if (a.getLocation().equals(b.getLocation())) {
-					if (a.getSource().getUid() < b.getSource().getUid())
-						return -1;
-					if (a.getSource().getUid() > b.getSource().getUid())
-						return 1;
-					return 0;
-				}
-				if (a.getUid() < b.getUid())
-					return -1;
-				if (a.getUid() > b.getUid())
-					return 1;
-				return 0;
-			}
-		}
-		Arrays.sort(opDefs, new OpDefNodeComparator());
-
-		definitions = new Hashtable<String, OpDefNode>();
-		for (int i = 0; i < opDefs.length; i++) {
-			OpDefNode def = opDefs[i];
-			// Definition in this module
-			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-					.getName().toString())
-					|| StandardModules.contains(def.getSource()
-							.getOriginallyDefinedInModuleNode().getName()
-							.toString())) {
-				continue;
-			}
-			definitions.put(def.getName().toString(), def);
-		}
-	}
-
-	class OpDeclNodeComparator implements Comparator<OpDeclNode> {
-		public int compare(OpDeclNode a, OpDeclNode b) {
-			if (a.getUid() < b.getUid())
-				return -1;
-			if (a.getUid() > b.getUid())
-				return 1;
-			return 0;
-		}
-	}
-
-	private void evalConstants() {
-		OpDeclNode[] cons = moduleNode.getConstantDecls();
-		Arrays.sort(cons, new OpDeclNodeComparator());
-	}
-
-	private void evalVariables() {
-		OpDeclNode[] vars = moduleNode.getVariableDecls();
-		Arrays.sort(vars, new OpDeclNodeComparator());
+		KeywordRenamer keywordRenamer= new KeywordRenamer(moduleNode);
+		keywordRenamer.start();
 	}
 
 	public ModuleNode getRoot() {
@@ -309,45 +147,26 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		return invariants;
 	}
 
-	public boolean containsDef(String defName) {
-		return definitions.containsKey(defName);
-	}
-
-	public OpDefNode getDef(String defName) {
-		return definitions.get(defName);
-	}
-
-	public void removeBCon(String conName) {
-		bConstants.remove(conName);
-	}
 
 	public ArrayList<String> getBConstants() {
 		ArrayList<String> clone = new ArrayList<String>(bConstants);
 		return clone;
 	}
 
-	public void setOverrides(Hashtable<String, String> overrides) {
-		this.overrides = overrides;
-	}
-
 	public Hashtable<String, String> getOverrides() {
 		return this.overrides;
-	}
-
-	public void addEnum(String modelValue) {
-		setEnumeration.add(modelValue);
-	}
-
-	public boolean containsEnum(String modelValue) {
-		return setEnumeration.contains(modelValue);
 	}
 
 	public ArrayList<String> getEnum() {
 		return setEnumeration;
 	}
 
+	
+	// find b operations
 	private void findOperations(ExprNode e, String opName)
 			throws FrontEndException {
+		if (e == null)
+			return;
 		String name = opName;
 		ArrayList<OpApplNode> existQuans = new ArrayList<OpApplNode>();
 		findOperationsInSemanticNode(e, name, existQuans,
@@ -372,21 +191,16 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			LetInNode l = (LetInNode) node;
 			LinkedHashMap<String, LetDef> letsList = new LinkedHashMap<String, LetDef>();
 			for (int i = 0; i < l.getLets().length; i++) {
+				
 				OpDefNode d = l.getLets()[i];
-
-				d.setToolObject(letParamsId, evalQuantorParams(existQuans));
-
 				String letName = createName(d.getName().toString());
-				LetDef letDef = new LetDef(letName, d,
-						evalQuantorParams(existQuans),
+				LetDef letDef = new LetDef(letName, d, new ArrayList<String>(),
 						new LinkedHashMap<String, LetDef>(letsList));
 				globalLets.add(letDef);
 				letsList.put(d.getName().toString(), letDef);
 
 				// visit lets to determine used definitions
-				ArrayList<String> ps = new ArrayList<String>();
-				ps.addAll(evalQuantorParams(existQuans));
-				ps.addAll(getParams(d));
+				ArrayList<String> ps = new ArrayList<String>(getParams(d));
 				String prefix = name.substring(0, name.lastIndexOf('!') + 1);
 				visitExprNode(d.getBody(), prefix, ps);
 			}
@@ -407,23 +221,11 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		}
 		case LabelKind:
 		default:
+
+			// TODO no valid b operation
 			throw new RuntimeException("not implemented");
 		}
 
-	}
-
-	private ArrayList<String> evalQuantorParams(ArrayList<OpApplNode> existQuans) {
-		ArrayList<String> res = new ArrayList<String>();
-		for (int i = 0; i < existQuans.size(); i++) {
-			OpApplNode n = existQuans.get(i);
-			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
-			for (int k = 0; k < params.length; k++) {
-				for (int j = 0; j < params[k].length; j++) {
-					res.add(params[k][j].getName().toString());
-				}
-			}
-		}
-		return res;
 	}
 
 	private void findOperationsInOpApplNode(OpApplNode n, String name,
@@ -586,7 +388,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			LetInNode l = (LetInNode) node;
 			for (int i = 0; i < l.getLets().length; i++) {
 				OpDefNode d = l.getLets()[i];
-				d.setToolObject(letParamsId, new ArrayList<String>(parameters));
+				d.setToolObject(LET_PARAMS_ID,
+						new ArrayList<String>(parameters));
 
 				// visit lets to determine used definitions
 				ArrayList<String> ps = new ArrayList<String>();
@@ -667,11 +470,14 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 				def2.setToolObject(PRINT_DEFINITION, true);
 				visitExprNode(def2.getBody(), newPrefix, getParams(def));
 			}
-			
-			
+
+			for (int i = 0; i < node.getArgs().length; i++) {
+				visitExprOrOpArgNode(node.getArgs()[i], prefix,
+						new ArrayList<String>(parameters));
+			}
 			return;
 		}
-
+		
 		}
 
 	}
@@ -691,7 +497,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	private void visitBuiltInKind(OpApplNode node, String prefix,
 			ArrayList<String> parameters) {
 		switch (BuiltInOPs.getOpCode(node.getOperator().getName())) {
-		
+
 		case OPCODE_be:
 		case OPCODE_bf:
 		case OPCODE_soa:
@@ -705,10 +511,9 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			visitExprOrOpArgNode(node.getArgs()[0], prefix, parameters);
 			return;
 		}
-		
-		
-		case OPCODE_bc:{
-			if(!definitionMacro.contains(CHOOSE)){
+
+		case OPCODE_bc: {
+			if (!definitionMacro.contains(CHOOSE)) {
 				definitionMacro.add(CHOOSE);
 			}
 		}

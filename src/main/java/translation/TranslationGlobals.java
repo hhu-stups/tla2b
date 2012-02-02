@@ -4,6 +4,7 @@
 
 package translation;
 
+
 import tla2sany.semantic.FrontEnd;
 
 public interface TranslationGlobals {
@@ -13,6 +14,9 @@ public interface TranslationGlobals {
 	final int DEF_OBJECT = 19;
 	final int PRINT_DEFINITION = 11;
 	final int TYPE_ID = 5;
+	final int LET_PARAMS_ID = 13;
+	final int NEW_NAME = 20;
 	
-	final String CHOOSE = " CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T),T);";
+	final String CHOOSE = " CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T)-->T)";
+
 }
