@@ -41,6 +41,7 @@ public class TestModuleFiniteSets {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES NATURAL : FIN(NATURAL) \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));

@@ -299,7 +299,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		out.append("DEFINITIONS\n");
 		for (int i = 0; i < moduleContext.definitionMacro.size(); i++) {
 			out.append(moduleContext.definitionMacro.get(i));
-			if (i != moduleContext.definitionMacro.size()
+			if (i != moduleContext.definitionMacro.size()-1
 					|| bDefs.size() + moduleContext.globalLets.size() > 0) {
 				out.append(";\n");
 			}
@@ -1264,6 +1264,15 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 						.format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
 								iif.out, then.out, iif.out, eelse.out);
 				return new ExprReturn(res);
+//				ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
+//						VALUE);
+//				ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
+//				ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+//						VALUE);
+//				String res = String
+//						.format("IF_THEN_ELSE(%s, %s, %s)",
+//								iif.out, then.out, eelse.out);
+//				return new ExprReturn(res);
 			}
 		}
 

@@ -35,7 +35,7 @@ public class Main {
 		String config = evalConfigName(configName);
 
 		ModuleNode moduleNode = parseModule(moduleName);
-
+		
 		ModuleContext con;
 		if (config != null) {
 			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
@@ -48,11 +48,13 @@ public class Main {
 		} else {
 			con = new ModuleContext(moduleNode);
 		}
-
+		//long time = -System.currentTimeMillis();
 		TypeChecker tc = new TypeChecker(moduleNode, con);
 		tc.start();
+		//System.out.println(time + System.currentTimeMillis() + "ms");
 
 		BPrettyPrinter p = new BPrettyPrinter(moduleNode, con);
+		
 		return p.start();
 	}
 

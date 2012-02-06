@@ -38,7 +38,7 @@ public class TestStruct {
 	
 	
 	@Test
-	public void testStruct2() throws Exception {
+	public void testStructExpansion() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME [a: {2}] = [a : {1}, b : BOOLEAN] \n"
@@ -72,7 +72,7 @@ public class TestStruct {
 	
 	
 	@Test
-	public void testRecord2() throws Exception {
+	public void testRecordExpansion() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME [a|-> 2] = [a |-> 1, b |-> \"abc\"] \n"

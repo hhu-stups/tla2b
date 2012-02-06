@@ -17,7 +17,7 @@ import tla2sany.semantic.SymbolNode;
 public class KeywordRenamer implements TranslationGlobals{
 	private ModuleNode moduleNode;
 	private Hashtable<String, SymbolNode> symbolTable = new Hashtable<String, SymbolNode>();
-	private static Set<String> KEYWORDS = new HashSet<String>();
+	private final static Set<String> KEYWORDS = new HashSet<String>();
 	static {
 		KEYWORDS.add("seq");
 		KEYWORDS.add("left");
@@ -30,7 +30,46 @@ public class KeywordRenamer implements TranslationGlobals{
 		KEYWORDS.add("ran");
 		KEYWORDS.add("fnc");
 		KEYWORDS.add("rel");
-		//TODO add missing
+		KEYWORDS.add("id");
+		KEYWORDS.add("card");
+		KEYWORDS.add("POW");
+		KEYWORDS.add("POW1");
+		KEYWORDS.add("FIN");
+		KEYWORDS.add("FIN1");
+		KEYWORDS.add("size");
+		KEYWORDS.add("rev");
+		KEYWORDS.add("first");
+		KEYWORDS.add("last");
+		KEYWORDS.add("front");
+		KEYWORDS.add("tail");
+		KEYWORDS.add("conc");
+		KEYWORDS.add("struct");
+		KEYWORDS.add("rec");
+		KEYWORDS.add("tree");
+		KEYWORDS.add("btree");
+		KEYWORDS.add("skip");
+		KEYWORDS.add("ANY");
+		KEYWORDS.add("WHERE");
+		KEYWORDS.add("END");
+		KEYWORDS.add("BE");
+		KEYWORDS.add("VAR");
+		KEYWORDS.add("ASSERT");
+		KEYWORDS.add("CHOICE");
+		KEYWORDS.add("OR");
+		KEYWORDS.add("SELECT");
+		KEYWORDS.add("EITHER");
+		KEYWORDS.add("WHEN");
+		KEYWORDS.add("BEGIN");
+		KEYWORDS.add("MACHINE");
+		KEYWORDS.add("REFINEMENT");
+		KEYWORDS.add("IMPLEMENTATION");
+		KEYWORDS.add("SETS");
+		KEYWORDS.add("CONSTRAINTS");
+		KEYWORDS.add("MODEL");
+		KEYWORDS.add("SYSTEM");
+		KEYWORDS.add("MACHINE");
+		KEYWORDS.add("EVENTS");
+		KEYWORDS.add("OPERATIONS");
 	}
 	
 	private Set<String> newNames = new HashSet<String>();

@@ -28,7 +28,7 @@ public class TestChoose {
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 = CHOOSE({x|x : {1, 2, 3} & TRUE = TRUE}) \n"
-				+ "DEFINITIONS CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T),T);"
+				+ "DEFINITIONS CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T)-->T);"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

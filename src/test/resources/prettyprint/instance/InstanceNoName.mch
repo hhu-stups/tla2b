@@ -5,8 +5,7 @@ PROPERTIES
 DEFINITIONS
  Init == c = start;
 
- val == 1;
-
+ val == 1
 VARIABLES c
 INVARIANT
  c : INTEGER

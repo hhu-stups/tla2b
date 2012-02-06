@@ -27,6 +27,7 @@ public class TestRealWorld {
 	public void testQueens() throws Exception {
 		ToolIO.reset();
 		StringBuilder sb = Main.start("Queens", null, false);
+		System.out.println(sb);
 		String expected = fileToString(path + "Queens.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -47,12 +48,11 @@ public class TestRealWorld {
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 
-	//TODO 
-//	@Test
-//	public void testFastPaxos() throws Exception {
-//		ToolIO.reset();
-//		StringBuilder sb = Main.start("FastPaxos", "FastPaxos", false);
-//		System.out.println(sb);
-//	}
+	@Test
+	public void testFastPaxos() throws Exception {
+		ToolIO.reset();
+		StringBuilder sb = Main.start("FastPaxos", "FastPaxos", false);
+		System.out.println(sb);
+	}
 	
 }

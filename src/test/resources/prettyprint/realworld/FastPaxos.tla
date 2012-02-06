@@ -8,8 +8,11 @@ RNum == FastNum \cup ClassicNum
 
 any == CHOOSE v : v \notin PVal
 
+i \prec j == i < j 
+i \preceq j == (i \prec j) \/ (i = j)
+
 MaxOfSet(S) == CHOOSE p \in S: \A n \in S: p \geq n
-Max(S) == CHOOSE p \in S: \A n \in S: p \geq n
+Max(S) == CHOOSE i \in S : \A j \in S : j \preceq i
 Message ==
        [type : {"propose"}, pval : PVal]
   \cup [type : {"phase1a"}, rnd : RNum]
@@ -22,8 +25,7 @@ Quorum(i) == IF i \in ClassicNum THEN {{a1,a2}, {a1,a3}, {a2, a3}}
                                    ELSE {{a1,a2,a3}}
 
 
-i \prec j == i < j 
-i \preceq j == (i \prec j) \/ (i = j)
+
 ASSUME 
   /\ FastNum \cap ClassicNum = {}
   /\ \A i, j, k \in RNum : (i \prec j) /\ (j \prec k) => (i \prec k)
@@ -85,8 +87,8 @@ SafeSet(M, Q, i) ==
                                           /\ m.acc = a
     IN  IF k = 0 
           THEN PVal
-          ELSE IF \E v \in Vk : Only(v)
-                 THEN {v1}
+          ELSE IF \E v \in  Vk : Only(v)
+                 THEN {CHOOSE v \in {v1}(*Vk*) : Only(v)}
                  ELSE PVal                     
 
 Phase2a(i, va) ==

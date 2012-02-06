@@ -72,6 +72,26 @@ public class TestDefinitions {
 		
 	}
 	
+	@Test  
+	public void testDefinition4() throws FrontEndException, MyException {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k, k2 \n"
+				+ "foo(var, value) ==  var = value \n"
+				+ "ASSUME foo(k,1) /\\ foo(k2,TRUE)  \n"
+				+ "=================================";
+	
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
+		assertEquals("INTEGER", t.constants.get("k").toString());
+		assertEquals("BOOL", t.constants.get("k2").toString());
+	}
+	
+	
+	
+	
 	
 	/**********************************************************************
 	 * Definition Call

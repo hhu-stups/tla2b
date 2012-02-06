@@ -511,23 +511,26 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			visitExprOrOpArgNode(node.getArgs()[0], prefix, parameters);
 			return;
 		}
-
+		case OPCODE_ite:{
+//			if(!definitionMacro.contains(IF_THEN_ELSE)){
+//				definitionMacro.add(IF_THEN_ELSE);
+//			}
+			break;
+		}
+		
 		case OPCODE_bc: {
 			if (!definitionMacro.contains(CHOOSE)) {
 				definitionMacro.add(CHOOSE);
 			}
+			break;
 		}
 		case OPCODE_unchanged: {
 			return;
 		}
-
-		default: {
-			for (int i = 0; i < node.getArgs().length; i++) {
-				visitExprOrOpArgNode(node.getArgs()[i], prefix,
-						new ArrayList<String>(parameters));
-			}
-			return;
 		}
+		for (int i = 0; i < node.getArgs().length; i++) {
+			visitExprOrOpArgNode(node.getArgs()[i], prefix,
+					new ArrayList<String>(parameters));
 		}
 	}
 

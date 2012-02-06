@@ -38,6 +38,7 @@ public class TestInstance {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		String expected = fileToString(path+"OneInstanced.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -87,7 +88,6 @@ public class TestInstance {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		String expected = fileToString(path+"InstanceOpArg.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
