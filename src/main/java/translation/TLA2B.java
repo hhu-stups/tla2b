@@ -14,16 +14,41 @@ import exceptions.MyException;
 import util.FileUtil;
 import util.ToolIO;
 
-public class TLA2B {
+public class TLA2B implements TranslationGlobals {
 
 	public static void main(String[] args) {
 
-		if (args.length != 1) {
-			System.err.println("Require input file!");
-			return;
+		int i;
+		String configName = null;
+		for (i = 0; (i < args.length) && (args[i].charAt(0) == '-'); i++) {
+			if (args[i].equals("-version")) {
+				System.out.println("TLA2B version " + VERSION);
+				System.exit(-1);
+			} else if (args[i].equals("-config")) {
+				i++;
+				if (i < args.length) {
+					if (args[i].toLowerCase().endsWith(".cfg")) {
+						configName = args[i].substring(0, args[i].length() - 4);
+					} else {
+						configName = args[i];
+					}
+				} else {
+					System.err
+							.println("Error: expect a file name for -config option.");
+				}
+
+			} else {
+				System.err.println("Illegal switch: " + args[i]);
+				System.exit(-1);
+			}
 		}
 
-		String name = args[0];
+		if (i == args.length) {
+			System.err.println("Error: expected a module file.");
+			System.exit(-1);
+		}
+
+		String name = args[i];
 		if (name.toLowerCase().endsWith(".tla")) {
 			name = name.substring(0, name.length() - 4);
 		}
@@ -39,25 +64,26 @@ public class TLA2B {
 				name.lastIndexOf(FileUtil.separator) + 1);
 
 		// Config file
-		File config = new File(name + ".cfg");
-		String configName = null;
-		// use config if it exists
-		if (config.exists()) {
-			configName = name + ".cfg";
+		File config;
+		if (configName == null) {
+			config = new File(name + ".cfg");
+			// use config if it exists
+			if (config.exists()) {
+				configName = name + ".cfg";
+			}
 		}
 
 		StringBuilder s = new StringBuilder();
-
 		ToolIO.setMode(ToolIO.TOOL);
 		try {
 			s = Main.start(name, configName, false);
 		} catch (FrontEndException e) {
 			System.err.println(e.getMessage());
-			return;
+			System.exit(-1);
 		} catch (MyException e) {
 			System.err.print("**** Translation Error ****\n");
 			System.err.println(e.getMessage());
-			return;
+			System.exit(-1);
 		}
 
 		s.append("\n/* Created " + new Date() + " by TLA2B */");
@@ -67,7 +93,8 @@ public class TLA2B {
 		try {
 			f.createNewFile();
 		} catch (IOException e) {
-			System.err.println(String.format("Could not create File %s.", path + sourceModuleName+".mch"));
+			System.err.println(String.format("Could not create File %s.", path
+					+ sourceModuleName + ".mch"));
 			return;
 		}
 

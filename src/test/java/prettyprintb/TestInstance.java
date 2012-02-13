@@ -92,5 +92,32 @@ public class TestInstance {
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 	
+	@Test
+	public void TestInstanceDefinition() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE InstanceDefinition ----------------\n"
+				+ "VARIABLES c \n"
+				+ " val == 5 \n"
+				+ "INSTANCE Counter WITH x <- c, start <- 0\n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		String expected = fileToString(path+"InstanceDefinition.mch");
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	@Test
+	public void TestModConstantAssignment() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE ModConstantAssignment ----------------\n"
+				+ "VARIABLES c \n"
+				+ "INSTANCE Counter WITH x <- c, start <- 0\n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, path+"ModConstantAssignment.cfg", true);
+		String expected = fileToString(path+"ModConstantAssignment.mch");
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
 	
 }

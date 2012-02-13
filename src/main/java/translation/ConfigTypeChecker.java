@@ -1,6 +1,7 @@
 package translation;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -8,9 +9,11 @@ import java.util.Map;
 
 import exceptions.ConfigFileErrorException;
 import exceptions.UnificationException;
+import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.OpDefOrDeclNode;
 import tlc2.tool.ModelConfig;
 import tlc2.util.Vect;
 import tlc2.value.ModelValue;
@@ -48,8 +51,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		this.configAst = configAst;
 		this.moduleNode = moduleNode;
 
-		enumeratedSet = new ArrayList<String>();
-		enumeratedTypes = new LinkedHashMap<String, EnumType>();
+		this.enumeratedSet = new ArrayList<String>();
+		this.enumeratedTypes = new LinkedHashMap<String, EnumType>();
 		evalDefinitions();
 	}
 
@@ -77,6 +80,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 
 		// constant overrides
 		evalConstantOverrides();
+
+		evalModConstantsAssignments();
 
 		// invariant declaration
 		evalInvariants();
@@ -161,6 +166,83 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 
 	}
 
+	private void evalModConstantsAssignments() throws ConfigFileErrorException {
+		// val = [Counter] 7
+		@SuppressWarnings("unchecked")
+		Hashtable<String, Vect> configCons = configAst.getModConstants();
+		Enumeration<String> moduleNames = configCons.keys();
+		while (moduleNames.hasMoreElements()) {
+			String moduleName = (String) moduleNames.nextElement();
+			ModuleNode mNode = searchModule(moduleName);
+			Vect assignments = configCons.get(moduleName);
+			for (int i = 0; i < assignments.size(); i++) {
+				Vect assigment = (Vect) assignments.elementAt(i);
+				OpDefOrDeclNode opDefOrDeclNode = searchDefinitionOrConstant(
+						mNode, (String) assigment.elementAt(0));
+				String symbolName = opDefOrDeclNode.getName().toString();
+				Object symbolValue = assigment.elementAt(1);
+				BType symbolType = conGetType(assigment.elementAt(1));
+				//System.out.println(symbolName + " " + symbolValue+ " " + symbolType);
+
+				if (opDefOrDeclNode instanceof OpDeclNode) {
+					OpDeclNode c = (OpDeclNode) opDefOrDeclNode;
+					if (symbolType instanceof AbstractHasFollowers) {
+						((AbstractHasFollowers) symbolType).addFollower(c);
+					}
+					ConstantObj conObj = new ConstantObj(symbolValue,
+							symbolType);
+					conObjs.put(symbolName, conObj);
+					c.setToolObject(CONSTANT_OBJECT, conObj);
+					/**
+					 * if conValue is a model value and the name of value is the
+					 * same as the name of constants, then the constant
+					 * declaration in the resulting B machine disappears
+					 **/
+					if (symbolName.equals(symbolValue.toString())) {
+						bConstants.remove(symbolName);
+						conObjs.put(symbolName, conObj);
+					}
+				} else {
+					OpDefNode def = (OpDefNode) opDefOrDeclNode;
+					ConstantObj conObj = new ConstantObj(symbolValue,
+							symbolType);
+					def.setToolObject(CONSTANT_OBJECT, conObj);
+					if (symbolName.equals(symbolValue.toString())) {
+						def.setToolObject(PRINT_DEFINITION, false);
+					}
+				}
+			}
+		}
+	}
+
+	public ModuleNode searchModule(String moduleName) {
+		InstanceNode[] instanceNodes = moduleNode.getInstances();
+
+		for (int i = 0; i < instanceNodes.length; i++) {
+			if (instanceNodes[i].getModule().getName().toString()
+					.equals(moduleName))
+				return instanceNodes[i].getModule();
+		}
+		return null;
+	}
+
+	public OpDefOrDeclNode searchDefinitionOrConstant(ModuleNode n,
+			String defOrConName) throws ConfigFileErrorException {
+		for (int i = 0; i < n.getOpDefs().length; i++) {
+			if (n.getOpDefs()[i].getName().toString().equals(defOrConName)) {
+				return n.getOpDefs()[i];
+			}
+		}
+		for (int i = 0; i < n.getConstantDecls().length; i++) {
+			if (n.getConstantDecls()[i].getName().toString()
+					.equals(defOrConName)) {
+				return n.getConstantDecls()[i];
+			}
+		}
+		throw new ConfigFileErrorException(
+				"Module does not contain the symbol: " + defOrConName);
+	}
+
 	private void evalConstantAssignments() throws ConfigFileErrorException {
 		Vect configCons = configAst.getConstants();
 		// iterate over all constant declaration in the config file
@@ -204,9 +286,10 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 
 	@SuppressWarnings("unchecked")
 	private void evalConstantOverrides() throws ConfigFileErrorException {
-		overrides =(Hashtable<String, String>) configAst.getOverrides().clone();
-		Iterator<Map.Entry<String, String>> it = configAst.getOverrides().entrySet()
-				.iterator();
+		overrides = (Hashtable<String, String>) configAst.getOverrides()
+				.clone();
+		Iterator<Map.Entry<String, String>> it = configAst.getOverrides()
+				.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, String> entry = it.next();
 			String left = entry.getKey();
@@ -228,7 +311,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				}
 			} else if (definitions.containsKey(left)) {
 				OpDefNode def = definitions.get(left);
-				//TODO remove conObj
+				// TODO remove conObj
 				ConstantObj conObj = new ConstantObj(right, new Untyped());
 				def.setToolObject(CONSTANT_OBJECT, conObj);
 				def.setToolObject(DEF_OBJECT, definitions.get(right));

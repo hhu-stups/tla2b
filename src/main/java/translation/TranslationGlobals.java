@@ -8,6 +8,8 @@ package translation;
 import tla2sany.semantic.FrontEnd;
 
 public interface TranslationGlobals {
+	final String VERSION = "1.0.5";
+	
 	final int USED = FrontEnd.getToolId();
 	final int OVERRIDE_SUBSTITUTION_ID = 17;
 	final int CONSTANT_OBJECT = 18;
