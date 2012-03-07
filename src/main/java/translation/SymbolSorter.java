@@ -11,7 +11,6 @@ import java.util.Hashtable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
-import util.StandardModules;
 
 public class SymbolSorter {
 	private ModuleNode moduleNode;

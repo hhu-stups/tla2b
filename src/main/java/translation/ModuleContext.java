@@ -27,7 +27,6 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ToolGlobals;
 import types.BType;
 import types.IType;
-import types.IntType;
 import util.StandardModules;
 
 // contains the content of a tla+ module

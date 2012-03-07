@@ -27,7 +27,6 @@ import types.PowerSetType;
 import types.StringType;
 import types.Untyped;
 import types.EnumType;
-import util.StandardModules;
 
 public class ConfigTypeChecker implements IType, TranslationGlobals {
 	private ModuleNode moduleNode;
