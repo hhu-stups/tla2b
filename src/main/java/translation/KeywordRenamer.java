@@ -108,6 +108,8 @@ public class KeywordRenamer implements TranslationGlobals{
 				}else if(defName.startsWith("\\")){
 					newName = defName.substring(1);
 					def.setToolObject(NEW_NAME, newName);
+					if(!def.getSource().equals(def))
+						def.getSource().setToolObject(NEW_NAME, newName);
 				}
 				newNames.add(newName);
 			}

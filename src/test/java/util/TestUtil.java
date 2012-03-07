@@ -8,6 +8,15 @@ import de.be4.classicalb.core.parser.BParser;
 import de.be4.classicalb.core.parser.exceptions.BException;
 import de.be4.classicalb.core.parser.node.Start;
 
+import static org.junit.Assert.assertEquals;
+import static util.TestUtil.getTreeAsString;
+
+import org.junit.Test;
+
+import translation.Main;
+import translation.Util;
+import util.FileUtil;
+import util.ToolIO;
 public class TestUtil {
 
 	public static String getTreeAsString(final String testMachine)
@@ -33,5 +42,29 @@ public class TestUtil {
 		in.close();
 		return res.toString();
 	}
+	
 
+	@Test
+	public void TestGetPrefixWithoutLast(){
+		String input = "foo!";
+		assertEquals("", Util.getPrefixWithoutLast(input));
+	}
+	
+	@Test
+	public void TestGetPrefixWithoutLast2(){
+		String input = "foo!bar!";
+		assertEquals("foo!", Util.getPrefixWithoutLast(input));
+	}
+	
+	@Test
+	public void TestGetPrefixWithoutLast3(){
+		String input = "";
+		assertEquals("", Util.getPrefixWithoutLast(input));
+	}
+	
+	@Test
+	public void TestGetPrefixWithoutLast4(){
+		String input = "foo!bar!bazz!";
+		assertEquals("foo!bar!", Util.getPrefixWithoutLast(input));
+	}
 }

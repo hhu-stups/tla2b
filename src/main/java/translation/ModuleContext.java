@@ -17,6 +17,7 @@ import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
@@ -24,10 +25,14 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ToolGlobals;
+import types.BType;
+import types.IType;
+import types.IntType;
+import util.StandardModules;
 
 // contains the content of a tla+ module
 public class ModuleContext implements ASTConstants, ToolGlobals,
-		TranslationGlobals {
+		TranslationGlobals, IType {
 	private final ModuleNode moduleNode;
 	protected Hashtable<String, OpDefNode> definitions;
 
@@ -45,6 +50,8 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	protected ExprNode next;
 	protected ArrayList<String> definitionMacro = new ArrayList<String>();
 
+	private int INSTANCE_SUBSITUTION_ID = 10;
+	private ArrayList<OpApplNode> ifThenElseNodes = new ArrayList<OpApplNode>();
 
 	public ModuleContext(ModuleNode rootModule, ConfigTypeChecker ctc)
 			throws FrontEndException, ConfigFileErrorException,
@@ -133,9 +140,9 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		startAnalyse();
 	}
 
-	public void startAnalyse() {
+	public void startAnalyse() throws ConfigFileErrorException {
 		evalUsedDefintions();
-		KeywordRenamer keywordRenamer= new KeywordRenamer(moduleNode);
+		KeywordRenamer keywordRenamer = new KeywordRenamer(moduleNode);
 		keywordRenamer.start();
 	}
 
@@ -146,7 +153,6 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	public ArrayList<String> getInvariants() {
 		return invariants;
 	}
-
 
 	public ArrayList<String> getBConstants() {
 		ArrayList<String> clone = new ArrayList<String>(bConstants);
@@ -161,10 +167,9 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		return setEnumeration;
 	}
 
-	
 	// find b operations
 	private void findOperations(ExprNode e, String opName)
-			throws FrontEndException {
+			throws FrontEndException, ConfigFileErrorException {
 		if (e == null)
 			return;
 		String name = opName;
@@ -176,7 +181,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	private void findOperationsInSemanticNode(SemanticNode node, String name,
 			ArrayList<OpApplNode> existQuans,
 			LinkedHashMap<String, LetDef> localDefintions)
-			throws FrontEndException {
+			throws FrontEndException, ConfigFileErrorException {
 		switch (node.getKind()) {
 		case OpApplKind: {
 			findOperationsInOpApplNode((OpApplNode) node, name, existQuans,
@@ -191,7 +196,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			LetInNode l = (LetInNode) node;
 			LinkedHashMap<String, LetDef> letsList = new LinkedHashMap<String, LetDef>();
 			for (int i = 0; i < l.getLets().length; i++) {
-				
+
 				OpDefNode d = l.getLets()[i];
 				String letName = createName(d.getName().toString());
 				LetDef letDef = new LetDef(letName, d, new ArrayList<String>(),
@@ -231,7 +236,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	private void findOperationsInOpApplNode(OpApplNode n, String name,
 			ArrayList<OpApplNode> existQuans,
 			LinkedHashMap<String, LetDef> localDefintions)
-			throws FrontEndException {
+			throws FrontEndException, ConfigFileErrorException {
 		int kind = n.getOperator().getKind();
 		if (kind == UserDefinedOpKind
 				&& !BBuiltInOPs.contains(n.getOperator().getName())) {
@@ -322,10 +327,11 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 	}
 
 	/**
+	 * @throws ConfigFileErrorException
 	 * 
 	 */
 	// TODO find local definitions
-	private void evalUsedDefintions() {
+	private void evalUsedDefintions() throws ConfigFileErrorException {
 		AssumeNode[] assumes = moduleNode.getAssumptions();
 		for (int i = 0; i < assumes.length; i++) {
 			visitExprNode(assumes[i].getAssume(), "", new ArrayList<String>());
@@ -376,8 +382,60 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 
 	}
 
+	/**
+	 * @param exprOrOpArgNode
+	 * @throws ConfigFileErrorException
+	 */
+	private void visitExprOrOpArgNode(ExprOrOpArgNode n, String prefix,
+			ArrayList<String> parameters) throws ConfigFileErrorException {
+		if (n instanceof ExprNode) {
+			visitExprNode((ExprNode) n, prefix, new ArrayList<String>(
+					parameters));
+		} else if (n instanceof OpArgNode) {
+			OpArgNode opArgNode = (OpArgNode) n;
+			SymbolNode s = opArgNode.getOp();
+
+			ExprOrOpArgNode e = (ExprOrOpArgNode) s
+					.getToolObject(INSTANCE_SUBSITUTION_ID);
+			if (e != null) {
+				visitExprOrOpArgNode(e, Util.getPrefixWithoutLast(prefix),
+						new ArrayList<String>(parameters));
+				return;
+			}
+
+			String overrideName = (String) s
+					.getToolObject(OVERRIDE_SUBSTITUTION_ID);
+			if (overrideName != null) {
+				OpDefNode def = definitions.get(overrideName);
+				if (!StandardModules.contains(def
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())
+						&& !StandardModules.contains(def.getSource()
+								.getOriginallyDefinedInModuleNode().getName()
+								.toString())) {
+					def.setToolObject(PRINT_DEFINITION, true);
+				}
+
+				return;
+			}
+
+			if (s instanceof OpDefNode) {
+				s.setToolObject(PRINT_DEFINITION, true);
+				visitExprNode(((OpDefNode) s).getBody(),
+						Util.getPrefixWithoutLast(prefix),
+						new ArrayList<String>());
+				return;
+			}
+
+			throw new ConfigFileErrorException(
+					String.format(
+							"Operator '%s' has %s arguments and must be overriden in the configuration file.",
+							s.getName(), s.getArity()));
+		}
+	}
+
 	private void visitExprNode(ExprNode node, String prefix,
-			ArrayList<String> parameters) {
+			ArrayList<String> parameters) throws ConfigFileErrorException {
 		switch (node.getKind()) {
 		case OpApplKind: {
 			visitOpApplNode((OpApplNode) node, prefix, new ArrayList<String>(
@@ -405,8 +463,11 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			SubstInNode substInNode = (SubstInNode) node;
 			Subst[] substs = substInNode.getSubsts();
 			for (int i = 0; i < substs.length; i++) {
-				visitExprOrOpArgNode(substs[i].getExpr(), prefix,
-						new ArrayList<String>(parameters));
+				OpDeclNode op = substs[i].getOp();
+				op.setToolObject(INSTANCE_SUBSITUTION_ID, substs[i].getExpr());
+				// System.out.println(substs[i].getExpr().toString(2));
+				// visitExprOrOpArgNode(substs[i].getExpr(), prefix,
+				// new ArrayList<String>(parameters));
 			}
 			visitExprNode(substInNode.getBody(), prefix, new ArrayList<String>(
 					parameters));
@@ -417,10 +478,55 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 
 	/**
 	 * @param node
+	 * @throws ConfigFileErrorException
 	 */
 	private void visitOpApplNode(OpApplNode node, String prefix,
-			ArrayList<String> parameters) {
+			ArrayList<String> parameters) throws ConfigFileErrorException {
 		switch (node.getOperator().getKind()) {
+
+		case ConstantDeclKind: {
+			for (int i = 0; i < node.getArgs().length; i++) {
+				visitExprOrOpArgNode(node.getArgs()[i], prefix, parameters);
+			}
+
+			ExprOrOpArgNode e = (ExprOrOpArgNode) node.getOperator()
+					.getToolObject(INSTANCE_SUBSITUTION_ID);
+			if (e != null) {
+				visitExprOrOpArgNode(e, Util.getPrefixWithoutLast(prefix),
+						new ArrayList<String>(parameters));
+				return;
+			}
+
+			String overrideName = (String) node.getOperator().getToolObject(
+					OVERRIDE_SUBSTITUTION_ID);
+			if (overrideName != null) {
+				OpDefNode def = definitions.get(overrideName);
+				if (!StandardModules.contains(def
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())
+						&& !StandardModules.contains(def.getSource()
+								.getOriginallyDefinedInModuleNode().getName()
+								.toString())) {
+					def.setToolObject(PRINT_DEFINITION, true);
+				}
+				return;
+			}
+
+			if (node.getArgs().length > 0) {
+				throw new ConfigFileErrorException(
+						String.format(
+								"Constant '%s' must be overriden in the configuration file.",
+								node.getOperator().getName()));
+			}
+
+			// normal constant, no substitution and no arguments
+			return;
+		}
+
+		case VariableDeclKind: {
+
+			return;
+		}
 
 		case BuiltInKind: {
 			visitBuiltInKind(node, prefix, new ArrayList<String>(parameters));
@@ -477,7 +583,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			}
 			return;
 		}
-		
+
 		}
 
 	}
@@ -493,9 +599,10 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 
 	/**
 	 * @param node
+	 * @throws ConfigFileErrorException
 	 */
 	private void visitBuiltInKind(OpApplNode node, String prefix,
-			ArrayList<String> parameters) {
+			ArrayList<String> parameters) throws ConfigFileErrorException {
 		switch (BuiltInOPs.getOpCode(node.getOperator().getName())) {
 
 		case OPCODE_be:
@@ -511,13 +618,14 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 			visitExprOrOpArgNode(node.getArgs()[0], prefix, parameters);
 			return;
 		}
-		case OPCODE_ite:{
-//			if(!definitionMacro.contains(IF_THEN_ELSE)){
-//				definitionMacro.add(IF_THEN_ELSE);
-//			}
+		case OPCODE_ite: {
+			ifThenElseNodes.add(node);
+			// if(!definitionMacro.contains(IF_THEN_ELSE)){
+			// definitionMacro.add(IF_THEN_ELSE);
+			// }
 			break;
 		}
-		
+
 		case OPCODE_bc: {
 			if (!definitionMacro.contains(CHOOSE)) {
 				definitionMacro.add(CHOOSE);
@@ -534,40 +642,16 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 		}
 	}
 
-	/**
-	 * @param exprOrOpArgNode
-	 */
-	private void visitExprOrOpArgNode(ExprOrOpArgNode n, String prefix,
-			ArrayList<String> parameters) {
-		if (n instanceof ExprNode) {
-			visitExprNode((ExprNode) n, prefix, new ArrayList<String>(
-					parameters));
-		} else if (n instanceof OpArgNode) {
-			OpArgNode opArgNode = (OpArgNode) n;
-
-			String defName;
-			if (opArgNode.getName().toString().toString().startsWith(prefix)) {
-				defName = opArgNode.getName().toString();
-			} else {
-				defName = prefix + opArgNode.getName().toString();
-			}
-
-			String newPrefix = defName.substring(0,
-					defName.lastIndexOf('!') + 1);
-
-			// let
-			if (!this.definitions.containsKey(defName)) {
-				OpDefNode def = (OpDefNode) opArgNode.getOp();
-				visitExprNode(def.getBody(), newPrefix, new ArrayList<String>(
-						parameters));
-				return;
-			}
-
-			OpDefNode def = definitions.get(defName);
-			def.setToolObject(PRINT_DEFINITION, true);
-			visitExprNode(def.getBody(), newPrefix, getParams(def));
-			return;
+	public void evalIfThenElse() {
+		boolean b = false;
+		for (int i = 0; i < ifThenElseNodes.size() && !b; i++) {
+			OpApplNode node = ifThenElseNodes.get(i);
+			BType t = (BType) node.getToolObject(TYPE_ID);
+			if (t.getKind() != BOOL)
+				b = true;
 		}
+		if (b)
+			definitionMacro.add(IF_THEN_ELSE);
 	}
 
 }

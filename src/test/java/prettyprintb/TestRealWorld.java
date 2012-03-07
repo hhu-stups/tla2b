@@ -27,7 +27,6 @@ public class TestRealWorld {
 	public void testQueens() throws Exception {
 		ToolIO.reset();
 		StringBuilder sb = Main.start("Queens", null, false);
-		System.out.println(sb);
 		String expected = fileToString(path + "Queens.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -35,7 +34,7 @@ public class TestRealWorld {
 	@Test
 	public void testMicrowave() throws Exception {
 		ToolIO.reset();
-		StringBuilder sb = Main.start("microwave", "microwave", false);
+		StringBuilder sb = Main.start("microwave", "microwave.cfg", false);
 		String expected = fileToString(path + "microwave.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -51,8 +50,8 @@ public class TestRealWorld {
 	@Test
 	public void testFastPaxos() throws Exception {
 		ToolIO.reset();
-		StringBuilder sb = Main.start("FastPaxos", "FastPaxos", false);
-		System.out.println(sb);
+		StringBuilder sb = Main.start("FastPaxos", "FastPaxos.cfg", false);
+		//System.out.println(sb);
 	}
 	
 }

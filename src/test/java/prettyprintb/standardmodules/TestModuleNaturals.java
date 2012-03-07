@@ -2,7 +2,7 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package prettyprintb;
+package prettyprintb.standardmodules;
 
 import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;

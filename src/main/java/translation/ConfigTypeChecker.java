@@ -79,7 +79,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		evalConstantAssignments();
 
 		// constant overrides
-		evalConstantOverrides();
+		evalConstantOrDefOverrides();
 
 		evalModConstantsAssignments();
 
@@ -93,13 +93,13 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		definitions = new Hashtable<String, OpDefNode>();
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
-			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-					.getName().toString())
-					|| StandardModules.contains(def.getSource()
-							.getOriginallyDefinedInModuleNode().getName()
-							.toString())) {
-				continue;
-			}
+//			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
+//					.getName().toString())
+//					|| StandardModules.contains(def.getSource()
+//							.getOriginallyDefinedInModuleNode().getName()
+//							.toString())) {
+//				continue;
+//			}
 			definitions.put(def.getName().toString(), def);
 		}
 	}
@@ -182,7 +182,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				String symbolName = opDefOrDeclNode.getName().toString();
 				Object symbolValue = assigment.elementAt(1);
 				BType symbolType = conGetType(assigment.elementAt(1));
-				//System.out.println(symbolName + " " + symbolValue+ " " + symbolType);
+				// System.out.println(symbolName + " " + symbolValue+ " " +
+				// symbolType);
 
 				if (opDefOrDeclNode instanceof OpDeclNode) {
 					OpDeclNode c = (OpDeclNode) opDefOrDeclNode;
@@ -215,7 +216,8 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		}
 	}
 
-	public ModuleNode searchModule(String moduleName) {
+	public ModuleNode searchModule(String moduleName)
+			throws ConfigFileErrorException {
 		InstanceNode[] instanceNodes = moduleNode.getInstances();
 
 		for (int i = 0; i < instanceNodes.length; i++) {
@@ -223,7 +225,10 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 					.equals(moduleName))
 				return instanceNodes[i].getModule();
 		}
-		return null;
+		throw new ConfigFileErrorException(
+				String.format(
+						"Module '%s' is not included in the specification.",
+						moduleName));
 	}
 
 	public OpDefOrDeclNode searchDefinitionOrConstant(ModuleNode n,
@@ -285,7 +290,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void evalConstantOverrides() throws ConfigFileErrorException {
+	private void evalConstantOrDefOverrides() throws ConfigFileErrorException {
 		overrides = (Hashtable<String, String>) configAst.getOverrides()
 				.clone();
 		Iterator<Map.Entry<String, String>> it = configAst.getOverrides()
@@ -295,6 +300,7 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 			String left = entry.getKey();
 			String right = entry.getValue();
 
+			// Verify if the definition on the right is a valid definition
 			if (!definitions.containsKey(right)) {
 				throw new ConfigFileErrorException("Invalid substitution for "
 						+ left + ".\n Module does not contain definition "

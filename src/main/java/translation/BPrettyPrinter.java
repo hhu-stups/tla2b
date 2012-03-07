@@ -369,7 +369,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 			out.append(" == " + conObj.getValue());
 			return out;
 		}
-
 		String prefix = defName.substring(0, defName.lastIndexOf('!') + 1);
 		DContext d = new DContext(prefix, "\t");
 		StringBuilder body = visitExprNode(def.getBody(), d, VALUEORPREDICATE).out;
@@ -542,7 +541,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		StringBuilder out = new StringBuilder();
 		switch (n.getKind()) {
 		case OpApplKind:
-			return visitOpApplNode((OpApplNode) n, d, expected);
+			return visitOpApplNode((OpApplNode) n, null, d, expected);
 
 		case NumeralKind: {
 			out.append(((NumeralNode) n).val());
@@ -620,55 +619,59 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		throw new RuntimeException(n.toString(2));
 	}
 
-	private ExprReturn visitOpApplNode(OpApplNode n, DContext d, int expected) {
+	private ExprReturn visitOpApplNode(OpApplNode n, SymbolNode newSymbol,
+			DContext d, int expected) {
 		StringBuilder out = new StringBuilder();
-		switch (n.getOperator().getKind()) {
+		int kind = newSymbol == null ? n.getOperator().getKind() : newSymbol
+				.getKind();
+		switch (kind) {
 		case ConstantDeclKind: {
-			OpDeclNode con = (OpDeclNode) n.getOperator();
+			OpDeclNode con = (OpDeclNode) (newSymbol == null ? n.getOperator()
+					: newSymbol);
+
+			// constant has a instance substitution
 			ExprOrOpArgNode substExpr = (ExprOrOpArgNode) con
 					.getToolObject(substitutionId);
+
 			String overrideName = (String) con
 					.getToolObject(OVERRIDE_SUBSTITUTION_ID);
 			if (substExpr != null) {
-				String prefix = d.getPrefix();
-				if (prefix.length() > 0) {
-					prefix = prefix.substring(0, prefix.length() - 1);
-					int last_ = prefix.lastIndexOf('!');
-					if (last_ != -1) {
-						prefix = prefix.substring(0,
-								prefix.lastIndexOf('!') + 1);
-					} else {
-						prefix = "";
-					}
-				}
+				// TODO substExpr has its own context
+
 				if (substExpr instanceof OpArgNode) {
-					prefix = prefix.replace('!', '_');
-					out.append(prefix
-							+ ((OpArgNode) substExpr).getName().toString());
+					// k <- c, for k(_,_)
+					return visitOpApplNode(n, ((OpArgNode) substExpr).getOp(),
+							d, expected);
+
 				} else {
 					out.append(visitExprOrOpArgNode(substExpr, new DContext(
-							prefix), VALUE).out);
+							Util.getPrefixWithoutLast(d.getPrefix())), VALUE).out);
 				}
 
 			} else if (overrideName != null) {
-				out.append(overrideName);
+				// constant overriding in configfile
+				OpDefNode def = moduleContext.definitions.get(overrideName);
+				return visitOpApplNode(n, def, d,
+						expected);
+				// out.append(overrideName);
+
+				// if (n.getArgs().length > 0) {
+				// out.append("(");
+				// for (int i = 0; i < n.getArgs().length; i++) {
+				// if (i != 0) {
+				// out.append(",");
+				// }
+				// out.append(visitExprOrOpArgNode(n.getArgs()[i], d,
+				// VALUE).out);
+				// }
+				// out.append(")");
+				// }
 			} else {
 				if (con.getToolObject(NEW_NAME) != null) {
 					out.append(con.getToolObject(NEW_NAME));
 				} else {
 					out.append(con.getName().toString());
 				}
-			}
-
-			if (n.getArgs().length > 0) {
-				out.append("(");
-				for (int i = 0; i < n.getArgs().length; i++) {
-					if (i != 0) {
-						out.append(",");
-					}
-					out.append(visitExprOrOpArgNode(n.getArgs()[i], d, VALUE).out);
-				}
-				out.append(")");
 			}
 
 			if (expected == PREDICATE) {
@@ -692,7 +695,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		}
 
 		case BuiltInKind:
-			return evalBuiltInKind(n, d, expected);
+			return evalBuiltInKind(n, null, d, expected);
 
 		case FormalParamKind: {
 			ExprOrOpArgNode e = (ExprOrOpArgNode) n.getOperator()
@@ -712,15 +715,19 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 		case UserDefinedOpKind: {
 			OpDefNode def;
-			if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
-				def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
-			} else {
-				def = (OpDefNode) n.getOperator();
+			if (newSymbol != null)
+				def = (OpDefNode) newSymbol;
+			else {
+				if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
+					def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
+				} else {
+					def = (OpDefNode) n.getOperator();
+				}
 			}
 
 			// Operator ist ein B-BuiltIn-Operator
 			if (BBuiltInOPs.contains(def.getName())) {
-				return evalBBuiltIns(n, d, expected);
+				return evalBBuiltIns(n, newSymbol, d, expected);
 			}
 
 			String defName = d.getPrefix() + def.getName().toString();
@@ -744,7 +751,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 							+ def.getName());
 				}
 				ArrayList<String> params = letDef.getParameters();
-
 				String letName = letDef.getName();
 				out.append(letName.replace('!', '_'));
 
@@ -767,14 +773,13 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 				}
 				BType defType = (BType) n.getToolObject(TYPE_ID);
-				if (defType.getKind() == BOOL) {
+				if (defType != null && defType.getKind() == BOOL) {
 					return makeBoolValue(out, expected, P_max);
 				}
 				return new ExprReturn(out);
 			}
 			if (defName.contains("!")) {
 				out.append(defName.replace('!', '_'));
-
 			} else {
 				out.append(getPrintName(def));
 			}
@@ -790,7 +795,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 
 			}
 			BType defType = (BType) n.getToolObject(TYPE_ID);
-			if (defType.getKind() == BOOL) {
+			if (defType != null && defType.getKind() == BOOL) {
 				return makeBoolValue(out, expected, P_max);
 			}
 			return new ExprReturn(out);
@@ -806,9 +811,12 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 	 * @param expected
 	 * @return
 	 */
-	private ExprReturn evalBuiltInKind(OpApplNode n, DContext d, int expected) {
+	private ExprReturn evalBuiltInKind(OpApplNode n, SymbolNode newSymbol,
+			DContext d, int expected) {
 		StringBuilder out = new StringBuilder();
-		switch (getOpCode(n.getOperator().getName())) {
+		UniqueString opName = newSymbol == null ? n.getOperator().getName()
+				: newSymbol.getName();
+		switch (getOpCode(opName)) {
 
 		/**********************************************************************
 		 * equality and disequality: =, #, /=
@@ -1256,25 +1264,23 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 						brackets(eelse, P_implies, false));
 				return makeBoolValue(new StringBuilder(res), expected, P_and);
 			} else {
-				ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
-						PREDICATE);
-				ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
-				ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
-						VALUE);
-				String res = String
-						.format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
-								iif.out, then.out, iif.out, eelse.out);
-				return new ExprReturn(res);
 				// ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
-				// VALUE);
+				// PREDICATE);
 				// ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
 				// VALUE);
 				// ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
 				// VALUE);
 				// String res = String
-				// .format("IF_THEN_ELSE(%s, %s, %s)",
-				// iif.out, then.out, eelse.out);
+				// .format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
+				// iif.out, then.out, iif.out, eelse.out);
 				// return new ExprReturn(res);
+				ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
+				ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
+				ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+						VALUE);
+				String res = String.format("IF_THEN_ELSE(%s, %s, %s)", iif.out,
+						then.out, eelse.out);
+				return new ExprReturn(res);
 			}
 		}
 
@@ -1369,7 +1375,7 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		 * no TLA+ Built-ins
 		 ***********************************************************************/
 		case 0: {
-			return evalBBuiltIns(n, d, expected);
+			return evalBBuiltIns(n, null, d, expected);
 		}
 
 		case OPCODE_sa: // []_
@@ -1429,16 +1435,17 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 		return new ExprReturn(out, P_max);
 	}
 
-	private ExprReturn evalBBuiltIns(OpApplNode n, DContext d, int expected) {
-		UniqueString name = n.getOperator().getName();
+	private ExprReturn evalBBuiltIns(OpApplNode n, SymbolNode newSymbol,
+			DContext d, int expected) {
+		UniqueString opName = newSymbol == null ? n.getOperator().getName()
+				: newSymbol.getName();
 		StringBuilder out = new StringBuilder();
 		if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
 			OpDefNode def = (OpDefNode) n.getOperator().getToolObject(
 					DEF_OBJECT);
-			name = def.getName();
+			opName = def.getName();
 		}
-
-		switch (BBuiltInOPs.getOpcode(name)) {
+		switch (BBuiltInOPs.getOpcode(opName)) {
 
 		/**********************************************************************
 		 * Standard Module Naturals

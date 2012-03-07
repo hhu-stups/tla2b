@@ -42,13 +42,13 @@ public class SymbolSorter {
 		for (int i = 0; i < opDefNodes.length; i++) {
 			OpDefNode def = opDefNodes[i];
 			// Definition in this module
-			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-					.getName().toString())
-					|| StandardModules.contains(def.getSource()
-							.getOriginallyDefinedInModuleNode().getName()
-							.toString())) {
-				continue;
-			}
+//			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
+//					.getName().toString())
+//					|| StandardModules.contains(def.getSource()
+//							.getOriginallyDefinedInModuleNode().getName()
+//							.toString())) {
+//				continue;
+//			}
 			definitions.put(def.getName().toString(), def);
 		}
 		return definitions;

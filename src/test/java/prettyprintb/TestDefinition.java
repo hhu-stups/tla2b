@@ -45,6 +45,7 @@ public class TestDefinition {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER  & TRUE = bool(foo(1)) \n"
 				+ "DEFINITIONS foo(a) == k = a \n" + "END";

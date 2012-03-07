@@ -32,13 +32,13 @@ public class Main {
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = evalFileName(fileName);
-		String config = evalConfigName(configName);
+		//String config = evalConfigName(configName);
 
 		ModuleNode moduleNode = parseModule(moduleName);
 		
 		ModuleContext con;
-		if (config != null) {
-			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
+		if (configName != null) {
+			ModelConfig configAst = new ModelConfig(configName, null);
 			configAst.parse();
 
 			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
@@ -52,7 +52,7 @@ public class Main {
 		TypeChecker tc = new TypeChecker(moduleNode, con);
 		tc.start();
 		//System.out.println(time + System.currentTimeMillis() + "ms");
-
+		con.evalIfThenElse();
 		BPrettyPrinter p = new BPrettyPrinter(moduleNode, con);
 		
 		return p.start();

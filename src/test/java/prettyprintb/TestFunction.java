@@ -87,7 +87,8 @@ public class TestFunction {
 				+ "ABSTRACT_CONSTANTS k,k2,k3\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) & k2 : INTEGER & k3 : INTEGER \n"
 				+ " & k = fact & fact(k2) = k3 \n"
-				+ "DEFINITIONS fact == %n.(n : {1, 2}| (%t_.( t_ = 0 & n = 0 | 1 )\\/%t_.( t_ = 0 & not(n = 0) | n + fact(n - 1) ))(0)); \n"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0); \n"
+				+ "fact == %n.(n : {1, 2}| IF_THEN_ELSE(bool(n = 0), 1, n + fact(n - 1))) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

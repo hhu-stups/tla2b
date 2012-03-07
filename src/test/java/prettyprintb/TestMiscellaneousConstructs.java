@@ -29,7 +29,8 @@ public class TestMiscellaneousConstructs {
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
-				+ "PROPERTIES k : INTEGER & k = (%t_.( t_ = 0 & 1 = 1 | 1 )\\/%t_.( t_ = 0 & not(1 = 1) | 2 ))(0) \n"
+				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, 2) \n"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0) \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -43,6 +44,7 @@ public class TestMiscellaneousConstructs {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : BOOL & k = bool( (1 = 1 => TRUE = TRUE) & (not(1=1) => FALSE = TRUE )) \n"
@@ -50,7 +52,6 @@ public class TestMiscellaneousConstructs {
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 
-	@Ignore
 	@Test
 	public void testIfThenElse3() throws Exception {
 		ToolIO.reset();
@@ -80,13 +81,15 @@ public class TestMiscellaneousConstructs {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
-//		final String expected = "MACHINE Testing\n"
-//				+ "ABSTRACT_CONSTANTS k\n"
-//				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, 2) \n"
-//				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0)"
-//				+ "END";
-//		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		final String expected = "MACHINE Testing\n"
+				+ "ABSTRACT_CONSTANTS k\n"
+				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, foo) \n"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0);"
+				+ " bar == IF_THEN_ELSE(bool(1 = 1), 2, 4); \n"
+				+ " bazz == IF_THEN_ELSE(bool(1 = 2), 7, 8); \n"
+				+ " foo == IF_THEN_ELSE(bool(1 = 2), bar, bazz) \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 
 	@Test

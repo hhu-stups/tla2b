@@ -66,6 +66,19 @@ public class TestSet {
 	}
 	
 	@Test
+	public void testIn2() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "ASSUME 1 \\in {1,2,3} \n"
+				+ "=================================";
+		
+		StringBuilder sb = Main.start(module, null, true);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES 1 : {1,2,3} \n" + "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	@Test
 	public void testNotIn() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

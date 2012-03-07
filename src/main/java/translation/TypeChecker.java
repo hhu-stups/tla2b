@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
+import exceptions.FrontEndException;
 import exceptions.MyException;
 import exceptions.NotImplementedException;
 import exceptions.TypeErrorException;
@@ -207,7 +208,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @throws MyException
 	 */
 	private void visitOpDefNode(OpDefNode def) throws MyException {
-		ConstantObj conObj = (ConstantObj) def.getToolObject(CONSTANT_OBJECT);
+		ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
+				CONSTANT_OBJECT);
 		if (conObj != null) {
 			def.setToolObject(TYPE_ID, conObj.getType());
 			if (conObj.getType() instanceof AbstractHasFollowers) {
@@ -218,11 +220,15 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		FormalParamNode[] params = def.getParams();
 		for (int i = 0; i < params.length; i++) {
 			FormalParamNode p = params[i];
+			if (p.getArity() > 0) {
+				throw new FrontEndException(String.format(
+						"TLA2B do not support 2nd-order operators: '%s'\n %s ",
+						def.getName(), def.getLocation()));
+			}
 			Untyped u = new Untyped();
 			p.setToolObject(paramId, u);
 			u.addFollower(p);
 		}
-
 		BType defType = visitExprNode(def.getBody(), new Untyped());
 		def.setToolObject(TYPE_ID, defType);
 		if (defType instanceof AbstractHasFollowers) {
@@ -472,8 +478,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			if (def.getToolObject(CONSTANT_OBJECT) == null) {
 				// evaluate the body of the definition again
 				paramId = TEMP_TYPE_ID;
-				//if (found.isUntyped())
-					found = visitExprNode(def.getBody(), found);
+				// if (found.isUntyped())
+				found = visitExprNode(def.getBody(), found);
 				paramId = TYPE_ID;
 			}
 

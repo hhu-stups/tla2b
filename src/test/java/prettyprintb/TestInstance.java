@@ -38,7 +38,6 @@ public class TestInstance {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		String expected = fileToString(path+"OneInstanced.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -113,8 +112,11 @@ public class TestInstance {
 				+ "VARIABLES c \n"
 				+ "INSTANCE Counter WITH x <- c, start <- 0\n"
 				+ "=================================";
-
-		StringBuilder sb = Main.start(module, path+"ModConstantAssignment.cfg", true);
+		final String config = "INIT Init\n"
+				+ "NEXT Next \n"
+				+ "CONSTANTS val = [Counter] 7";
+		
+		StringBuilder sb = Main.start(module, config, true);
 		String expected = fileToString(path+"ModConstantAssignment.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
