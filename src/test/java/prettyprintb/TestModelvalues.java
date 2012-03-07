@@ -6,7 +6,6 @@ package prettyprintb;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import static util.TestUtil.fileToString;
 import static util.TestUtil.getTreeAsString;
 import translation.Main;
 import util.ToolIO;

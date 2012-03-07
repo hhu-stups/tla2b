@@ -5,16 +5,13 @@
 package configfile;
 
 import static org.junit.Assert.assertEquals;
-import static util.TestUtil.fileToString;
 import static util.TestUtil.getTreeAsString;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import exceptions.FrontEndException;
 
 import translation.Main;
-import util.FileUtil;
 import util.ToolIO;
 
 public class TestOpArgSubstitution {

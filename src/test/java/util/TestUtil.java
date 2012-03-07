@@ -9,14 +9,10 @@ import de.be4.classicalb.core.parser.exceptions.BException;
 import de.be4.classicalb.core.parser.node.Start;
 
 import static org.junit.Assert.assertEquals;
-import static util.TestUtil.getTreeAsString;
 
 import org.junit.Test;
 
-import translation.Main;
 import translation.Util;
-import util.FileUtil;
-import util.ToolIO;
 public class TestUtil {
 
 	public static String getTreeAsString(final String testMachine)

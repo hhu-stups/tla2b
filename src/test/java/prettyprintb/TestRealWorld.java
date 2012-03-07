@@ -51,7 +51,7 @@ public class TestRealWorld {
 	public void testFastPaxos() throws Exception {
 		ToolIO.reset();
 		StringBuilder sb = Main.start("FastPaxos", "FastPaxos.cfg", false);
-		//System.out.println(sb);
+		System.out.println(sb);
 	}
 	
 }
