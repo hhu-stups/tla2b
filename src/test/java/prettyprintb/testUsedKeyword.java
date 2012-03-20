@@ -82,25 +82,4 @@ public class testUsedKeyword {
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
-	@Test
-	public void testRenamingInfixOperator2() throws Exception {
-		ToolIO.reset();
-		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "EXTENDS Naturals \n"
-				+ "VARIABLES x \n"
-				+ "a \\preceq b == a + b \n"
-				+ " foo(a) == (a \\preceq 2)"
-				+ "Init ==  x = foo (3)\n"
-				+ "=================================";
-
-		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
-		final String expected = "MACHINE Testing\n"
-				+ "PROPERTIES prec(3, 1) \n"
-				+ "DEFINITIONS prec(a,b) == a > b\n"
-				+ "END";
-		//assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
-	}
-	
 }
