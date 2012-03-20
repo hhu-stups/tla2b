@@ -29,7 +29,7 @@ public class TestMiscellaneousConstructs {
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, 2) \n"
-				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0) \n"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=TRUE & P = TRUE | a )\\/%t_.(t_=TRUE & not(P= TRUE) | b ))(TRUE); \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -43,7 +43,6 @@ public class TestMiscellaneousConstructs {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : BOOL & k = bool( (1 = 1 => TRUE = TRUE) & (not(1=1) => FALSE = TRUE )) \n"
@@ -63,7 +62,7 @@ public class TestMiscellaneousConstructs {
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, 2) \n"
-				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0)"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=TRUE & P = TRUE | a )\\/%t_.(t_=TRUE & not(P= TRUE) | b ))(TRUE)"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -83,7 +82,7 @@ public class TestMiscellaneousConstructs {
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : INTEGER & k = IF_THEN_ELSE(bool(1 = 1), 1, foo) \n"
-				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=0 & P = TRUE | a )\\/%t_.(t_=0 & not(P= TRUE) | b ))(0);"
+				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=TRUE & P = TRUE | a )\\/%t_.(t_=TRUE & not(P= TRUE) | b ))(TRUE);"
 				+ " bar == IF_THEN_ELSE(bool(1 = 1), 2, 4); \n"
 				+ " bazz == IF_THEN_ELSE(bool(1 = 2), 7, 8); \n"
 				+ " foo == IF_THEN_ELSE(bool(1 = 2), bar, bazz) \n"

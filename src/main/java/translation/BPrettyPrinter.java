@@ -653,19 +653,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				OpDefNode def = moduleContext.definitions.get(overrideName);
 				return visitOpApplNode(n, def, d,
 						expected);
-				// out.append(overrideName);
-
-				// if (n.getArgs().length > 0) {
-				// out.append("(");
-				// for (int i = 0; i < n.getArgs().length; i++) {
-				// if (i != 0) {
-				// out.append(",");
-				// }
-				// out.append(visitExprOrOpArgNode(n.getArgs()[i], d,
-				// VALUE).out);
-				// }
-				// out.append(")");
-				// }
 			} else {
 				if (con.getToolObject(NEW_NAME) != null) {
 					out.append(con.getToolObject(NEW_NAME));
@@ -746,7 +733,6 @@ public class BPrettyPrinter extends BuiltInOPs implements ASTConstants, IType,
 				if (letDef == null) {
 					// letDef =
 					// moduleContext.lets.get(def.getName().toString());
-					System.out.println(def.toString(4));
 					throw new RuntimeException("Unkown Defintion: "
 							+ def.getName());
 				}

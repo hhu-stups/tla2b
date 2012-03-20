@@ -34,6 +34,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
 import types.*;
 import util.StandardModules;
+import util.UniqueString;
 
 public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
@@ -104,10 +105,14 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		for (int i = 0; i < cons.length; i++) {
 			OpDeclNode con = cons[i];
-			BType conType = (BType) con.getToolObject(TYPE_ID);
-			if (conType.isUntyped()) {
-				throw new TypeErrorException("The type of Constant "
-						+ con.getName() + " is still untyped: " + conType);
+			if (moduleContext.getBConstants()
+					.contains(con.getName().toString())) {
+
+				BType conType = (BType) con.getToolObject(TYPE_ID);
+				if (conType.isUntyped()) {
+					throw new TypeErrorException("The type of Constant "
+							+ con.getName() + " is still untyped: " + conType);
+				}
 			}
 		}
 
@@ -264,7 +269,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		switch (exprNode.getKind()) {
 		case OpApplKind:
-			return visitOpApplNode((OpApplNode) exprNode, expected);
+			return visitOpApplNode((OpApplNode) exprNode, null, expected);
 
 		case NumeralKind:
 			try {
@@ -339,7 +344,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						OpApplNode o = (OpApplNode) expr;
 						@SuppressWarnings("unused")
 						OpDeclNode var = (OpDeclNode) o.getOperator();
-					} catch (Exception e) {
+					} catch (ClassCastException e) {
 						throw new TypeErrorException(String.format(
 								"Expected variable.\n%s ", expr.getLocation()));
 					}
@@ -375,30 +380,46 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @return {@link BType}
 	 * @throws MyException
 	 */
-	private BType visitOpApplNode(OpApplNode n, BType expected)
-			throws MyException {
-		SymbolNode symbolNode = n.getOperator();
-		switch (symbolNode.getKind()) {
+	private BType visitOpApplNode(OpApplNode n, SymbolNode newSymbol,
+			BType expected) throws MyException {
+		int kind = newSymbol == null ? n.getOperator().getKind() : newSymbol
+				.getKind();
+
+		switch (kind) {
 		case ConstantDeclKind: {
-			String cName = symbolNode.getName().toString();
-			BType c = (BType) symbolNode.getToolObject(TYPE_ID);
-			if (c == null) {
-				throw new RuntimeException(cName + " has no type yet!");
+			OpDeclNode con = (OpDeclNode) (newSymbol == null ? n.getOperator()
+					: newSymbol);
+			
+			BType c;
+			String overrideName = (String) con
+					.getToolObject(OVERRIDE_SUBSTITUTION_ID);
+			if (overrideName != null) {
+				// constant overriding in configfile
+				OpDefNode def = moduleContext.definitions.get(overrideName);
+				
+				c = visitOpApplNode(n, def, expected);
+			}else{
+				c = (BType) con.getToolObject(TYPE_ID);
+				if (c == null) {
+					throw new RuntimeException(con.getName() + " has no type yet!");
+				}
 			}
+			
 			try {
 				BType result = expected.unify(c);
-				symbolNode.setToolObject(TYPE_ID, result);
+				con.setToolObject(TYPE_ID, result);
 				return result;
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
 						"Expected %s, found %s at constant '%s',\n%s",
-						expected, c, cName, n.getLocation())
+						expected, c, con.getName(), n.getLocation())
 
 				);
 			}
 		}
 
 		case VariableDeclKind: {
+			SymbolNode symbolNode = n.getOperator();
 			String vName = symbolNode.getName().toString();
 			BType v = (BType) symbolNode.getToolObject(TYPE_ID);
 			if (v == null) {
@@ -416,10 +437,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		case BuiltInKind: {
-			return evalBuiltInKind(n, expected);
+			return evalBuiltInKind(n, newSymbol, expected);
 		}
 
 		case FormalParamKind: {
+			SymbolNode symbolNode = n.getOperator();
 			String pName = symbolNode.getName().toString();
 			BType t = (BType) symbolNode.getToolObject(paramId);
 			if (t == null) {
@@ -437,11 +459,23 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		case UserDefinedOpKind: {
-			// Definition is a BBuilt-in definition
-			if (BBuiltInOPs.contains(n.getOperator().getName())) {
-				return evalBBuiltIns(n, expected);
+			OpDefNode def;
+			if (newSymbol != null)
+				def = (OpDefNode) newSymbol;
+			else {
+				if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
+					def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
+				} else {
+					def = (OpDefNode) n.getOperator();
+				}
+
 			}
-			OpDefNode def = (OpDefNode) n.getOperator();
+
+			// Definition is a BBuilt-in definition
+			if (BBuiltInOPs.contains(def.getName())) {
+				return evalBBuiltIns(n, def, expected);
+			}
+
 			BType found = ((BType) def.getToolObject(TYPE_ID));
 			if (found == null)
 				found = new Untyped();
@@ -490,342 +524,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		default: {
-			throw new NotImplementedException(symbolNode.getName().toString());
-		}
-		}
-
-	}
-
-	private BType evalBBuiltIns(OpApplNode n, BType expected)
-			throws MyException {
-		switch (BBuiltInOPs.getOpcode(n.getOperator().getName())) {
-		// B Builtins
-
-		/**********************************************************************
-		 * Standard Module Naturals
-		 **********************************************************************/
-		case B_OPCODE_gt: // >
-		case B_OPCODE_lt: // <
-		case B_OPCODE_leq: // <=
-		case B_OPCODE_geq: // >=
-		{
-			try {
-				BoolType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found BOOL at '%s',\n%s", expected, n
-								.getOperator().getName(), n.getLocation()));
-			}
-			for (int i = 0; i < n.getArgs().length; i++) {
-				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
-			}
-			return BoolType.getInstance();
-		}
-
-		case B_OPCODE_plus: // +
-		case B_OPCODE_minus: // -
-		case B_OPCODE_times: // *
-		case B_OPCODE_div: // /
-		case B_OPCODE_mod: // % modulo
-		case B_OPCODE_exp: { // x hoch y, x^y
-			try {
-				IntType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found INTEGER at '%s',\n%s", expected, n
-								.getOperator().getName(), n.getLocation()));
-			}
-			for (int i = 0; i < n.getArgs().length; i++) {
-				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
-			}
-			return IntType.getInstance();
-		}
-
-		case B_OPCODE_dotdot: // ..
-		{
-			try {
-				expected.unify(new PowerSetType(IntType.getInstance()));
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(INTEGER) at '%s',\n%s",
-						expected, n.getOperator().getName(), n.getLocation()));
-			}
-
-			for (int i = 0; i < n.getArgs().length; i++) {
-				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
-			}
-			return new PowerSetType(IntType.getInstance());
-		}
-
-		case B_OPCODE_nat: // Nat
-		{
-			try {
-				PowerSetType found = new PowerSetType(IntType.getInstance());
-				found = found.unify(expected);
-				return found;
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(INTEGER) at 'Nat',\n%s",
-						expected, n.getLocation()));
-			}
-		}
-
-		/**********************************************************************
-		 * Standard Module Integers
-		 **********************************************************************/
-		case B_OPCODE_int: // Int
-		{
-			try {
-				PowerSetType found = new PowerSetType(IntType.getInstance());
-				found = found.unify(expected);
-				return found;
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(INTEGER) at 'Int',\n%s",
-						expected, n.getLocation()));
-			}
-		}
-
-		case B_OPCODE_uminus: // -x
-		{
-			try {
-				IntType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found INTEGER at '-',\n%s", expected,
-						n.getLocation()));
-			}
-			visitExprOrOpArgNode(n.getArgs()[0], IntType.getInstance());
-			return IntType.getInstance();
-		}
-
-		/**********************************************************************
-		 * Standard Module FiniteSets
-		 **********************************************************************/
-		case B_OPCODE_finite: // IsFiniteSet
-		{
-			try {
-				BoolType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found BOOL at 'IsFiniteSet',\n%s",
-						expected, n.getLocation()));
-			}
-			visitExprOrOpArgNode(n.getArgs()[0],
-					new PowerSetType(new Untyped()));
-			return BoolType.getInstance();
-		}
-
-		case B_OPCODE_card: // Cardinality
-		{
-			try {
-				IntType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found INTEGER at 'Cardinality',\n%s",
-						expected, n.getLocation()));
-			}
-			visitExprOrOpArgNode(n.getArgs()[0],
-					new PowerSetType(new Untyped()));
-			return IntType.getInstance();
-		}
-
-		/**********************************************************************
-		 * Standard Module Sequences
-		 **********************************************************************/
-		case B_OPCODE_seq: { // Seq(S) - set of sequences, S must be a set
-
-			PowerSetType set_of_seq = new PowerSetType(new PowerSetType(
-					new PairType(IntType.getInstance(), new Untyped())));
-
-			try {
-				set_of_seq = set_of_seq.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(
-						String.format(
-								"Expected %s, found POW(POW(INTEGER*_A)) at 'Seq',\n%s",
-								expected, n.getLocation()));
-			}
-			PowerSetType seq = (PowerSetType) set_of_seq.getSubType();
-			PairType pair = (PairType) seq.getSubType();
-			PowerSetType S = (PowerSetType) visitExprOrOpArgNode(
-					n.getArgs()[0], new PowerSetType(pair.getSecond()));
-			pair.setSecond(S.getSubType());
-			return set_of_seq;
-		}
-
-		case B_OPCODE_len: // lengh of the sequence
-		{
-			try {
-				IntType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found INTEGER at 'Len',\n%s", expected,
-						n.getLocation()));
-			}
-			visitExprOrOpArgNode(n.getArgs()[0],
-					new PowerSetType(new Untyped()));
-			return IntType.getInstance();
-		}
-
-		case B_OPCODE_conc: // s \o s2 - concatenation of s and s2
-		{
-			PowerSetType found = new PowerSetType(new PairType(
-					IntType.getInstance(), new Untyped()));
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(INTEGER*_A) at '\\o',\n%s",
-						expected, n.getLocation()));
-			}
-			BType left = visitExprOrOpArgNode(n.getArgs()[0], found);
-			BType right = visitExprOrOpArgNode(n.getArgs()[1], left);
-			return right;
-		}
-
-		case B_OPCODE_append: // Append(s, e)
-		{
-			PowerSetType found = new PowerSetType(new PairType(
-					IntType.getInstance(), new Untyped()));
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(INTEGER*_A) at 'Append',\n%s",
-						expected, n.getLocation()));
-			}
-			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
-			PairType pair = (PairType) ((PowerSetType) s).getSubType();
-			BType e = visitExprOrOpArgNode(n.getArgs()[1], pair.getSecond());
-			pair.setSecond(e);
-			return s;
-		}
-
-		case B_OPCODE_head: // HEAD(s) - the first element of the sequence
-		{
-			PowerSetType seq = new PowerSetType(new PairType(
-					IntType.getInstance(), expected));
-			BType s = visitExprOrOpArgNode(n.getArgs()[0], seq);
-			PairType res = (PairType) ((PowerSetType) s).getSubType();
-			return res.getSecond();
-		}
-
-		case B_OPCODE_tail: // Tail(s)
-		{
-			PowerSetType found = new PowerSetType(new PairType(
-					IntType.getInstance(), new Untyped()));
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(
-						String.format(
-								"Expected %s, found POW(INTEGER*UNTYED) at 'Tail',\n%s",
-								expected, n.getLocation()));
-			}
-			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
-			return s;
-		}
-
-		case B_OPCODE_subseq: // SubSeq(s,m,n)
-		{
-			PowerSetType found = new PowerSetType(new PairType(
-					IntType.getInstance(), new Untyped()));
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(
-						String.format(
-								"Expected %s, found POW(INTEGER*UNTYED) at 'SubSeq',\n%s",
-								expected, n.getLocation()));
-			}
-			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
-			visitExprOrOpArgNode(n.getArgs()[1], IntType.getInstance());
-			visitExprOrOpArgNode(n.getArgs()[2], IntType.getInstance());
-			return s;
-		}
-
-		// TODO add BSeq to tla standard modules
-
-		/**********************************************************************
-		 * Standard Module TLA2B
-		 **********************************************************************/
-
-		case B_OPCODE_min: // MinOfSet(S)
-		case B_OPCODE_max: // MaxOfSet(S)
-		case B_OPCODE_setprod: // SetProduct(S)
-		case B_OPCODE_setsum: // SetSummation(S)
-		{
-			try {
-				IntType.getInstance().unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found INTEGER at '%s',\n%s", expected, n
-								.getOperator().getName(), n.getLocation()));
-			}
-			visitExprOrOpArgNode(n.getArgs()[0],
-					new PowerSetType(IntType.getInstance()));
-			return IntType.getInstance();
-		}
-
-		case B_OPCODE_permseq: // PermutedSequences(S)
-		{
-			PowerSetType argType = (PowerSetType) visitExprOrOpArgNode(
-					n.getArgs()[0], new PowerSetType(new Untyped()));
-
-			PowerSetType found = new PowerSetType(new PowerSetType(
-					new PairType(IntType.getInstance(), argType.getSubType())));
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found %s at 'PermutedSequences',\n%s",
-						expected, found, n.getLocation()));
-			}
-			return found;
-		}
-
-		/***********************************************************************
-		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
-		 ***********************************************************************/
-		case B_OPCODE_bool: // BOOLEAN
-			try {
-				PowerSetType found = new PowerSetType(BoolType.getInstance());
-				found = found.unify(expected);
-				return found;
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(BOOL) at 'BOOLEAN',\n%s",
-						expected, n.getLocation()));
-			}
-
-		case B_OPCODE_string: // STRING
-			try {
-				PowerSetType found = new PowerSetType(StringType.getInstance());
-				found = found.unify(expected);
-				return found;
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(STRING) at 'STRING',\n%s",
-						expected, n.getLocation()));
-			}
-
-		case B_OPCODE_true:
-		case B_OPCODE_false:
-			try {
-				BoolType.getInstance().unify(expected);
-				return BoolType.getInstance();
-			} catch (Exception e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found BOOL at '%s',\n%s", expected, n
-								.getOperator().getName(), n.getLocation()));
-			}
-
-		default: {
 			throw new NotImplementedException(n.getOperator().getName()
 					.toString());
 		}
 		}
+
 	}
 
 	/**
@@ -834,10 +537,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @return {@link BType}
 	 * @throws MyException
 	 */
-	private BType evalBuiltInKind(OpApplNode n, BType expected)
-			throws MyException {
-
-		switch (getOpCode(n.getOperator().getName())) {
+	private BType evalBuiltInKind(OpApplNode n, SymbolNode newSymbol,
+			BType expected) throws MyException {
+		UniqueString opName = newSymbol == null ? n.getOperator().getName()
+				: newSymbol.getName();
+		switch (getOpCode(opName)) {
 
 		/**********************************************************************
 		 * equality and disequality: =, #, /=
@@ -1507,12 +1211,345 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		 * no TLA+ Built-ins
 		 ***********************************************************************/
 		case 0: {
-			return evalBBuiltIns(n, expected);
+			return evalBBuiltIns(n, newSymbol, expected);
 		}
 		}
 
 		throw new NotImplementedException("Not supported Operator: "
-				+ n.getOperator().getName().toString() + "\n" + n.getLocation());
+				+ opName.toString() + "\n" + n.getLocation());
+	}
+
+	private BType evalBBuiltIns(OpApplNode n, SymbolNode newSymbol,
+			BType expected) throws MyException {
+		UniqueString opName = newSymbol == null ? n.getOperator().getName()
+				: newSymbol.getName();
+		switch (BBuiltInOPs.getOpcode(opName)) {
+		// B Builtins
+
+		/**********************************************************************
+		 * Standard Module Naturals
+		 **********************************************************************/
+		case B_OPCODE_gt: // >
+		case B_OPCODE_lt: // <
+		case B_OPCODE_leq: // <=
+		case B_OPCODE_geq: // >=
+		{
+			try {
+				BoolType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found BOOL at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
+			}
+			for (int i = 0; i < n.getArgs().length; i++) {
+				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
+			}
+			return BoolType.getInstance();
+		}
+
+		case B_OPCODE_plus: // +
+		case B_OPCODE_minus: // -
+		case B_OPCODE_times: // *
+		case B_OPCODE_div: // /
+		case B_OPCODE_mod: // % modulo
+		case B_OPCODE_exp: { // x hoch y, x^y
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
+			}
+			for (int i = 0; i < n.getArgs().length; i++) {
+				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
+			}
+			return IntType.getInstance();
+		}
+
+		case B_OPCODE_dotdot: // ..
+		{
+			try {
+				expected.unify(new PowerSetType(IntType.getInstance()));
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(INTEGER) at '..',\n%s",
+						expected, n.getLocation()));
+			}
+
+			for (int i = 0; i < n.getArgs().length; i++) {
+				visitExprOrOpArgNode(n.getArgs()[i], IntType.getInstance());
+			}
+			return new PowerSetType(IntType.getInstance());
+		}
+
+		case B_OPCODE_nat: // Nat
+		{
+			try {
+				PowerSetType found = new PowerSetType(IntType.getInstance());
+				found = found.unify(expected);
+				return found;
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(INTEGER) at 'Nat',\n%s",
+						expected, n.getLocation()));
+			}
+		}
+
+		/**********************************************************************
+		 * Standard Module Integers
+		 **********************************************************************/
+		case B_OPCODE_int: // Int
+		{
+			try {
+				PowerSetType found = new PowerSetType(IntType.getInstance());
+				found = found.unify(expected);
+				return found;
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(INTEGER) at 'Int',\n%s",
+						expected, n.getLocation()));
+			}
+		}
+
+		case B_OPCODE_uminus: // -x
+		{
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at '-',\n%s", expected,
+						n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0], IntType.getInstance());
+			return IntType.getInstance();
+		}
+
+		/**********************************************************************
+		 * Standard Module FiniteSets
+		 **********************************************************************/
+		case B_OPCODE_finite: // IsFiniteSet
+		{
+			try {
+				BoolType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found BOOL at 'IsFiniteSet',\n%s",
+						expected, n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0],
+					new PowerSetType(new Untyped()));
+			return BoolType.getInstance();
+		}
+
+		case B_OPCODE_card: // Cardinality
+		{
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at 'Cardinality',\n%s",
+						expected, n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0],
+					new PowerSetType(new Untyped()));
+			return IntType.getInstance();
+		}
+
+		/**********************************************************************
+		 * Standard Module Sequences
+		 **********************************************************************/
+		case B_OPCODE_seq: { // Seq(S) - set of sequences, S must be a set
+
+			PowerSetType set_of_seq = new PowerSetType(new PowerSetType(
+					new PairType(IntType.getInstance(), new Untyped())));
+
+			try {
+				set_of_seq = set_of_seq.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(
+						String.format(
+								"Expected %s, found POW(POW(INTEGER*_A)) at 'Seq',\n%s",
+								expected, n.getLocation()));
+			}
+			PowerSetType seq = (PowerSetType) set_of_seq.getSubType();
+			PairType pair = (PairType) seq.getSubType();
+			PowerSetType S = (PowerSetType) visitExprOrOpArgNode(
+					n.getArgs()[0], new PowerSetType(pair.getSecond()));
+			pair.setSecond(S.getSubType());
+			return set_of_seq;
+		}
+
+		case B_OPCODE_len: // lengh of the sequence
+		{
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at 'Len',\n%s", expected,
+						n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0],
+					new PowerSetType(new Untyped()));
+			return IntType.getInstance();
+		}
+
+		case B_OPCODE_conc: // s \o s2 - concatenation of s and s2
+		{
+			PowerSetType found = new PowerSetType(new PairType(
+					IntType.getInstance(), new Untyped()));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(INTEGER*_A) at '\\o',\n%s",
+						expected, n.getLocation()));
+			}
+			BType left = visitExprOrOpArgNode(n.getArgs()[0], found);
+			BType right = visitExprOrOpArgNode(n.getArgs()[1], left);
+			return right;
+		}
+
+		case B_OPCODE_append: // Append(s, e)
+		{
+			PowerSetType found = new PowerSetType(new PairType(
+					IntType.getInstance(), new Untyped()));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(INTEGER*_A) at 'Append',\n%s",
+						expected, n.getLocation()));
+			}
+			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
+			PairType pair = (PairType) ((PowerSetType) s).getSubType();
+			BType e = visitExprOrOpArgNode(n.getArgs()[1], pair.getSecond());
+			pair.setSecond(e);
+			return s;
+		}
+
+		case B_OPCODE_head: // HEAD(s) - the first element of the sequence
+		{
+			PowerSetType seq = new PowerSetType(new PairType(
+					IntType.getInstance(), expected));
+			BType s = visitExprOrOpArgNode(n.getArgs()[0], seq);
+			PairType res = (PairType) ((PowerSetType) s).getSubType();
+			return res.getSecond();
+		}
+
+		case B_OPCODE_tail: // Tail(s)
+		{
+			PowerSetType found = new PowerSetType(new PairType(
+					IntType.getInstance(), new Untyped()));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(
+						String.format(
+								"Expected %s, found POW(INTEGER*UNTYED) at 'Tail',\n%s",
+								expected, n.getLocation()));
+			}
+			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
+			return s;
+		}
+
+		case B_OPCODE_subseq: // SubSeq(s,m,n)
+		{
+			PowerSetType found = new PowerSetType(new PairType(
+					IntType.getInstance(), new Untyped()));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(
+						String.format(
+								"Expected %s, found POW(INTEGER*UNTYED) at 'SubSeq',\n%s",
+								expected, n.getLocation()));
+			}
+			BType s = visitExprOrOpArgNode(n.getArgs()[0], found);
+			visitExprOrOpArgNode(n.getArgs()[1], IntType.getInstance());
+			visitExprOrOpArgNode(n.getArgs()[2], IntType.getInstance());
+			return s;
+		}
+
+		// TODO add BSeq to tla standard modules
+
+		/**********************************************************************
+		 * Standard Module TLA2B
+		 **********************************************************************/
+
+		case B_OPCODE_min: // MinOfSet(S)
+		case B_OPCODE_max: // MaxOfSet(S)
+		case B_OPCODE_setprod: // SetProduct(S)
+		case B_OPCODE_setsum: // SetSummation(S)
+		{
+			try {
+				IntType.getInstance().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found INTEGER at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
+			}
+			visitExprOrOpArgNode(n.getArgs()[0],
+					new PowerSetType(IntType.getInstance()));
+			return IntType.getInstance();
+		}
+
+		case B_OPCODE_permseq: // PermutedSequences(S)
+		{
+			PowerSetType argType = (PowerSetType) visitExprOrOpArgNode(
+					n.getArgs()[0], new PowerSetType(new Untyped()));
+
+			PowerSetType found = new PowerSetType(new PowerSetType(
+					new PairType(IntType.getInstance(), argType.getSubType())));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at 'PermutedSequences',\n%s",
+						expected, found, n.getLocation()));
+			}
+			return found;
+		}
+
+		/***********************************************************************
+		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
+		 ***********************************************************************/
+		case B_OPCODE_bool: // BOOLEAN
+			try {
+				PowerSetType found = new PowerSetType(BoolType.getInstance());
+				found = found.unify(expected);
+				return found;
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(BOOL) at 'BOOLEAN',\n%s",
+						expected, n.getLocation()));
+			}
+
+		case B_OPCODE_string: // STRING
+			try {
+				PowerSetType found = new PowerSetType(StringType.getInstance());
+				found = found.unify(expected);
+				return found;
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found POW(STRING) at 'STRING',\n%s",
+						expected, n.getLocation()));
+			}
+
+		case B_OPCODE_true:
+		case B_OPCODE_false:
+			try {
+				BoolType.getInstance().unify(expected);
+				return BoolType.getInstance();
+			} catch (Exception e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found BOOL at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
+			}
+
+		default: {
+			throw new NotImplementedException(opName.toString());
+		}
+		}
 	}
 
 	public static BType makePair(ArrayList<BType> list) {

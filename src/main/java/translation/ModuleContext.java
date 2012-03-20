@@ -500,7 +500,7 @@ public class ModuleContext implements ASTConstants, ToolGlobals,
 					OVERRIDE_SUBSTITUTION_ID);
 			if (overrideName != null) {
 				OpDefNode def = definitions.get(overrideName);
-				if (!StandardModules.contains(def
+				if (def != null && !StandardModules.contains(def
 						.getOriginallyDefinedInModuleNode().getName()
 						.toString())
 						&& !StandardModules.contains(def.getSource()

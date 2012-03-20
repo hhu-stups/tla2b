@@ -9,11 +9,15 @@ import java.util.Map;
 
 import exceptions.ConfigFileErrorException;
 import exceptions.UnificationException;
+import tla2sany.semantic.Context;
+import tla2sany.semantic.Context.InitialSymbolEnumeration;
 import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.OpDefOrDeclNode;
+import tla2sany.semantic.SymbolNode;
+import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ModelConfig;
 import tlc2.util.Vect;
 import tlc2.value.ModelValue;
@@ -27,8 +31,10 @@ import types.PowerSetType;
 import types.StringType;
 import types.Untyped;
 import types.EnumType;
+import util.UniqueString;
 
-public class ConfigTypeChecker implements IType, TranslationGlobals {
+public class ConfigTypeChecker extends BuiltInOPs implements IType,
+		TranslationGlobals {
 	private ModuleNode moduleNode;
 	private ModelConfig configAst;
 
@@ -92,13 +98,14 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 		definitions = new Hashtable<String, OpDefNode>();
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
-//			if (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
-//					.getName().toString())
-//					|| StandardModules.contains(def.getSource()
-//							.getOriginallyDefinedInModuleNode().getName()
-//							.toString())) {
-//				continue;
-//			}
+			// if
+			// (StandardModules.contains(def.getOriginallyDefinedInModuleNode()
+			// .getName().toString())
+			// || StandardModules.contains(def.getSource()
+			// .getOriginallyDefinedInModuleNode().getName()
+			// .toString())) {
+			// continue;
+			// }
 			definitions.put(def.getName().toString(), def);
 		}
 	}
@@ -183,7 +190,6 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 				BType symbolType = conGetType(assigment.elementAt(1));
 				// System.out.println(symbolName + " " + symbolValue+ " " +
 				// symbolType);
-
 				if (opDefOrDeclNode instanceof OpDeclNode) {
 					OpDeclNode c = (OpDeclNode) opDefOrDeclNode;
 					if (symbolType instanceof AbstractHasFollowers) {
@@ -300,22 +306,38 @@ public class ConfigTypeChecker implements IType, TranslationGlobals {
 			String right = entry.getValue();
 
 			// Verify if the definition on the right is a valid definition
-			if (!definitions.containsKey(right)) {
+			UniqueString u = UniqueString.uniqueStringOf(right);
+
+			OpDefNode rightDefNode = definitions.get(right);
+			if (rightDefNode == null && getOpCode(u) == 0) {
 				throw new ConfigFileErrorException("Invalid substitution for "
 						+ left + ".\n Module does not contain definition "
 						+ right + ".");
 			}
-
 			if (constants.containsKey(left)) {
 				OpDeclNode con = constants.get(left);
+				if (con.getArity() != rightDefNode.getArity()) {
+					throw new ConfigFileErrorException(
+							String.format(
+									"Invalid substitution for %s.\n Constant %s has %s arguments while %s has %s arguments.",
+									left, left, con.getArity(), right,
+									rightDefNode.getArity()));
+				}
 				if (con.getArity() > 0) {
 					bConstants.remove(left);
-					con.setToolObject(OVERRIDE_SUBSTITUTION_ID,
-							entry.getValue());
+					con.setToolObject(OVERRIDE_SUBSTITUTION_ID, right);
 					overrides.remove(entry.getKey());
 				}
 			} else if (definitions.containsKey(left)) {
 				OpDefNode def = definitions.get(left);
+				if (def.getArity() != rightDefNode.getArity()) {
+					throw new ConfigFileErrorException(
+							String.format(
+									"Invalid substitution for %s.\n Operator %s has %s arguments while %s has %s arguments.",
+									left, left, def.getArity(), right,
+									rightDefNode.getArity()));
+				}
+
 				// TODO remove conObj
 				ConstantObj conObj = new ConstantObj(right, new Untyped());
 				def.setToolObject(CONSTANT_OBJECT, conObj);

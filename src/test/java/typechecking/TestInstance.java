@@ -5,22 +5,25 @@
 package typechecking;
 
 import static org.junit.Assert.assertEquals;
+import static util.TestUtil.getTreeAsString;
 
 import org.junit.Test;
+
+import translation.Main;
 import util.FileUtil;
 import util.ToolIO;
 import util.TypeCheckerTest;
 
 public class TestInstance {
 
-	private static final String I = FileUtil.separator;
-	private static String path = "src" + I + "test" + I + "resources" + I
-			+ "typechecking" + I + "modules" + I;
+	private static final char fileseparator = FileUtil.separatorChar;
+	private static String path = "src/test/resources/typechecking/modules/";
 	static {
+		path = path.replace('/', fileseparator);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}
-
+	
 	@Test
 	public void TestNamedInstance() throws Exception {
 		ToolIO.reset();
@@ -101,4 +104,20 @@ public class TestInstance {
 		assertEquals("BOOL", t.variables.get("c").toString());
 		assertEquals("INTEGER", t.constants.get("k").toString());
 	}
+	
+	@Test
+	public void TestCon4Con() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS c2, val2 \n"
+				+ "INSTANCE Value WITH val <- val2, c <- c2 \n"
+				+ "ASSUME def"
+				+ "=================================";
+		final String config = "CONSTANTS c2 = 1";
+		TypeCheckerTest t = new TypeCheckerTest(module, config, true);
+		t.start();
+		assertEquals("INTEGER", t.constants.get("c2").toString());
+		assertEquals("INTEGER", t.constants.get("val2").toString());
+	}
+	
 }

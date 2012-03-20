@@ -38,13 +38,13 @@ public class TypeCheckerTest {
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = Main.evalFileName(fileName);
-		String config = Main.evalConfigName(configName);
+		//String config = Main.evalConfigName(configName);
 
 		moduleNode = Main.parseModule(moduleName);
 
 		ModuleContext con;
-		if (config != null) {
-			ModelConfig configAst = new ModelConfig(config + ".cfg", null);
+		if (configName != null) {
+			ModelConfig configAst = new ModelConfig(configName, null);
 			configAst.parse();
 
 			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
