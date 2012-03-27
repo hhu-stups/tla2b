@@ -87,8 +87,8 @@ public class TLA2B implements TranslationGlobals {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-
-		s.append("\n/* Created " + new Date() + " by TLA2B */");
+		s.insert(0, "/*@ generated TLA2B "+ VERSION + " "+ new Date() + " */\n");
+//		s.append("\n/* Created " + new Date() + " by TLA2B */");
 
 		File f;
 		f = new File(path + sourceModuleName + ".mch");
