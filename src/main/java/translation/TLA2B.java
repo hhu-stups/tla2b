@@ -69,7 +69,9 @@ public class TLA2B implements TranslationGlobals {
 			config = new File(name + ".cfg");
 			// use config if it exists
 			if (config.exists()) {
-				configName = name + ".cfg";
+				configName = evalConfigName(configName);
+			}else{
+				configName = null;
 			}
 		}
 
@@ -110,5 +112,17 @@ public class TLA2B implements TranslationGlobals {
 			System.err.println("Error while creating file " + sourceModuleName
 					+ "mch.");
 		}
+	}
+	
+	public static String evalConfigName(String name) {
+		if (name == null)
+			return null;
+		if (!name.toLowerCase().endsWith(".cfg")) {
+			name = name + ".cfg";
+		}
+		String configfile = name
+				.substring(name.lastIndexOf(FileUtil.separator) + 1);
+
+		return configfile;
 	}
 }

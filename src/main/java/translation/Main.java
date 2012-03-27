@@ -38,6 +38,7 @@ public class Main {
 		
 		ModuleContext con;
 		if (configName != null) {
+			System.out.println(configName);
 			ModelConfig configAst = new ModelConfig(configName, null);
 			configAst.parse();
 
@@ -122,18 +123,6 @@ public class Main {
 		if (!path.equals(""))
 			ToolIO.setUserDir(path);
 		return sourceModuleName;
-	}
-
-	public static String evalConfigName(String name) {
-		if (name == null)
-			return null;
-		if (name.toLowerCase().endsWith(".cfg")) {
-			name = name.substring(0, name.length() - 4);
-		}
-		String configfile = name
-				.substring(name.lastIndexOf(FileUtil.separator) + 1);
-
-		return configfile;
 	}
 
 }
