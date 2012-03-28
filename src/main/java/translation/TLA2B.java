@@ -134,7 +134,7 @@ public class TLA2B implements TranslationGlobals {
 			fw = new FileWriter(machineFile);
 			fw.write(res);
 			fw.close();
-			System.out.println("B-Maschine " + sourceModuleName
+			System.out.println("B-Machine " + sourceModuleName
 					+ "_tla.mch created.");
 		} catch (IOException e) {
 			System.err.println("Error while creating file " + sourceModuleName
