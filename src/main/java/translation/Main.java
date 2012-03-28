@@ -38,10 +38,8 @@ public class Main {
 		
 		ModuleContext con;
 		if (configName != null) {
-			System.out.println(configName);
 			ModelConfig configAst = new ModelConfig(configName, null);
 			configAst.parse();
-
 			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
 					moduleNode);
 			configTC.start();

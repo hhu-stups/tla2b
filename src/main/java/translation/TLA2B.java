@@ -33,7 +33,7 @@ public class TLA2B implements TranslationGlobals {
 					if (args[i].toLowerCase().endsWith(".cfg")) {
 						configName = args[i].substring(0, args[i].length() - 4);
 					} else {
-						configName = args[i];
+						configName = args[i]+ ".cfg";
 					}
 				} else {
 					System.err
@@ -72,7 +72,7 @@ public class TLA2B implements TranslationGlobals {
 			config = new File(name + ".cfg");
 			// use config if it exists
 			if (config.exists()) {
-				configName = evalConfigName(configName);
+				configName = evalConfigName(name + ".cfg");
 			} else {
 				configName = null;
 			}
@@ -135,7 +135,7 @@ public class TLA2B implements TranslationGlobals {
 			fw.write(res);
 			fw.close();
 			System.out.println("B-Maschine " + sourceModuleName
-					+ ".mch created.");
+					+ "_tla.mch created.");
 		} catch (IOException e) {
 			System.err.println("Error while creating file " + sourceModuleName
 					+ "mch.");
