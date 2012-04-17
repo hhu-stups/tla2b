@@ -8,21 +8,21 @@ project.group = 'de.prob'
 
 repositories {
 	mavenCentral()
-   	mavenRepo name: 'cobra_ext', urls: "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
+   	mavenRepo name: 'cobra_ext', url: "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
 }
 
 dependencies {
     compile (group: 'de.stups', name: 'tla', version: '1.0.7-SNAPSHOT')
-	testCompile (group: 'de.prob', name: 'prologlib', version: '2.0.158')
- 	testCompile (group: 'de.prob', name: 'parserbase', version: '2.0.158')
-  	testCompile (group: 'de.prob', name: 'bparser', version: '2.0.158')
+	testCompile (group: 'de.prob', name: 'prologlib', version: '2.4.2-SNAPSHOT')
+ 	testCompile (group: 'de.prob', name: 'parserbase', version: '2.4.2-SNAPSHOT')
+  	testCompile (group: 'de.prob', name: 'bparser', version: '2.4.2-SNAPSHOT')
 	testCompile (group: 'junit', name: 'junit', version: '4.+')
 }
 
 task pack(type: Jar, dependsOn: [jar]) {
 	baseName = 'TLA2B'
-	deps = configurations.runtime + configurations.archives.allArtifactFiles
-	depClasses = {
+	deps = configurations.runtime + configurations.archives.allArtifacts.getFiles()
+		depClasses = {
 		deps.collect {
 			it.isDirectory() ? it : zipTree(it)
 		}
