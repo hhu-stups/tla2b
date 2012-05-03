@@ -23,14 +23,15 @@ public class TestDefinitions {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "Next(a,b) ==  a = 1 /\\ b = TRUE  \n"
+				+ "foo(a,b) ==  a = 1 /\\ b = TRUE \n"
+				+ "Next ==  foo(1,TRUE)  \n"
 				+ "=================================";
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		assertEquals("BOOL", t.definitions.get("Next").getType().toString());
-		assertEquals("INTEGER", t.definitions.get("Next").parameters.get("a").toString());
-		assertEquals("BOOL", t.definitions.get("Next").parameters.get("b").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
+		assertEquals("INTEGER", t.definitions.get("foo").getParams().get("a").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getParams().get("b").toString());
 		
 	}
 	
@@ -48,8 +49,8 @@ public class TestDefinitions {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
-		assertEquals("INTEGER", t.definitions.get("foo").parameters.get("a").toString());
-		assertEquals("BOOL", t.definitions.get("foo").parameters.get("b").toString());
+		assertEquals("INTEGER", t.definitions.get("foo").getParams().get("a").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getParams().get("b").toString());
 		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
 		
 	}
@@ -207,8 +208,8 @@ public class TestDefinitions {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
-		assertEquals("UNTYPED", t.definitions.get("foo").parameters.get("a").toString());
-		assertEquals("UNTYPED", t.definitions.get("foo").parameters.get("b").toString());
+		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("a").toString());
+		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("b").toString());
 		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
 		
 		assertEquals("INTEGER", t.constants.get("k").toString());
@@ -229,11 +230,11 @@ public class TestDefinitions {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getType().toString());
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").parameters.get("a").toString());
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").parameters.get("b").toString());
+		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getParams().get("a").toString());
+		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getParams().get("b").toString());
 		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
-		assertEquals("POW(INTEGER)", t.definitions.get("bar").parameters.get("x").toString());
-		assertEquals("POW(INTEGER)", t.definitions.get("bar").parameters.get("y").toString());
+		assertEquals("POW(INTEGER)", t.definitions.get("bar").getParams().get("x").toString());
+		assertEquals("POW(INTEGER)", t.definitions.get("bar").getParams().get("y").toString());
 		assertEquals("POW(INTEGER)", t.constants.get("k").toString());
 	}
 	
@@ -252,6 +253,47 @@ public class TestDefinitions {
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		System.out.println(t.definitions.get("foo").parameters.get("a"));
+		assertEquals("INTEGER", t.constants.get("k").toString());
+		assertEquals("INTEGER", t.constants.get("k2").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
+		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
+		assertEquals("BOOL", t.definitions.get("baz").getType().toString());
+		assertEquals("INTEGER", t.definitions.get("foo").getParams().get("a").toString());
+		
+	}
+	
+	
+	@Test  
+	public void testDefinitionCall9() throws FrontEndException, MyException {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k, k2 \n"
+				+ "foo(a,b) ==  a = b \n"
+				+ "ASSUME foo(k, 1) /\\ foo(k2, TRUE) \n"
+				+ "=================================";
+	
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("INTEGER", t.constants.get("k").toString());
+		assertEquals("BOOL", t.constants.get("k2").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
+		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("a").toString());
+	}
+	
+	@Test  
+	public void testDefinitionCall10() throws FrontEndException, MyException {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "foo(a,b) ==  a= 1 /\\ b = TRUE \n"
+				+ "ASSUME foo(1, TRUE) \n"
+				+ "=================================";
+	
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
+		assertEquals("INTEGER", t.definitions.get("foo").getParams().get("a").toString());
+		assertEquals("BOOL", t.definitions.get("foo").getParams().get("b").toString());
 	}
 }

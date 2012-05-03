@@ -1,60 +1,91 @@
 package translation;
 
+import analysis.InstanceTransformation;
+import analysis.NewTypeChecker;
+import analysis.SpecAnalyser;
+import analysis.SymbolRenamer;
+import analysis.SymbolSorter;
+import config.ConfigfileEvaluator;
+import config.ModuleOverrider;
+import pprint.BMachinePrinter;
 import exceptions.MyException;
+import global.TranslationGlobals;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ModuleNode;
 import tlc2.tool.ModelConfig;
 import util.FileUtil;
 import util.ToolIO;
 
-public class Main {
+public class Main implements TranslationGlobals {
 
 	public static void main(String[] args) throws exceptions.FrontEndException,
-			MyException {
-		char fileseparator = FileUtil.separatorChar;
-		String path = "C:\\Users\\Dominik\\Desktop\\svn TLA Beispiele\\TLA_Distribution\\allocator";
-		path = path.replace('/', fileseparator);
+			MyException, AbortException {
 		ToolIO.setMode(ToolIO.TOOL);
-		ToolIO.setUserDir(path);
 		ToolIO.reset();
-
-		StringBuilder sb = Main.start("McSchedulingAllocator", "McSchedulingAllocator", false);
+		String module = "----MODULE testing ----\n" 
+				+ "ANY == 1 \n" 
+				+ "ASSUME ANY = 1" 
+				+ "=======";
+		final String config = "CONSTANTS k = 3";
+		StringBuilder sb = Main.start(module, null, true);
 
 		System.out.println(sb);
 	}
 
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
-			MyException {
-
+			MyException, AbortException {
+		StringBuilder out = new StringBuilder();
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = evalFileName(fileName);
-		//String config = evalConfigName(configName);
-
+		// String config = evalConfigName(configName);
 		ModuleNode moduleNode = parseModule(moduleName);
-		
-		ModuleContext con;
+
+		InstanceTransformation trans = new InstanceTransformation(moduleNode);
+		trans.start();
+
+		SymbolSorter symbolSorter = new SymbolSorter(moduleNode);
+		symbolSorter.sort();
+
+		SpecAnalyser specAnalyser;
+		ConfigfileEvaluator conEval = null;
 		if (configName != null) {
 			ModelConfig configAst = new ModelConfig(configName, null);
 			configAst.parse();
-			ConfigTypeChecker configTC = new ConfigTypeChecker(configAst,
-					moduleNode);
-			configTC.start();
-			con = new ModuleContext(moduleNode, configTC);
-		} else {
-			con = new ModuleContext(moduleNode);
+
+			conEval = new ConfigfileEvaluator(configAst, moduleNode);
+			conEval.start();
+
+			ModuleOverrider modOver = new ModuleOverrider(moduleNode,
+					conEval);
+			modOver.start();
+			specAnalyser = new SpecAnalyser(moduleNode, conEval);
+		}else {
+			specAnalyser = new SpecAnalyser(moduleNode);
 		}
-		//long time = -System.currentTimeMillis();
-		TypeChecker tc = new TypeChecker(moduleNode, con);
+
+		specAnalyser.start();
+
+		NewTypeChecker tc = new NewTypeChecker(moduleNode, conEval,
+				specAnalyser);
 		tc.start();
-		//System.out.println(time + System.currentTimeMillis() + "ms");
-		con.evalIfThenElse();
-		BPrettyPrinter p = new BPrettyPrinter(moduleNode, con);
 		
+		specAnalyser.evalIfThenElse();
+		
+		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode,
+				specAnalyser);
+		symRenamer.start();
+
+		BMachinePrinter p = new BMachinePrinter(moduleNode, conEval,
+				specAnalyser);
+
 		return p.start();
+
+		// ExpressionPrinter eConsole = new ExpressionPrinter(moduleNode);
 	}
 
 	public static ModuleNode parseModule(String moduleName)
@@ -88,11 +119,10 @@ public class Main {
 		}
 
 		if (n == null) { // Parse Error
-			System.out.println("Rootmodule null");
+			// System.out.println("Rootmodule null");
 			throw new exceptions.FrontEndException(
 					allMessagesToString(ToolIO.getAllMessages()), spec);
 		}
-
 		return n;
 	}
 

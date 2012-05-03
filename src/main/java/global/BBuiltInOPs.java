@@ -1,4 +1,5 @@
-package translation;
+package global;
+
 
 import java.util.Hashtable;
 

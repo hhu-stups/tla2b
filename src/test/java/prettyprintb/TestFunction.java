@@ -83,6 +83,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k,k2,k3\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) & k2 : INTEGER & k3 : INTEGER \n"

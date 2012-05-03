@@ -1,4 +1,4 @@
-package translation;
+package global;
 
 import util.UniqueString;
 

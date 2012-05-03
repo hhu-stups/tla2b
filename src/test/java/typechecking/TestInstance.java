@@ -5,11 +5,7 @@
 package typechecking;
 
 import static org.junit.Assert.assertEquals;
-import static util.TestUtil.getTreeAsString;
-
 import org.junit.Test;
-
-import translation.Main;
 import util.FileUtil;
 import util.ToolIO;
 import util.TypeCheckerTest;
@@ -118,6 +114,21 @@ public class TestInstance {
 		t.start();
 		assertEquals("INTEGER", t.constants.get("c2").toString());
 		assertEquals("INTEGER", t.constants.get("val2").toString());
+	}
+	
+	@Test
+	public void Test2Instances() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k, k2 \n"
+				+ "Inst == INSTANCE Value WITH val <- 1, c <- k \n"
+				+ "Inst2 == INSTANCE Value WITH val <- TRUE, c <- k2 \n"
+				+ "ASSUME Inst!def /\\ Inst2!def"
+				+ "=================================";
+		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
+		t.start();
+		assertEquals("INTEGER", t.constants.get("k").toString());
+		assertEquals("BOOL", t.constants.get("k2").toString());
 	}
 	
 }

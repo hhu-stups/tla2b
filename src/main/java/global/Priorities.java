@@ -1,4 +1,4 @@
-package translation;
+package global;
 
 public interface Priorities {
 	public static final int P_max = 300;

@@ -2,13 +2,15 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package translation;
+package global;
 
 
 import tla2sany.semantic.FrontEnd;
 
 public interface TranslationGlobals {
 	final String VERSION = "1.0.6";
+	
+	final int TLCValueKind = 100;
 	
 	final int USED = FrontEnd.getToolId();
 	final int OVERRIDE_SUBSTITUTION_ID = 17;

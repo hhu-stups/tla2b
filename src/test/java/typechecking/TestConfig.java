@@ -32,26 +32,16 @@ public class TestConfig {
 	public void TestConOverride() throws FrontEndException, MyException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "CONSTANTS k \n"
-				+ "foo == 1"
+				+ "CONSTANTS k, k2 \n"
+				+ "foo == 1\n"
+				+ "ASSUME k2 = k\n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
 		TypeCheckerTest t = new TypeCheckerTest(module, config, true);
 		t.start();
-		assertEquals("INTEGER", t.constants.get("k").toString());
+		assertEquals("INTEGER", t.constants.get("k2").toString());
 	}
 	
-	@Test // TODO DefOverriding
-	public void TestConOverride2() throws FrontEndException, MyException {
-		ToolIO.setMode(ToolIO.TOOL);
-		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "CONSTANTS k \n"
-				+ "foo == 1"
-				+ "=================================";
-		final String config = "CONSTANTS k <- foo";
-		TypeCheckerTest t = new TypeCheckerTest(module, config, true);
-		t.start();
-		assertEquals("INTEGER", t.constants.get("k").toString());
-	}
+	// TODO DefOverriding
 	
 }

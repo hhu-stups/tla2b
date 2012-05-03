@@ -4,6 +4,7 @@
 
 package prettyprintb;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import translation.Main;
@@ -15,10 +16,11 @@ import static util.TestUtil.getTreeAsString;
 
 public class TestRealWorld {
 
-	private static final char fileseparator = FileUtil.separatorChar;
 	private static String path = "src/test/resources/prettyprint/realworld/";
-	static {
-		path = path.replace('/', fileseparator);
+
+	@BeforeClass
+	public static void beforeClass(){
+		path=path.replace('/', FileUtil.separatorChar);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}

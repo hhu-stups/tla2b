@@ -7,13 +7,16 @@ package prettyprintb;
 import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import translation.Main;
 import util.ToolIO;
 
-public class testUsedKeyword {
-	static {
+public class TestUsedKeywords {
+	
+	@BeforeClass
+	public static void beforeClass(){
 		ToolIO.setMode(ToolIO.TOOL);
 	}
 	

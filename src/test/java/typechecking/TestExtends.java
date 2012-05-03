@@ -13,17 +13,16 @@ import util.ToolIO;
 import util.TypeCheckerTest;
 
 public class TestExtends {
-
-	private static final String I = FileUtil.separator;
-	private static String path = "src" + I + "test" + I + "resources" + I
-			+ "typechecking" + I + "modules" + I;
+	private static final char fileseparator = FileUtil.separatorChar;
+	private static String path = "src/test/resources/typechecking/modules/";
 	static {
+		path = path.replace('/', fileseparator);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}
 
 	@Test
-	public void TestNamedInstance() throws Exception {
+	public void TestExtends1() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Counter"

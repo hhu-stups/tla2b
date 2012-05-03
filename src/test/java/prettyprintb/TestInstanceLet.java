@@ -4,6 +4,7 @@
 
 package prettyprintb;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import translation.Main;
@@ -12,17 +13,19 @@ import util.ToolIO;
 
 public class TestInstanceLet {
 
-	private static final char fileseparator = FileUtil.separatorChar;
 	private static String path = "src/test/resources/prettyprint/instance/";
-	static {
-		path=path.replace('/', fileseparator);
+
+	@BeforeClass
+	public static void beforeClass(){
+		path=path.replace('/', FileUtil.separatorChar);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}
-
+	
 	@Test
 	public void testInstance() throws Exception {
 		ToolIO.reset();
+		ToolIO.setUserDir(path);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "VARIABLES c, c2 \n"
 				+ "inst == INSTANCE Let WITH x <- c  \n"

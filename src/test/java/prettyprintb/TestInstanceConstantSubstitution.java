@@ -7,6 +7,7 @@ package prettyprintb;
 import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import exceptions.ConfigFileErrorException;
@@ -17,14 +18,14 @@ import util.ToolIO;
 
 public class TestInstanceConstantSubstitution {
 
-	private static final char fileseparator = FileUtil.separatorChar;
 	private static String path = "src/test/resources/prettyprint/instance/constantSubstitution/";
-	static {
-		path = path.replace('/', fileseparator);
+
+	@BeforeClass
+	public static void beforeClass(){
+		path=path.replace('/', FileUtil.separatorChar);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}
-
 	@Test
 	public void TestExp4Con() throws Exception {
 		ToolIO.reset();

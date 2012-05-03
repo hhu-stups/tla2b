@@ -2,9 +2,9 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package prettyprintb;
+package configfile;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;
 
 import org.junit.Test;
@@ -12,26 +12,27 @@ import org.junit.Test;
 import translation.Main;
 import util.ToolIO;
 
-public class TestChoose {
+public class TestConstantOverride {
+
 	static {
 		ToolIO.setMode(ToolIO.TOOL);
 	}
-
 	
 	@Test
-	public void testChoose() throws Exception {
+	public void testConstantOverridenByDef() throws Exception {
 		ToolIO.reset();
+		
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "ASSUME 1 = CHOOSE x \\in {1,2,3}: TRUE \n"
+				+ "CONSTANTS k \n"
+				+ " foo == 5 \n"
+				+ "ASSUME k = 5"
 				+ "=================================";
-
-		StringBuilder sb = Main.start(module, null, true);
-		System.out.println(sb);
+		final String config = "CONSTANTS k <- foo";
+		StringBuilder sb = Main.start(module, config, true);
 		final String expected = "MACHINE Testing\n"
-				+ "PROPERTIES 1 = CHOOSE({x|x : {1, 2, 3} & TRUE = TRUE}) \n"
-				+ "DEFINITIONS CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T)-->T);"
+				+ "PROPERTIES foo = 5 \n"
+				+ "DEFINITIONS foo == 5 \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-
 }

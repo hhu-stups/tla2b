@@ -5,6 +5,7 @@
 package prettyprintb;
 
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import exceptions.ConfigFileErrorException;
@@ -14,12 +15,11 @@ import util.FileUtil;
 import util.ToolIO;
 
 public class TestConstantWithArgs {
-
-	
-	private static final char fileseparator = FileUtil.separatorChar;
 	private static String path = "src/test/resources/prettyprint/constantWithArgs/";
-	static {
-		path=path.replace('/', fileseparator);
+	
+	@BeforeClass
+	public static void beforeClass(){
+		path=path.replace('/', FileUtil.separatorChar);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}

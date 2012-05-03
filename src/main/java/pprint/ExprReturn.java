@@ -1,7 +1,5 @@
-package translation;
+package pprint;
 
-//return object of a tla-expression
-// contains the type and priority of the operator
 public class ExprReturn {
 	public StringBuilder out= new StringBuilder();
 	private int priority;

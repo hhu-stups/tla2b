@@ -14,6 +14,9 @@ import java.io.Writer;
 import java.util.Date;
 import exceptions.FrontEndException;
 import exceptions.MyException;
+import global.TranslationGlobals;
+import tla2sany.drivers.SANY;
+import tla2sany.semantic.AbortException;
 import util.FileUtil;
 import util.ToolIO;
 
@@ -27,13 +30,22 @@ public class TLA2B implements TranslationGlobals {
 			if (args[i].equals("-version")) {
 				System.out.println("TLA2B version " + VERSION);
 				System.exit(-1);
-			} else if (args[i].equals("-config")) {
+			} else if (args[i].equals("-expr")) {
+				if (i + 1 == args.length) {
+					System.err.println("Error: expected a module file.");
+					System.exit(-1);
+				}
+				evalExpression(args[i + 1]);
+				System.exit(-1);
+			}
+
+			else if (args[i].equals("-config")) {
 				i++;
 				if (i < args.length) {
 					if (args[i].toLowerCase().endsWith(".cfg")) {
 						configName = args[i].substring(0, args[i].length() - 4);
 					} else {
-						configName = args[i]+ ".cfg";
+						configName = args[i] + ".cfg";
 					}
 				} else {
 					System.err
@@ -89,6 +101,9 @@ public class TLA2B implements TranslationGlobals {
 			System.err.print("**** Translation Error ****\n");
 			System.err.println(e.getMessage());
 			System.exit(-1);
+		} catch (AbortException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		s.insert(0, "/*@ generated TLA2B " + VERSION + " " + new Date()
 				+ " */\n");
@@ -142,6 +157,31 @@ public class TLA2B implements TranslationGlobals {
 		}
 	}
 
+	/**
+	 * @throws IOException
+	 * 
+	 */
+	private static void evalExpression(String file) {
+
+		ToolIO.setMode(ToolIO.TOOL);
+		String expr = null;
+		try {
+			expr = fileToString(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			ExpressionParser eP = new ExpressionParser(expr);
+		} catch (MyException e) {
+			System.err.println("------ExpressionError----------------");
+			System.err.println(e.getMessage());
+		} catch (AbortException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 	public static String evalConfigName(String name) {
 		if (name == null)
 			return null;
@@ -152,5 +192,19 @@ public class TLA2B implements TranslationGlobals {
 				.substring(name.lastIndexOf(FileUtil.separator) + 1);
 
 		return configfile;
+	}
+
+	public static String fileToString(String fileName) throws IOException {
+		StringBuilder res = new StringBuilder();
+		BufferedReader in = new BufferedReader(new FileReader(fileName));
+		String str;
+		boolean first = true;
+		while ((str = in.readLine()) != null) {
+			if (!first)
+				res.append("\n");
+			res.append(str);
+		}
+		in.close();
+		return res.toString();
 	}
 }

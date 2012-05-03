@@ -2,7 +2,10 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package translation;
+package analysis;
+
+import global.BBuiltInOPs;
+import global.TranslationGlobals;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,15 +26,13 @@ public class BOperation implements ASTConstants, ToolGlobals, TranslationGlobals
 	private ExprNode node;
 	private ArrayList<OpApplNode> existQuans;
 	private ArrayList<String> opParams;
-	private LinkedHashMap<String, LetDef> localDefintions;
 	private ArrayList<String> unchangedVariables;
 
 	public BOperation(String name, ExprNode n,
-			ArrayList<OpApplNode> existQuans, LinkedHashMap<String, LetDef> lets) {
+			ArrayList<OpApplNode> existQuans) {
 		this.name = name;
 		this.node = n;
 		this.existQuans = existQuans;
-		this.localDefintions = lets;
 		evalParams();
 		findUnchangedVariables();
 	}
@@ -63,10 +64,6 @@ public class BOperation implements ASTConstants, ToolGlobals, TranslationGlobals
 
 	public ArrayList<String> getOpParams() {
 		return opParams;
-	}
-
-	public LinkedHashMap<String, LetDef> getLocalDefintions() {
-		return localDefintions;
 	}
 
 	public ArrayList<String> getUnchangedVariables(){

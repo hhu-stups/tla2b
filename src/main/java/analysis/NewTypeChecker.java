@@ -2,18 +2,27 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package translation;
+package analysis;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
+
+import config.ConfigfileEvaluator;
+import config.TLCValueNode;
+import config.ValueObj;
+
+
+
 
 import exceptions.FrontEndException;
 import exceptions.MyException;
 import exceptions.NotImplementedException;
 import exceptions.TypeErrorException;
 import exceptions.UnificationException;
+import global.BBuildIns;
+import global.BBuiltInOPs;
+import global.TranslationGlobals;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.AtNode;
@@ -24,47 +33,57 @@ import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.StringNode;
-import tla2sany.semantic.Subst;
-import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
 import types.*;
 import util.StandardModules;
-import util.UniqueString;
 
-public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
+public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
 
 	private final int TEMP_TYPE_ID = 6;
 	private int paramId;
 
-	private ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
-	private ModuleNode moduleNode;
-	private ModuleContext moduleContext;
+	private ArrayList<ExprNode> inits;
+	private ExprNode nextExpr;
+	private Set<OpDefNode> usedDefinitions;
 
-	public TypeChecker(ModuleNode n, ModuleContext moduleContext) {
-		this.moduleContext = moduleContext;
-		this.moduleNode = n;
+	private ArrayList<OpApplNode> recList = new ArrayList<OpApplNode>();
+	// every record node [a |-> 1 .. ] will be added to this List
+	private ModuleNode moduleNode;
+	private ArrayList<OpDeclNode> bConstList;
+
+	private Hashtable<OpDeclNode, ValueObj> constantAssignments;
+
+	/**
+	 * @param moduleNode2
+	 * @param conEval
+	 * @param specAnalyser
+	 */
+	public NewTypeChecker(ModuleNode moduleNode, ConfigfileEvaluator conEval,
+			SpecAnalyser specAnalyser) {
+		this.moduleNode = moduleNode;
+		if (conEval != null) {
+			this.bConstList = conEval.getbConstantList();
+			this.constantAssignments = conEval.getConstantAssignments();
+		}
+		this.inits = specAnalyser.getInits();
+		this.nextExpr = specAnalyser.getNext();
+		usedDefinitions = specAnalyser.getUsedDefinitions();
+
 		paramId = TYPE_ID;
 	}
 
 	public void start() throws MyException {
-		visitModule(moduleNode);
-	}
-
-	private void visitModule(ModuleNode n) throws MyException {
-		OpDeclNode[] cons = n.getConstantDecls();
-
+		OpDeclNode[] cons = moduleNode.getConstantDecls();
 		for (int i = 0; i < cons.length; i++) {
 			OpDeclNode con = cons[i];
-			String conName = con.getName().toString();
-			if (moduleContext.conObjs != null
-					&& moduleContext.conObjs.get(conName) != null) {
-				BType t = moduleContext.conObjs.get(conName).getType();
+			if (constantAssignments != null
+					&& constantAssignments.containsKey(con)) {
+				BType t = constantAssignments.get(con).getType();
 				con.setToolObject(TYPE_ID, t);
 			} else {
 				Untyped u = new Untyped();
@@ -73,7 +92,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 		}
 
-		OpDeclNode[] vars = n.getVariableDecls();
+		OpDeclNode[] vars = moduleNode.getVariableDecls();
 		for (int i = 0; i < vars.length; i++) {
 			OpDeclNode var = vars[i];
 			Untyped u = new Untyped();
@@ -81,19 +100,21 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			u.addFollower(var);
 		}
 
-		evalDefinitions(n.getOpDefs());
-		evalAssumptions(n.getAssumptions());
-
-		if (moduleContext.next != null) {
-			visitExprNode(moduleContext.next, BoolType.getInstance());
+		evalDefinitions(moduleNode.getOpDefs());
+		evalAssumptions(moduleNode.getAssumptions());
+		
+		
+		if(inits!= null){
+			for (int i = 0; i < inits.size(); i++) {
+				visitExprNode(inits.get(i), BoolType.getInstance());
+			}
 		}
-		for (int i = 0; i < moduleContext.inits.size(); i++) {
-			visitExprNode(moduleContext.inits.get(i).getNode(),
-					BoolType.getInstance());
+
+		if (nextExpr != null) {
+			visitExprNode(nextExpr, BoolType.getInstance());
 		}
 
-		evalOverrides(n.getConstantDecls());
-
+		// check if a variable has no type
 		for (int i = 0; i < vars.length; i++) {
 			OpDeclNode var = vars[i];
 			BType varType = (BType) var.getToolObject(TYPE_ID);
@@ -103,11 +124,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 		}
 
+		// check if a constant has no type, only constants which will appear in
+		// the resulting B Machine are considered
 		for (int i = 0; i < cons.length; i++) {
 			OpDeclNode con = cons[i];
-			if (moduleContext.getBConstants()
-					.contains(con.getName().toString())) {
-
+			if (bConstList == null || bConstList.contains(con)) {
 				BType conType = (BType) con.getToolObject(TYPE_ID);
 				if (conType.isUntyped()) {
 					throw new TypeErrorException("The type of Constant "
@@ -145,48 +166,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	}
 
-	private void evalOverrides(OpDeclNode[] cons) throws UnificationException,
-			TypeErrorException {
-		if (moduleContext.getOverrides() == null) {
-			return;
-		}
-
-		Hashtable<String, String> overrides = moduleContext.getOverrides();
-		Hashtable<String, OpDeclNode> moduleCons = new Hashtable<String, OpDeclNode>();
-		for (int i = 0; i < cons.length; i++) {
-			moduleCons.put(cons[i].getName().toString(), cons[i]);
-		}
-
-		Iterator<Map.Entry<String, String>> it = overrides.entrySet()
-				.iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, String> entry = it.next();
-			String left = entry.getKey();
-			String right = entry.getValue();
-			BType leftType = new Untyped();
-			OpDefNode rightDef = moduleContext.definitions.get(right);
-			BType rightType = (BType) rightDef.getToolObject(TYPE_ID);
-			if (moduleCons.containsKey(left)) {
-				OpDeclNode leftCon = moduleCons.get(left);
-				leftType = (BType) leftCon.getToolObject(TYPE_ID);
-			} else if (moduleContext.definitions.containsKey(left)) {
-				OpDefNode leftDef = moduleContext.definitions.get(left);
-				leftType = (BType) leftDef.getToolObject(TYPE_ID);
-			}
-			try {
-				leftType.unify(rightType);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(
-						String.format(
-								"Expected %s, found %s at '%s' (overriding symbol %s),\n%s ",
-								leftType, rightType, rightDef.getName()
-										.toString(), left, rightDef
-										.getLocation()));
-			}
-
-		}
-	}
-
 	private void evalDefinitions(OpDefNode[] opDefs) throws MyException {
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
@@ -198,11 +177,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 							.toString())) {
 				continue;
 			}
-			Boolean usedDefintion = (Boolean) def
-					.getToolObject(PRINT_DEFINITION);
-			if (usedDefintion != null) {
+			if (usedDefinitions.contains(def))
 				visitOpDefNode(def);
-			}
 
 		}
 
@@ -213,15 +189,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @throws MyException
 	 */
 	private void visitOpDefNode(OpDefNode def) throws MyException {
-		ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
-				CONSTANT_OBJECT);
-		if (conObj != null) {
-			def.setToolObject(TYPE_ID, conObj.getType());
-			if (conObj.getType() instanceof AbstractHasFollowers) {
-				((AbstractHasFollowers) conObj.getType()).addFollower(def);
-			}
-			return;
-		}
 		FormalParamNode[] params = def.getParams();
 		for (int i = 0; i < params.length; i++) {
 			FormalParamNode p = params[i];
@@ -268,8 +235,22 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			throws MyException {
 
 		switch (exprNode.getKind()) {
+		case TLCValueKind: {
+			TLCValueNode valueNode = (TLCValueNode) exprNode;
+			try {
+				return valueNode.getType().unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(
+						String.format(
+								"Expected %s, found %s at '%s'(assigned in the configuration file),\n%s ",
+								expected, valueNode.getType(),
+								valueNode.getValue(), exprNode.getLocation()));
+			}
+
+		}
+
 		case OpApplKind:
-			return visitOpApplNode((OpApplNode) exprNode, null, expected);
+			return visitOpApplNode((OpApplNode) exprNode, expected);
 
 		case NumeralKind:
 			try {
@@ -333,39 +314,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		case SubstInKind: {
-			SubstInNode substNode = (SubstInNode) exprNode;
-			Subst[] subs = substNode.getSubsts();
-			for (int i = 0; i < subs.length; i++) {
-				Subst sub = subs[i];
-				OpDeclNode op = sub.getOp();
-				ExprOrOpArgNode expr = sub.getExpr();
-				if (op.getLevel() == 1) {
-					try {
-						OpApplNode o = (OpApplNode) expr;
-						@SuppressWarnings("unused")
-						OpDeclNode var = (OpDeclNode) o.getOperator();
-					} catch (ClassCastException e) {
-						throw new TypeErrorException(String.format(
-								"Expected variable.\n%s ", expr.getLocation()));
-					}
-				}
-				BType exprType;
-				if (expr instanceof OpArgNode) {
-					OpArgNode opArgNode = (OpArgNode) expr;
-					exprType = (BType) opArgNode.getOp().getToolObject(TYPE_ID);
-					if (exprType == null)
-						exprType = new Untyped();
-				} else {
-					exprType = visitExprOrOpArgNode(expr, new Untyped());
-				}
-				op.setToolObject(TYPE_ID, exprType);
-				if (exprType instanceof AbstractHasFollowers) {
-					((AbstractHasFollowers) exprType).addFollower(op);
-				}
-			}
-
-			return visitExprNode(substNode.getBody(), expected);// visitExprNode(substNode.getBody(),
-			// expected);
+			throw new RuntimeException(
+					"SubstInKind should never occur after InstanceTransformation");
 		}
 
 		}
@@ -380,31 +330,17 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @return {@link BType}
 	 * @throws MyException
 	 */
-	private BType visitOpApplNode(OpApplNode n, SymbolNode newSymbol,
-			BType expected) throws MyException {
-		int kind = newSymbol == null ? n.getOperator().getKind() : newSymbol
-				.getKind();
+	private BType visitOpApplNode(OpApplNode n, BType expected)
+			throws MyException {
 
-		switch (kind) {
+		switch (n.getOperator().getKind()) {
 		case ConstantDeclKind: {
-			OpDeclNode con = (OpDeclNode) (newSymbol == null ? n.getOperator()
-					: newSymbol);
-			
-			BType c;
-			String overrideName = (String) con
-					.getToolObject(OVERRIDE_SUBSTITUTION_ID);
-			if (overrideName != null) {
-				// constant overriding in configfile
-				OpDefNode def = moduleContext.definitions.get(overrideName);
-				
-				c = visitOpApplNode(n, def, expected);
-			}else{
-				c = (BType) con.getToolObject(TYPE_ID);
-				if (c == null) {
-					throw new RuntimeException(con.getName() + " has no type yet!");
-				}
+			OpDeclNode con = (OpDeclNode) n.getOperator();
+
+			BType c = (BType) con.getToolObject(TYPE_ID);
+			if (c == null) {
+				throw new RuntimeException(con.getName() + " has no type yet!");
 			}
-			
 			try {
 				BType result = expected.unify(c);
 				con.setToolObject(TYPE_ID, result);
@@ -437,7 +373,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		case BuiltInKind: {
-			return evalBuiltInKind(n, newSymbol, expected);
+			return evalBuiltInKind(n, expected);
 		}
 
 		case FormalParamKind: {
@@ -459,21 +395,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		}
 
 		case UserDefinedOpKind: {
-			OpDefNode def;
-			if (newSymbol != null)
-				def = (OpDefNode) newSymbol;
-			else {
-				if (n.getOperator().getToolObject(DEF_OBJECT) != null) {
-					def = (OpDefNode) n.getOperator().getToolObject(DEF_OBJECT);
-				} else {
-					def = (OpDefNode) n.getOperator();
-				}
-
-			}
+			OpDefNode def = (OpDefNode) n.getOperator();
 
 			// Definition is a BBuilt-in definition
 			if (BBuiltInOPs.contains(def.getName())) {
-				return evalBBuiltIns(n, def, expected);
+				return evalBBuiltIns(n, expected);
 			}
 
 			BType found = ((BType) def.getToolObject(TYPE_ID));
@@ -488,31 +414,32 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						"Expected %s, found %s at definition '%s',\n%s",
 						expected, found, def.getName(), n.getLocation()));
 			}
-
+			boolean untyped = false;
 			FormalParamNode[] params = def.getParams();
 			for (int i = 0; i < n.getArgs().length; i++) {
 				// clone the parameter type, because the parameter type is not
-				// set/changed at
-				// a definition call
+				// set/changed at a definition call
 				FormalParamNode p = params[i];
 				BType pType = ((BType) p.getToolObject(TYPE_ID));
 				if (pType == null) {
-					pType = new Untyped();
-					// throw new RuntimeException("Parameter " + p.getName()
-					// + " has no type yet!\n" + p.getLocation());
+					throw new RuntimeException("Parameter " + p.getName()
+							+ " has no type yet!\n" + p.getLocation());
 				}
-
 				pType = pType.cloneBType();
-				pType = visitExprOrOpArgNode(n.getArgs()[i], pType);
+				if (pType.isUntyped())
+					untyped = true;
+
+				pType = visitExprOrOpArgNode(n.getArgs()[i], pType); // unify
+																		// both
+																		// types
 				// set types of the arguments of the definition call to the
-				// parameters (position paramID+1) for reevaluation the def body
+				// parameters for reevaluation the def body
 				p.setToolObject(TEMP_TYPE_ID, pType);
 			}
 
-			if (def.getToolObject(CONSTANT_OBJECT) == null) {
+			if (found.isUntyped() || untyped) {
 				// evaluate the body of the definition again
 				paramId = TEMP_TYPE_ID;
-				// if (found.isUntyped())
 				found = visitExprNode(def.getBody(), found);
 				paramId = TYPE_ID;
 			}
@@ -537,11 +464,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @return {@link BType}
 	 * @throws MyException
 	 */
-	private BType evalBuiltInKind(OpApplNode n, SymbolNode newSymbol,
-			BType expected) throws MyException {
-		UniqueString opName = newSymbol == null ? n.getOperator().getName()
-				: newSymbol.getName();
-		switch (getOpCode(opName)) {
+	private BType evalBuiltInKind(OpApplNode n, BType expected)
+			throws MyException {
+
+		switch (getOpCode(n.getOperator().getName())) {
 
 		/**********************************************************************
 		 * equality and disequality: =, #, /=
@@ -1211,19 +1137,17 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		 * no TLA+ Built-ins
 		 ***********************************************************************/
 		case 0: {
-			return evalBBuiltIns(n, newSymbol, expected);
+			return evalBBuiltIns(n, expected);
 		}
 		}
 
 		throw new NotImplementedException("Not supported Operator: "
-				+ opName.toString() + "\n" + n.getLocation());
+				+ n.getOperator().getName().toString() + "\n" + n.getLocation());
 	}
 
-	private BType evalBBuiltIns(OpApplNode n, SymbolNode newSymbol,
-			BType expected) throws MyException {
-		UniqueString opName = newSymbol == null ? n.getOperator().getName()
-				: newSymbol.getName();
-		switch (BBuiltInOPs.getOpcode(opName)) {
+	private BType evalBBuiltIns(OpApplNode n, BType expected)
+			throws MyException {
+		switch (BBuiltInOPs.getOpcode(n.getOperator().getName())) {
 		// B Builtins
 
 		/**********************************************************************
@@ -1547,7 +1471,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 
 		default: {
-			throw new NotImplementedException(opName.toString());
+			throw new NotImplementedException(n.getOperator().getName()
+					.toString());
 		}
 		}
 	}

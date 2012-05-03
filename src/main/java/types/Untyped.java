@@ -20,6 +20,7 @@ public class Untyped extends AbstractHasFollowers {
 	
 	@Override
 	public boolean compare(BType o){
+		o.getKind();
 		return true;
 	}
 

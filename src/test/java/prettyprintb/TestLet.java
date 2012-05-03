@@ -28,6 +28,7 @@ public class TestLet {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		getTreeAsString(sb.toString());
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES  k : INTEGER & foo(1) \n"
@@ -44,6 +45,7 @@ public class TestLet {
 				+ "ASSUME bar(5) \n" + "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		getTreeAsString(sb.toString());
 		final String expected = "MACHINE Testing\n" + "PROPERTIES bar(5) \n"
 				+ "DEFINITIONS  foo(a, x) == x = a; bar(x) == foo(1, x) \n"
@@ -82,17 +84,17 @@ public class TestLet {
 				+ "VARIABLES x\n"
 				+ "Init == x = 1\n"
 				+ "bar == x = 1 /\\ LET val == 1 IN x' = val + val\n"
-				+ "bazz == x = 2 /\\ LET val == 1 IN x' = val * val\n"
+				+ "bazz == x = 2 /\\ LET val2 == 1 IN x' = val2 * val2\n"
 				+ "Next == bar \\/ bazz \n"
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
 		getTreeAsString(sb.toString());
 		final String expected = "MACHINE Testing\n"
-				+ "DEFINITIONS val == 1; val1 == 1 \n"
+				+ "DEFINITIONS val == 1; val2 == 1 \n"
 				+ "VARIABLES x INVARIANT x : INTEGER INITIALISATION x:(x = 1)\n"
 				+ "OPERATIONS bar_Op = ANY x_n WHERE x_n : INTEGER & x = 1 & x_n = val + val THEN x := x_n END; \n"
-				+ "bazz_Op = ANY x_n WHERE x_n : INTEGER & x = 2 & x_n = val1 * val1 THEN x := x_n END\n"
+				+ "bazz_Op = ANY x_n WHERE x_n : INTEGER & x = 2 & x_n = val2 * val2 THEN x := x_n END\n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

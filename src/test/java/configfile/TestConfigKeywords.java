@@ -12,21 +12,16 @@ import org.junit.Test;
 import exceptions.ConfigFileErrorException;
 
 import translation.Main;
-import util.FileUtil;
 import util.ToolIO;
 
 public class TestConfigKeywords {
 
-	private static final String I = FileUtil.separator;
-	private static String path = "src" + I + "test" + I + "resources" + I
-			+ "configfile" + I;
 	static {
 		ToolIO.setMode(ToolIO.TOOL);
 	}
 
 	@Test
 	public void TestConfig() throws Exception {
-		ToolIO.setUserDir(path);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -37,6 +32,7 @@ public class TestConfigKeywords {
 				+ "=================================";
 		final String config = "INIT Init NEXT Next INVARIANT Inv";
 		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
 		String expected = "MACHINE Testing\n"
 				+ "DEFINITIONS Inv == c : NATURAL \n" + "VARIABLES c \n"
 				+ "INVARIANT c: INTEGER & Inv \n" + "INITIALISATION c:(c=1) \n"

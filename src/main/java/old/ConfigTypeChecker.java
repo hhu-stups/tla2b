@@ -1,4 +1,4 @@
-package translation;
+package old;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -9,6 +9,7 @@ import java.util.Map;
 
 import exceptions.ConfigFileErrorException;
 import exceptions.UnificationException;
+import global.TranslationGlobals;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Context.InitialSymbolEnumeration;
 import tla2sany.semantic.InstanceNode;
@@ -20,6 +21,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ModelConfig;
 import tlc2.util.Vect;
+import tlc2.value.IntValue;
 import tlc2.value.ModelValue;
 import tlc2.value.SetEnumValue;
 import types.AbstractHasFollowers;
@@ -81,9 +83,8 @@ public class ConfigTypeChecker extends BuiltInOPs implements IType,
 		conObjs = new Hashtable<String, ConstantObj>();
 
 		// constant assignments
-		evalConstantAssignments();
+		evalConstantOrOperatorAssignments();
 
-		// constant overrides
 		evalConstantOrDefOverrides();
 
 		evalModConstantsAssignments();
@@ -253,7 +254,7 @@ public class ConfigTypeChecker extends BuiltInOPs implements IType,
 				"Module does not contain the symbol: " + defOrConName);
 	}
 
-	private void evalConstantAssignments() throws ConfigFileErrorException {
+	private void evalConstantOrOperatorAssignments() throws ConfigFileErrorException {
 		Vect configCons = configAst.getConstants();
 		// iterate over all constant declaration in the config file
 		for (int i = 0; i < configCons.size(); i++) {
@@ -276,7 +277,6 @@ public class ConfigTypeChecker extends BuiltInOPs implements IType,
 				 **/
 				if (symbolName.equals(symbolValue.toString())) {
 					bConstants.remove(symbolName);
-					conObjs.put(symbolName, conObj);
 				}
 			} else if (definitions.containsKey(symbolName)) {
 				OpDefNode def = definitions.get(symbolName);
@@ -355,7 +355,8 @@ public class ConfigTypeChecker extends BuiltInOPs implements IType,
 	}
 
 	private BType conGetType(Object o) throws ConfigFileErrorException {
-		if (o.getClass().getName().equals("tlc2.value.IntValue")) {
+		if (o instanceof IntValue) {
+				
 			// IntValue iv = (IntValue) o;
 			return IntType.getInstance();
 		} else if (o.getClass().getName().equals("tlc2.value.SetEnumValue")) {

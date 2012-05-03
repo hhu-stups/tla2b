@@ -1,10 +1,10 @@
+package configfile;
 /**
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package prettyprintb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;
 
 import org.junit.Test;
@@ -12,26 +12,27 @@ import org.junit.Test;
 import translation.Main;
 import util.ToolIO;
 
-public class TestChoose {
+public class TestConstantAssignment {
+
 	static {
 		ToolIO.setMode(ToolIO.TOOL);
 	}
 
 	
 	@Test
-	public void testChoose() throws Exception {
+	public void testValueAssignedToConstant() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "ASSUME 1 = CHOOSE x \\in {1,2,3}: TRUE \n"
+				+ "CONSTANTS k \n"
 				+ "=================================";
-
-		StringBuilder sb = Main.start(module, null, true);
+		final String config = "CONSTANTS k = 1";
+		StringBuilder sb = Main.start(module, config, true);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
-				+ "PROPERTIES 1 = CHOOSE({x|x : {1, 2, 3} & TRUE = TRUE}) \n"
-				+ "DEFINITIONS CHOOSE(X) == \"a member of X\"; EXTERNAL_FUNCTION_CHOOSE(T) == (POW(T)-->T);"
+				+ "ABSTRACT_CONSTANTS k \n"
+				+ "PROPERTIES k = 1 \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-
+	
 }

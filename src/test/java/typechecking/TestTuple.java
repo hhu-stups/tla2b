@@ -30,7 +30,6 @@ public class TestTuple {
 	}
 	
 	
-	
 	@Test  
 	public void testUnifyTuple2() throws FrontEndException, MyException {
 		ToolIO.setMode(ToolIO.TOOL);

@@ -7,6 +7,7 @@ package prettyprintb;
 import static org.junit.Assert.assertEquals;
 import static util.TestUtil.*;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import translation.Main;
@@ -15,13 +16,15 @@ import util.ToolIO;
 
 public class TestInstance {
 
-	private static final char fileseparator = FileUtil.separatorChar;
 	private static String path = "src/test/resources/prettyprint/instance/";
-	static {
-		path=path.replace('/', fileseparator);
+
+	@BeforeClass
+	public static void beforeClass(){
+		path=path.replace('/', FileUtil.separatorChar);
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.setUserDir(path);
 	}
+	
 	/**********************************************************************
 	 * Instance
 	 **********************************************************************/
@@ -38,6 +41,7 @@ public class TestInstance {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		String expected = fileToString(path+"OneInstanced.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -72,6 +76,7 @@ public class TestInstance {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		String expected = fileToString(path+"InstanceNoName.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -117,6 +122,7 @@ public class TestInstance {
 				+ "CONSTANTS val = [Counter] 7";
 		
 		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
 		String expected = fileToString(path+"ModConstantAssignment.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

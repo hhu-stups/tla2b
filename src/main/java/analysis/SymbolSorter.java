@@ -2,7 +2,7 @@
  * @author Dominik Hansen <Dominik.Hansen at hhu.de>
  **/
 
-package translation;
+package analysis;
 
 import java.util.Arrays;
 import java.util.Comparator;
