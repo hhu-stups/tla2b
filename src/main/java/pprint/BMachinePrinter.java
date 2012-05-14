@@ -14,6 +14,7 @@ import java.util.Set;
 import old.ConstantObj;
 
 import analysis.BOperation;
+import analysis.RecursiveFunktion;
 import analysis.SpecAnalyser;
 
 import config.ConfigfileEvaluator;
@@ -47,6 +48,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 	// set of OpDefNodes which are called in the specification
 	private Hashtable<OpDefNode, FormalParamNode[]> letParams;
 
+	private ArrayList<RecursiveFunktion> recursiveFunktions;
 	private ArrayList<LetInNode> tempLetInNodes = new ArrayList<LetInNode>();
 
 	/**
@@ -77,6 +79,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		this.definitionMacro = specAnalyser.getDefinitionMacros();
 		this.bDefinitions = specAnalyser.getBDefinitions();
 		this.letParams = specAnalyser.getLetParams();
+		this.recursiveFunktions = specAnalyser.getRecursiveFunctions();
 	}
 
 	public StringBuilder start() {
@@ -309,7 +312,6 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 
 	private StringBuilder evalDefinition() {
 		StringBuilder out = new StringBuilder();
-
 		ArrayList<OpDefNode> bDefs = new ArrayList<OpDefNode>();
 		for (int i = 0; i < module.getOpDefs().length; i++) {
 			OpDefNode def = module.getOpDefs()[i];
@@ -429,13 +431,18 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 
 	private StringBuilder evalConsDecl() {
 		StringBuilder out = new StringBuilder();
-		if (bConstants.size() == 0)
+		if (bConstants.size()+recursiveFunktions.size() == 0)
 			return out;
 		out.append("ABSTRACT_CONSTANTS ");
 		// out.append("CONSTANTS ");
 		for (int i = 0; i < bConstants.size(); i++) {
 			out.append(getPrintName(bConstants.get(i)));
-			if (i < bConstants.size() - 1)
+			if (i < bConstants.size() - 1|| recursiveFunktions.size()>0)
+				out.append(", ");
+		}
+		for (int i = 0; i < recursiveFunktions.size(); i++) {
+			out.append(getPrintName(recursiveFunktions.get(i).getOpDefNode()));
+			if (i < recursiveFunktions.size()-1)
 				out.append(", ");
 		}
 		out.append("\n");
@@ -507,6 +514,60 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		}
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
+		
+		if(recursiveFunktions.size() == 0)
+			return out;
+		if(bConstants.size()+assumes.length>0){
+			out.append(" & ");
+		}
+		for (int i = 0; i < recursiveFunktions.size(); i++) {
+			if (i != 0) {
+				out.append(" & ");
+			}
+			out.append(visitRecursiveFunction(recursiveFunktions.get(i)));
+			out.append("\n");
+		}
+		
+		return out;
+	}
+
+	/**
+	 * @param recursiveFunktion
+	 * @return
+	 */
+	private StringBuilder visitRecursiveFunction(RecursiveFunktion rf) {
+		StringBuilder out = new StringBuilder();
+		OpApplNode o = rf.getRF();
+		OpApplNode ifThenElse = rf.getIfThenElse();
+		out.append(getPrintName(rf.getOpDefNode()));
+		out.append(" = ");
+		
+		DContext d = new DContext();
+		
+		FormalParamNode[][] vars = o.getBdedQuantSymbolLists();
+		StringBuilder pre = new StringBuilder();
+		for (int i = 0; i < vars.length; i++) {
+			for (int j = 0; j < vars[i].length; j++) {
+				pre.append(vars[i][j].getName());
+				if (j < vars[i].length - 1) {
+					pre.append(",");
+				}
+			}
+			if (i < vars.length - 1) {
+				pre.append(",");
+			}
+		}
+		StringBuilder bound = visitBounded(o, d);
+		
+		ExprReturn iif = visitExprOrOpArgNode(ifThenElse.getArgs()[0], d,
+				PREDICATE);
+		ExprReturn then = visitExprOrOpArgNode(ifThenElse.getArgs()[1], d,
+				VALUE);
+		ExprReturn eelse = visitExprOrOpArgNode(ifThenElse.getArgs()[2], d,
+				VALUE);
+		String res = String.format("%%%s.(%s & %s | %s) \\/ %%%s.(%s & not(%s) | %s)",pre, bound, iif.out,
+				then.out, pre, bound, iif.out, eelse.out);
+		out.append(res);
 		return out;
 	}
 
