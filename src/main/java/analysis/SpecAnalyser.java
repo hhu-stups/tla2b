@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Set;
 
 import config.ConfigfileEvaluator;
@@ -16,6 +17,7 @@ import config.ConfigfileEvaluator;
 
 import exceptions.ConfigFileErrorException;
 import exceptions.FrontEndException;
+import exceptions.NotImplementedException;
 import exceptions.SemanticErrorException;
 import global.BBuiltInOPs;
 import global.TranslationGlobals;
@@ -40,7 +42,7 @@ import tlc2.tool.ToolGlobals;
 import types.BType;
 import types.IType;
 
-public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
+public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobals, IType,
 		TranslationGlobals {
 	private OpDefNode spec;
 	private OpDefNode init;
@@ -63,7 +65,7 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 
 	private ArrayList<OpApplNode> ifThenElseNodes = new ArrayList<OpApplNode>();
 
-	private Set<OpDefNode> bDefinitions = new HashSet<OpDefNode>();
+	private Set<OpDefNode> bDefinitionsSet = new HashSet<OpDefNode>();
 	// set of OpDefNodes which will appear in the resulting B Machine
 	private Set<OpDefNode> usedDefinitions = new HashSet<OpDefNode>();
 	// definitions which are used for the type inference algorithm
@@ -72,6 +74,8 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 	// surrounding operator
 	private ArrayList<String> definitionMacros = new ArrayList<String>();
 
+	private ArrayList<RecursiveFunktion> recursiveFunctions = new ArrayList<RecursiveFunktion>();
+	
 	/**
 	 * @param m
 	 * @param conEval
@@ -95,12 +99,14 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 		this.spec = definitions.get("Spec");
 		this.init = definitions.get("Init");
 		this.next = definitions.get("Next");
+		
+		// TODO are constant in the right order
 		this.bConstants = new ArrayList<OpDeclNode>();
 		this.bConstants.addAll(Arrays.asList(m.getConstantDecls()));
 	}
 
 	public void start() throws SemanticErrorException, FrontEndException,
-			ConfigFileErrorException {
+			ConfigFileErrorException, NotImplementedException {
 		if (spec != null) {
 			evalSpec();
 		} else {
@@ -110,7 +116,7 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 		findOperations();
 
 		findDefinitions();
-		usedDefinitions.addAll(bDefinitions);
+		usedDefinitions.addAll(bDefinitionsSet);
 
 		// test whether there is a init predicate if there is a variable
 		if (moduleNode.getVariableDecls().length > 0 && inits == null) {
@@ -127,7 +133,10 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 								con.getName()));
 			}
 		}
+		
+		evalRecursiveFunctions();
 	}
+
 
 	private void evalInit() {
 		if (init != null) {
@@ -376,7 +385,7 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 		if (invariants != null) {
 			for (int i = 0; i < invariants.size(); i++) {
 				OpDefNode def = invariants.get(i);
-				bDefinitions.add(def);
+				bDefinitionsSet.add(def);
 				visitExprNode(def.getBody(), null);
 			}
 		}
@@ -458,7 +467,7 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 				return;
 			}
 
-			bDefinitions.add(def);
+			bDefinitionsSet.add(def);
 			visitExprNode(def.getBody(), def.getParams());
 
 			for (int i = 0; i < node.getArgs().length; i++) {
@@ -511,13 +520,36 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 			visitExprOrOpArgNode(node.getArgs()[i], parameters);
 		}
 	}
+	
+	/**
+	 * @throws NotImplementedException 
+	 * 
+	 */
+	private void evalRecursiveFunctions() throws NotImplementedException {
+		
+		for (OpDefNode def : bDefinitionsSet) {
+			if (def.getBody() instanceof OpApplNode) {
+				OpApplNode o = (OpApplNode) def.getBody();
+				switch (getOpCode(o.getOperator().getName()))
+				{
+				case OPCODE_rfs:{ // recursive Function
+					bDefinitionsSet.remove(def);
+					ifThenElseNodes.remove(o.getArgs()[0]);
+					RecursiveFunktion rf = new RecursiveFunktion(def, o);
+					recursiveFunctions.add(rf);
+					return;
+				}
+				}
+			}
+		}
+	}
+	
 
 	public void evalIfThenElse() {
 		boolean b = false;
 		for (int i = 0; i < ifThenElseNodes.size() && !b; i++) {
 			OpApplNode node = ifThenElseNodes.get(i);
 			BType t = (BType) node.getToolObject(TYPE_ID);
-			System.out.println(node.toString(3));
 			if (t.getKind() != BOOL)
 				b = true;
 		}
@@ -542,7 +574,7 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 	}
 	
 	public Set<OpDefNode> getBDefinitions() {
-		return bDefinitions;
+		return bDefinitionsSet;
 	}
 
 	public Hashtable<OpDefNode, FormalParamNode[]> getLetParams() {
@@ -555,5 +587,9 @@ public class SpecAnalyser implements ASTConstants, ToolGlobals, IType,
 	
 	public Set<OpDefNode> getUsedDefinitions(){
 		return usedDefinitions;
+	}
+	
+	public ArrayList<RecursiveFunktion> getRecursiveFunctions(){
+		return recursiveFunctions;
 	}
 }
