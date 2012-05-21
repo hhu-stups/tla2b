@@ -6,27 +6,49 @@ package translation;
 
 import java.util.ArrayList;
 
+import pprint.ExpressionPrinter;
+import analysis.NewTypeChecker;
+
 import exceptions.MyException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.AbortException;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import util.ToolIO;
 
-public class ExpressionParser implements SyntaxTreeConstants {
-	private String expr;
+public class ExpressionTranslator implements SyntaxTreeConstants {
+	private String TLAExpression;
 	private ArrayList<String> constants;
 	private ArrayList<String> boundedVariables;
+	private StringBuilder BExpression;
+	
+	public static String translateExpression(String bExpression){
+		ExpressionTranslator et = new ExpressionTranslator(bExpression);
+		try {
+			et.start();
+		} catch (MyException e) {
+			System.err.println("------ExpressionError----------------");
+			System.err.println(e.getMessage());
+			return null;
+		} catch (AbortException e) {
+			e.printStackTrace();
+		}
+		return et.BExpression.toString();
+	}
 
-	public ExpressionParser(String expr) throws exceptions.FrontEndException,
-			MyException, AbortException {
-		this.expr = expr;
-
+	public ExpressionTranslator(String TLAExpression) {
+		this.TLAExpression = TLAExpression;
+		this.constants = new ArrayList<String>();
+		this.boundedVariables = new ArrayList<String>();
+	}
+	
+	public void start() throws MyException, AbortException{
 		String module = "----MODULE Test----\n" + "EXTENDS Naturals\n"
-				+ "def123 == " + expr + "\n====";
+				+ "def123 == " + TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
 
@@ -34,7 +56,7 @@ public class ExpressionParser implements SyntaxTreeConstants {
 		StringBuilder sb = new StringBuilder();
 		sb.append("----MODULE Test----\n");
 		sb.append("EXTENDS Naturals\n");
-		sb.append("def123");
+		sb.append("foo");
 		if (constants.size() > 0) {
 			sb.append("(");
 			for (int i = 0; i < constants.size(); i++) {
@@ -46,12 +68,26 @@ public class ExpressionParser implements SyntaxTreeConstants {
 			sb.append(")");
 		}
 		sb.append(" == ");
-		sb.append(expr);
+		sb.append(TLAExpression);
 		sb.append("\n====================");
-		// System.out.println(sb);
-		StringBuilder res = Main.start(sb.toString(), null, true);
-		System.out.println(res);
+		//System.out.println(sb);
+		BExpression = translate(sb.toString());
 	}
+	
+	
+	private static StringBuilder translate(String expr) throws exceptions.FrontEndException,
+			MyException, AbortException {
+		ModuleNode moduleNode = Main.parseModule(expr);
+
+		NewTypeChecker tc = new NewTypeChecker(moduleNode);
+		tc.start();
+		
+		ExpressionPrinter p = new ExpressionPrinter(moduleNode);
+		p.start();
+		return p.getBExpression();
+
+	}
+	
 
 	/**
 	 * @param module
@@ -81,8 +117,6 @@ public class ExpressionParser implements SyntaxTreeConstants {
 	 * @return
 	 */
 	private void evalConstants(SpecObj spec) {
-		constants = new ArrayList<String>();
-		boundedVariables = new ArrayList<String>();
 		ParseUnit p = (ParseUnit) spec.parseUnitContext.get("Testing");
 		TreeNode n_module = p.getParseTree();
 		TreeNode n_body = n_module.heirs()[2];
@@ -106,7 +140,15 @@ public class ExpressionParser implements SyntaxTreeConstants {
 			if (!constants.contains(con)) {
 				constants.add(con);
 			}
-			return;
+			break;
+		}
+		case N_UnboundQuant:{
+			TreeNode[] children = treeNode.heirs();
+			for (int i = 1; i < children.length-2; i = i +2) {
+				System.out.println(children[i].getImage());
+			}
+			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
+			break;
 		}
 		case N_QuantBound: {
 			TreeNode[] children = treeNode.heirs();
@@ -117,6 +159,7 @@ public class ExpressionParser implements SyntaxTreeConstants {
 				}
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
+			break;
 		}
 		case N_SubsetOf:{ // { x \in S : e }
 			TreeNode[] children = treeNode.heirs();
@@ -126,6 +169,7 @@ public class ExpressionParser implements SyntaxTreeConstants {
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[3]); // S
 			searchVarInSyntaxTree(treeNode.heirs()[5]); // e
+			break;
 		}
 		
 		}

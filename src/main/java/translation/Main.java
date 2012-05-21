@@ -42,7 +42,6 @@ public class Main implements TranslationGlobals {
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = evalFileName(fileName);
-		// String config = evalConfigName(configName);
 		ModuleNode moduleNode = parseModule(moduleName);
 
 		InstanceTransformation trans = new InstanceTransformation(moduleNode);
@@ -85,7 +84,6 @@ public class Main implements TranslationGlobals {
 
 		return p.start();
 
-		// ExpressionPrinter eConsole = new ExpressionPrinter(moduleNode);
 	}
 
 	public static ModuleNode parseModule(String moduleName)

@@ -9,7 +9,6 @@ import global.BBuiltInOPs;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
@@ -18,18 +17,27 @@ import tla2sany.semantic.OpDefNode;
 
 public class ExpressionPrinter extends AbstractExpressionPrinter {
 
+	private ArrayList<OpDefNode> letInNodeList;
+	private Hashtable<FormalParamNode, ExprOrOpArgNode> paramterSubstitution;
+	private ModuleNode moduleNode;
+	private StringBuilder BExpression;
 
-	ArrayList<OpDefNode> letInNodeList;
-	Hashtable<FormalParamNode, ExprOrOpArgNode> paramterSubstitution;
-
-	
 	public ExpressionPrinter(ModuleNode n) {
-		OpDefNode[] defs = n.getOpDefs();
-			ExprReturn e = visitExprNode(defs[defs.length-1].getBody(), new DContext(),
-					VALUEORPREDICATE);
-			System.out.println(e.out);
+		this.moduleNode = n;
+		paramterSubstitution = new Hashtable<FormalParamNode, ExprOrOpArgNode>();
+	}
+	
+	public void start(){
+		OpDefNode[] defs = moduleNode.getOpDefs();
+		ExprReturn e = visitExprNode(defs[defs.length - 1].getBody(),
+				new DContext(), VALUEORPREDICATE);
+		BExpression = e.out;
 	}
 
+	public StringBuilder getBExpression(){
+		return BExpression;
+	}
+	
 	@Override
 	protected ExprReturn visitUserdefinedOp(OpApplNode n, DContext d,
 			int expected) {
@@ -49,13 +57,14 @@ public class ExpressionPrinter extends AbstractExpressionPrinter {
 		}
 		return visitExprNode(def.getBody(), new DContext(), expected);
 	}
-	
+
 	@Override
 	protected ExprReturn visitFormalParamNode(OpApplNode n, DContext d,
 			int expected) {
 		StringBuilder out = new StringBuilder();
-		ExprOrOpArgNode e = paramterSubstitution.get((FormalParamNode)n.getOperator());
-		if(e != null){
+		ExprOrOpArgNode e = paramterSubstitution.get((FormalParamNode) n
+				.getOperator());
+		if (e != null) {
 			return visitExprOrOpArgNode(e, d, expected);
 		}
 		out.append(getPrintName(n.getOperator()));
@@ -65,5 +74,5 @@ public class ExpressionPrinter extends AbstractExpressionPrinter {
 		}
 		return new ExprReturn(out);
 	}
-	
+
 }

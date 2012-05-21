@@ -36,7 +36,7 @@ public class TLA2B implements TranslationGlobals {
 					System.exit(-1);
 				}
 				evalExpression(args[i + 1]);
-				System.exit(-1);
+				return;
 			}
 
 			else if (args[i].equals("-config")) {
@@ -170,13 +170,13 @@ public class TLA2B implements TranslationGlobals {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		ExpressionTranslator et = new ExpressionTranslator(expr);
 		try {
-			ExpressionParser eP = new ExpressionParser(expr);
+			et.start();
 		} catch (MyException e) {
 			System.err.println("------ExpressionError----------------");
 			System.err.println(e.getMessage());
 		} catch (AbortException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

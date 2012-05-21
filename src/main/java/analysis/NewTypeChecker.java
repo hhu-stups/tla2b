@@ -5,6 +5,7 @@
 package analysis;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -73,6 +74,18 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		this.inits = specAnalyser.getInits();
 		this.nextExpr = specAnalyser.getNext();
 		usedDefinitions = specAnalyser.getUsedDefinitions();
+
+		paramId = TYPE_ID;
+	}
+	
+	public NewTypeChecker(ModuleNode moduleNode) {
+		this.moduleNode = moduleNode;
+
+		Set<OpDefNode> usedDefinitions = new HashSet<OpDefNode>();
+		OpDefNode[] defs = moduleNode.getOpDefs();
+		// used the last definition of the module
+		usedDefinitions.add(defs[defs.length-1]);
+		this.usedDefinitions = usedDefinitions;
 
 		paramId = TYPE_ID;
 	}
