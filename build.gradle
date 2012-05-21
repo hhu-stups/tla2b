@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 
-//project.version = '1.0.0'
+project.version = '1.0.0-SNAPSHOT'
 project.group = 'de.prob'
 
 
@@ -37,12 +37,16 @@ task pack(type: Jar, dependsOn: [jar]) {
 	}
 }
 
-task copy(type:Copy, dependsOn: pack) {
-   from('build/libs/') { include 'TLA2B.jar' }
+task copy(dependsOn: pack) << {
+	copy {
+   from('build/libs/') { include 'TLA2B-'+project.version+'.jar' }
    into 'build/tla2b'
+   rename '(TLA2B)-(.+)', '$1.jar'
+}
+copy {
    from('src/main/resources/') { include '**/*' }
    into 'build/tla2b'
-}
+}}
 
 
 task deploy(type: Zip, dependsOn: copy) {
