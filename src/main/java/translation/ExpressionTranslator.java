@@ -24,8 +24,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	private ArrayList<String> constants;
 	private ArrayList<String> boundedVariables;
 	private StringBuilder BExpression;
-	
-	public static String translateExpression(String bExpression) throws TLA2BException{
+
+	public static String translateExpression(String bExpression)
+			throws TLA2BException {
 		ExpressionTranslator et = new ExpressionTranslator(bExpression);
 		et.start();
 		return et.BExpression.toString();
@@ -36,8 +37,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		this.constants = new ArrayList<String>();
 		this.boundedVariables = new ArrayList<String>();
 	}
-	
-	public void start() throws TLA2BException{
+
+	public void start() throws TLA2BException {
 		String module = "----MODULE Test----\n" + "EXTENDS Naturals\n"
 				+ "foo == " + TLAExpression + "\n====";
 
@@ -61,24 +62,22 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		sb.append(" == ");
 		sb.append(TLAExpression);
 		sb.append("\n====================");
-		//System.out.println(sb);
+		// System.out.println(sb);
 		BExpression = translate(sb.toString());
 	}
-	
-	
-	private static StringBuilder translate(String expr) throws exceptions.FrontEndException,
-			TLA2BException {
+
+	private static StringBuilder translate(String expr)
+			throws exceptions.FrontEndException, TLA2BException {
 		ModuleNode moduleNode = Main.parseModule(expr);
 
 		NewTypeChecker tc = new NewTypeChecker(moduleNode);
 		tc.start();
-		
+
 		ExpressionPrinter p = new ExpressionPrinter(moduleNode);
 		p.start();
 		return p.getBExpression();
 
 	}
-	
 
 	/**
 	 * @param module
@@ -86,20 +85,22 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 */
 	private SpecObj parseModuleWithoutSemanticAnalyse(String module)
 			throws exceptions.FrontEndException {
-		//SANY.turnSemanticAnalyseOff();
+		// SANY.turnSemanticAnalyseOff();
 		SpecObj spec = new SpecObj(module, null);
 		try {
 			SANY.frontEndMain(spec, module, ToolIO.out);
 		} catch (FrontEndException e) {
+			throw new exceptions.FrontEndException(e.getLocalizedMessage());
 			// Error in Frontend, should never happens
 		}
 
 		if (spec.parseErrors.isFailure()) {
+			System.out.println("foo--------------------------");
 			throw new exceptions.FrontEndException(
 					Main.allMessagesToString(ToolIO.getAllMessages())
 							+ spec.semanticErrors, spec);
 		}
-		//SANY.turnSemanticAnalyseOn();
+		// SANY.turnSemanticAnalyseOn();
 		return spec;
 	}
 
@@ -133,9 +134,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			}
 			break;
 		}
-		case N_UnboundQuant:{
+		case N_UnboundQuant: {
 			TreeNode[] children = treeNode.heirs();
-			for (int i = 1; i < children.length-2; i = i +2) {
+			for (int i = 1; i < children.length - 2; i = i + 2) {
 				System.out.println(children[i].getImage());
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
@@ -152,7 +153,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
 			break;
 		}
-		case N_SubsetOf:{ // { x \in S : e }
+		case N_SubsetOf: { // { x \in S : e }
 			TreeNode[] children = treeNode.heirs();
 			String boundedVar = children[1].getImage(); // x
 			if (!boundedVariables.contains(boundedVar)) {
@@ -162,7 +163,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			searchVarInSyntaxTree(treeNode.heirs()[5]); // e
 			break;
 		}
-		
+
 		}
 
 		for (int i = 0; i < treeNode.heirs().length; i++) {
