@@ -8,7 +8,7 @@ import analysis.SymbolSorter;
 import config.ConfigfileEvaluator;
 import config.ModuleOverrider;
 import pprint.BMachinePrinter;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import global.TranslationGlobals;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -22,7 +22,7 @@ import util.ToolIO;
 public class Main implements TranslationGlobals {
 
 	public static void main(String[] args) throws exceptions.FrontEndException,
-			MyException, AbortException {
+			TLA2BException, AbortException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		String module = "----MODULE testing ----\n" 
@@ -37,7 +37,7 @@ public class Main implements TranslationGlobals {
 
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
-			MyException, AbortException {
+			TLA2BException, AbortException {
 		StringBuilder out = new StringBuilder();
 		String moduleName = fileName;
 		if (!moduleAsString)

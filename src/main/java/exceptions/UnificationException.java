@@ -4,7 +4,7 @@
 
 package exceptions;
 @SuppressWarnings("serial")
-public class UnificationException extends MyException{
+public class UnificationException extends TLA2BException{
 
 	public UnificationException() {
 		super(null);

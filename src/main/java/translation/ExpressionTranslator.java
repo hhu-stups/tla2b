@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import pprint.ExpressionPrinter;
 import analysis.NewTypeChecker;
 
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
@@ -26,17 +25,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	private ArrayList<String> boundedVariables;
 	private StringBuilder BExpression;
 	
-	public static String translateExpression(String bExpression){
+	public static String translateExpression(String bExpression) throws TLA2BException{
 		ExpressionTranslator et = new ExpressionTranslator(bExpression);
-		try {
-			et.start();
-		} catch (MyException e) {
-			System.err.println("------ExpressionError----------------");
-			System.err.println(e.getMessage());
-			return null;
-		} catch (AbortException e) {
-			e.printStackTrace();
-		}
+		et.start();
 		return et.BExpression.toString();
 	}
 
@@ -46,9 +37,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		this.boundedVariables = new ArrayList<String>();
 	}
 	
-	public void start() throws MyException, AbortException{
+	public void start() throws TLA2BException{
 		String module = "----MODULE Test----\n" + "EXTENDS Naturals\n"
-				+ "def123 == " + TLAExpression + "\n====";
+				+ "foo == " + TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
 
@@ -76,7 +67,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	
 	
 	private static StringBuilder translate(String expr) throws exceptions.FrontEndException,
-			MyException, AbortException {
+			TLA2BException {
 		ModuleNode moduleNode = Main.parseModule(expr);
 
 		NewTypeChecker tc = new NewTypeChecker(moduleNode);

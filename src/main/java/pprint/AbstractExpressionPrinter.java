@@ -646,42 +646,8 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 ***********************************************************************/
 		case OPCODE_ite: // IF THEN ELSE
 		{
-
-			BType t = (BType) n.getToolObject(TYPE_ID);
-
-			if (t.getKind() == BOOL) {
-				d.indent.append(" ");
-				ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
-						PREDICATE);
-				ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
-						PREDICATE);
-				ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
-						PREDICATE);
-				String res = String.format(
-						"(%s \n%s => %s) \n\t & (not(%s) \n%s => %s)",
-						brackets(iif, P_implies, true), d.indent,
-						brackets(then, P_implies, false), iif.out, d.indent,
-						brackets(eelse, P_implies, false));
-				return makeBoolValue(new StringBuilder(res), expected, P_and);
-			} else {
-				// ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
-				// PREDICATE);
-				// ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
-				// VALUE);
-				// ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
-				// VALUE);
-				// String res = String
-				// .format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
-				// iif.out, then.out, iif.out, eelse.out);
-				// return new ExprReturn(res);
-				ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
-				ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
-				ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
-						VALUE);
-				String res = String.format("IF_THEN_ELSE(%s, %s, %s)", iif.out,
-						then.out, eelse.out);
-				return new ExprReturn(res);
-			}
+			return evalIfThenElse(n, d, expected);
+			
 		}
 
 		case OPCODE_case: { // CASE p1 -> e1 [] p2 -> e2
@@ -789,6 +755,48 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 		}
 		throw new RuntimeException(n.toString(2));
+	}
+
+	/**
+	 * @param n
+	 * @return
+	 */
+	protected ExprReturn evalIfThenElse(OpApplNode n, DContext d, int expected) {
+		BType t = (BType) n.getToolObject(TYPE_ID);
+
+		if (t.getKind() == BOOL) {
+			d.indent.append(" ");
+			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
+					PREDICATE);
+			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
+					PREDICATE);
+			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+					PREDICATE);
+			String res = String.format(
+					"(%s \n%s => %s) \n\t & (not(%s) \n%s => %s)",
+					brackets(iif, P_implies, true), d.indent,
+					brackets(then, P_implies, false), iif.out, d.indent,
+					brackets(eelse, P_implies, false));
+			return makeBoolValue(new StringBuilder(res), expected, P_and);
+		} else {
+			// ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
+			// PREDICATE);
+			// ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
+			// VALUE);
+			// ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+			// VALUE);
+			// String res = String
+			// .format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
+			// iif.out, then.out, iif.out, eelse.out);
+			// return new ExprReturn(res);
+			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
+			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
+			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+					VALUE);
+			String res = String.format("IF_THEN_ELSE(%s, %s, %s)", iif.out,
+					then.out, eelse.out);
+			return new ExprReturn(res);
+		}
 	}
 
 	private ExprReturn evalBoundedQuantor(OpApplNode n, DContext d,

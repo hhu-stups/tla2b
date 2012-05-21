@@ -14,6 +14,7 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
+import types.BType;
 
 public class ExpressionPrinter extends AbstractExpressionPrinter {
 
@@ -26,18 +27,18 @@ public class ExpressionPrinter extends AbstractExpressionPrinter {
 		this.moduleNode = n;
 		paramterSubstitution = new Hashtable<FormalParamNode, ExprOrOpArgNode>();
 	}
-	
-	public void start(){
+
+	public void start() {
 		OpDefNode[] defs = moduleNode.getOpDefs();
 		ExprReturn e = visitExprNode(defs[defs.length - 1].getBody(),
 				new DContext(), VALUEORPREDICATE);
 		BExpression = e.out;
 	}
 
-	public StringBuilder getBExpression(){
+	public StringBuilder getBExpression() {
 		return BExpression;
 	}
-	
+
 	@Override
 	protected ExprReturn visitUserdefinedOp(OpApplNode n, DContext d,
 			int expected) {
@@ -56,6 +57,33 @@ public class ExpressionPrinter extends AbstractExpressionPrinter {
 			}
 		}
 		return visitExprNode(def.getBody(), new DContext(), expected);
+	}
+
+	@Override
+	protected ExprReturn evalIfThenElse(OpApplNode n, DContext d, int expected) {
+		BType t = (BType) n.getToolObject(TYPE_ID);
+
+		if (t.getKind() == BOOL) {
+			d.indent.append(" ");
+			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE);
+			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, PREDICATE);
+			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
+					PREDICATE);
+			String res = String.format(
+					"(%s \n%s => %s) \n\t & (not(%s) \n%s => %s)",
+					brackets(iif, P_implies, true), d.indent,
+					brackets(then, P_implies, false), iif.out, d.indent,
+					brackets(eelse, P_implies, false));
+			return makeBoolValue(new StringBuilder(res), expected, P_and);
+		} else {
+			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE);
+			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
+			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d, VALUE);
+			String res = String
+					.format("(%%t_.( t_ = 0 & %s | %s )\\/%%t_.( t_ = 0 & not(%s) | %s ))(0)",
+							iif.out, then.out, iif.out, eelse.out);
+			return new ExprReturn(res);
+		}
 	}
 
 	@Override

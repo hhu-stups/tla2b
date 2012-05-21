@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import global.TranslationGlobals;
 import tla2sany.drivers.SANY;
 import tla2sany.semantic.AbortException;
@@ -97,7 +97,7 @@ public class TLA2B implements TranslationGlobals {
 		} catch (FrontEndException e) {
 			System.err.println(e.getMessage());
 			System.exit(-1);
-		} catch (MyException e) {
+		} catch (TLA2BException e) {
 			System.err.print("**** Translation Error ****\n");
 			System.err.println(e.getMessage());
 			System.exit(-1);
@@ -173,11 +173,9 @@ public class TLA2B implements TranslationGlobals {
 		ExpressionTranslator et = new ExpressionTranslator(expr);
 		try {
 			et.start();
-		} catch (MyException e) {
+		} catch (TLA2BException e) {
 			System.err.println("------ExpressionError----------------");
 			System.err.println(e.getMessage());
-		} catch (AbortException e) {
-			e.printStackTrace();
 		}
 
 	}

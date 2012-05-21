@@ -17,7 +17,7 @@ import config.ValueObj;
 
 
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.NotImplementedException;
 import exceptions.TypeErrorException;
 import exceptions.UnificationException;
@@ -90,7 +90,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		paramId = TYPE_ID;
 	}
 
-	public void start() throws MyException {
+	public void start() throws TLA2BException {
 		OpDeclNode[] cons = moduleNode.getConstantDecls();
 		for (int i = 0; i < cons.length; i++) {
 			OpDeclNode con = cons[i];
@@ -179,7 +179,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	}
 
-	private void evalDefinitions(OpDefNode[] opDefs) throws MyException {
+	private void evalDefinitions(OpDefNode[] opDefs) throws TLA2BException {
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
 			// Definition in this module
@@ -199,9 +199,9 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	/**
 	 * @param def
-	 * @throws MyException
+	 * @throws TLA2BException
 	 */
-	private void visitOpDefNode(OpDefNode def) throws MyException {
+	private void visitOpDefNode(OpDefNode def) throws TLA2BException {
 		FormalParamNode[] params = def.getParams();
 		for (int i = 0; i < params.length; i++) {
 			FormalParamNode p = params[i];
@@ -222,7 +222,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	}
 
-	private void evalAssumptions(AssumeNode[] assumptions) throws MyException {
+	private void evalAssumptions(AssumeNode[] assumptions) throws TLA2BException {
 		for (AssumeNode assumeNode : assumptions) {
 			visitExprNode(assumeNode.getAssume(), BoolType.getInstance());
 		}
@@ -235,7 +235,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @throws NotImplementedException
 	 */
 	private BType visitExprOrOpArgNode(ExprOrOpArgNode n, BType expected)
-			throws MyException {
+			throws TLA2BException {
 		if (n instanceof ExprNode) {
 			return visitExprNode((ExprNode) n, expected);
 		} else {
@@ -245,7 +245,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	}
 
 	private BType visitExprNode(ExprNode exprNode, BType expected)
-			throws MyException {
+			throws TLA2BException {
 
 		switch (exprNode.getKind()) {
 		case TLCValueKind: {
@@ -341,10 +341,10 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @param n
 	 * @param expected
 	 * @return {@link BType}
-	 * @throws MyException
+	 * @throws TLA2BException
 	 */
 	private BType visitOpApplNode(OpApplNode n, BType expected)
-			throws MyException {
+			throws TLA2BException {
 
 		switch (n.getOperator().getKind()) {
 		case ConstantDeclKind: {
@@ -475,10 +475,10 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @param exprNode
 	 * @param expected
 	 * @return {@link BType}
-	 * @throws MyException
+	 * @throws TLA2BException
 	 */
 	private BType evalBuiltInKind(OpApplNode n, BType expected)
-			throws MyException {
+			throws TLA2BException {
 
 		switch (getOpCode(n.getOperator().getName())) {
 
@@ -1159,7 +1159,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	}
 
 	private BType evalBBuiltIns(OpApplNode n, BType expected)
-			throws MyException {
+			throws TLA2BException {
 		switch (BBuiltInOPs.getOpcode(n.getOperator().getName())) {
 		// B Builtins
 
@@ -1508,9 +1508,9 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	/**
 	 * @param n
-	 * @throws MyException
+	 * @throws TLA2BException
 	 */
-	private void evalBoundedVariables(OpApplNode n) throws MyException {
+	private void evalBoundedVariables(OpApplNode n) throws TLA2BException {
 		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		ExprNode[] bounds = n.getBdedQuantBounds();
 		for (int i = 0; i < bounds.length; i++) {
