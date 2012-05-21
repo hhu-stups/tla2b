@@ -25,7 +25,7 @@ import translation.Main;
 import types.BType;
 import util.StandardModules;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 
 public class TypeCheckerTest {
 
@@ -37,7 +37,7 @@ public class TypeCheckerTest {
 	public Hashtable<String, DefCon> definitions;
 
 	public TypeCheckerTest(String fileName, String configName,
-			boolean moduleAsString) throws MyException, FrontEndException {
+			boolean moduleAsString) throws TLA2BException, FrontEndException {
 
 		constants = new Hashtable<String, BType>();
 		variables = new Hashtable<String, BType>();
@@ -85,7 +85,7 @@ public class TypeCheckerTest {
 				specAnalyser);
 	}
 
-	public void start() throws exceptions.FrontEndException, MyException {
+	public void start() throws exceptions.FrontEndException, TLA2BException {
 		tc.start();
 
 		for (int i = 0; i < moduleNode.getConstantDecls().length; i++) {

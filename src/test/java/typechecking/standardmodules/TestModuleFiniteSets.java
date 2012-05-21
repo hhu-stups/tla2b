@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestModuleFiniteSets {
@@ -20,7 +20,7 @@ public class TestModuleFiniteSets {
 	 * IsFiniteSet
 	 **********************************************************************/
 	@Test
-	public void unifyIsFiniteSet() throws FrontEndException, MyException {
+	public void unifyIsFiniteSet() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -35,7 +35,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test
-	public void unifyIsFiniteSet2() throws FrontEndException, MyException {
+	public void unifyIsFiniteSet2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -52,7 +52,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test
-	public void unifyIsFiniteSet3() throws FrontEndException, MyException {
+	public void unifyIsFiniteSet3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -67,7 +67,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void unifyErrorIsFiniteSet() throws FrontEndException, MyException {
+	public void unifyErrorIsFiniteSet() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -80,7 +80,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void unifyErrorIsFiniteSet2() throws FrontEndException, MyException {
+	public void unifyErrorIsFiniteSet2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -96,7 +96,7 @@ public class TestModuleFiniteSets {
 	 * Cardinality
 	 **********************************************************************/
 	@Test
-	public void unifyCardinality() throws FrontEndException, MyException {
+	public void unifyCardinality() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -111,7 +111,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test
-	public void unifyCardinality2() throws FrontEndException, MyException {
+	public void unifyCardinality2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -127,7 +127,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void unifyErrorCardinality() throws FrontEndException, MyException {
+	public void unifyErrorCardinality() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -140,7 +140,7 @@ public class TestModuleFiniteSets {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void unifyErrorCardinality2() throws FrontEndException, MyException {
+	public void unifyErrorCardinality2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

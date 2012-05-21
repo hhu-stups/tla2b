@@ -27,6 +27,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	public static String translateExpression(String bExpression)
 			throws TLA2BException {
+		ToolIO.setMode(ToolIO.TOOL);
 		ExpressionTranslator et = new ExpressionTranslator(bExpression);
 		et.start();
 		return et.BExpression.toString();
@@ -95,7 +96,6 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		}
 
 		if (spec.parseErrors.isFailure()) {
-			System.out.println("foo--------------------------");
 			throw new exceptions.FrontEndException(
 					Main.allMessagesToString(ToolIO.getAllMessages())
 							+ spec.semanticErrors, spec);

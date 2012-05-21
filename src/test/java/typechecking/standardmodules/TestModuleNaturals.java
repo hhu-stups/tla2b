@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestModuleNaturals {
@@ -20,7 +20,7 @@ public class TestModuleNaturals {
 	 * Relational operators: >, <, <=, >=
 	 **********************************************************************/
 	@Test  
-	public void testRelationalOperators() throws FrontEndException, MyException {
+	public void testRelationalOperators() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -36,7 +36,7 @@ public class TestModuleNaturals {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testRelationalOperatorsException() throws FrontEndException, MyException {
+	public void testRelationalOperatorsException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -53,7 +53,7 @@ public class TestModuleNaturals {
 	 * Arithmetic operator: +, -, *, /, mod, exp
 	 **********************************************************************/
 	@Test  
-	public void testArithmeticOperators() throws FrontEndException, MyException {
+	public void testArithmeticOperators() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -69,7 +69,7 @@ public class TestModuleNaturals {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testArithmeticOperatorsException() throws FrontEndException, MyException {
+	public void testArithmeticOperatorsException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -88,7 +88,7 @@ public class TestModuleNaturals {
 	 **********************************************************************/
 	
 	@Test  
-	public void testDotDot() throws FrontEndException, MyException {
+	public void testDotDot() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -104,7 +104,7 @@ public class TestModuleNaturals {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testDotDotException() throws FrontEndException, MyException {
+	public void testDotDotException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -120,7 +120,7 @@ public class TestModuleNaturals {
 	 * Nat
 	 **********************************************************************/
 	@Test  
-	public void testNat() throws FrontEndException, MyException {
+	public void testNat() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
@@ -134,7 +134,7 @@ public class TestModuleNaturals {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void unifyErrorNat() throws FrontEndException, MyException {
+	public void unifyErrorNat() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"

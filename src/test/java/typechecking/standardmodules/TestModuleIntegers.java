@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestModuleIntegers {
@@ -21,7 +21,7 @@ public class TestModuleIntegers {
 	 * Int
 	 **********************************************************************/
 	@Test  
-	public void unifyInt() throws FrontEndException, MyException {
+	public void unifyInt() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Integers \n"
@@ -35,7 +35,7 @@ public class TestModuleIntegers {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void unifyErrorInt() throws FrontEndException, MyException {
+	public void unifyErrorInt() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Integers \n"
@@ -50,7 +50,7 @@ public class TestModuleIntegers {
 	 * unary minus: -x
 	 **********************************************************************/
 	@Test  
-	public void unifyUnaryMinus() throws FrontEndException, MyException {
+	public void unifyUnaryMinus() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Integers \n"
@@ -65,7 +65,7 @@ public class TestModuleIntegers {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void unifyErrorUnaryMinus() throws FrontEndException, MyException {
+	public void unifyErrorUnaryMinus() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Integers \n"
