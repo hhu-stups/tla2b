@@ -126,12 +126,19 @@ public class ModuleOverrider extends BuiltInOPs implements ASTConstants {
 			if (constantOverrideTable.containsKey(s)) {
 				n.setOperator(constantOverrideTable.get(s));
 			}
+			break;
 
 		}
 		case FormalParamKind: // Params are not global in the modul
 		case VariableDeclKind: // TODO try to override variable
+			break;
+		
 		case BuiltInKind:// Buildin operator can not be overridden by in the
 							// configuration file
+			ExprNode[] ins = n.getBdedQuantBounds();
+			for (int i = 0; i < ins.length; i++) {
+				visitExprOrOpArgNode(ins[i]);
+			}
 			break;
 
 		case UserDefinedOpKind: {

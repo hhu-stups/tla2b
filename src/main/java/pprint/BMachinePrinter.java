@@ -7,6 +7,7 @@ package pprint;
 import global.BBuiltInOPs;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -19,7 +20,6 @@ import analysis.SpecAnalyser;
 
 import config.ConfigfileEvaluator;
 import config.ValueObj;
-
 
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.ExprNode;
@@ -59,19 +59,18 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 	public BMachinePrinter(ModuleNode moduleNode, ConfigfileEvaluator conEval,
 			SpecAnalyser specAnalyser) {
 		this.module = moduleNode;
-		
-		if(conEval == null){
+
+		if (conEval == null) {
 			bConstants = new ArrayList<OpDeclNode>();
 			for (int i = 0; i < moduleNode.getConstantDecls().length; i++) {
 				bConstants.add(moduleNode.getConstantDecls()[i]);
 			}
-		}else{
+		} else {
 			this.bConstants = conEval.getbConstantList();
 			this.invariants = conEval.getInvariants();
 			this.setEnumeration = conEval.getEnumerationSet();
 			this.constantAssignments = conEval.getConstantAssignments();
 		}
-
 
 		this.inits = specAnalyser.getInits();
 		this.bOperations = specAnalyser.getBOperations();
@@ -91,12 +90,12 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		// Constants and Properties
 		out.append(evalConsDecl());
 		out.append(evalPropertyStatements());
-		
+
 		tempLetInNodes.clear();
 		StringBuilder operations = evalOperations();
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
-		
+
 		out.append(evalDefinition());
 
 		out.append(evalVariables());
@@ -315,10 +314,10 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		ArrayList<OpDefNode> bDefs = new ArrayList<OpDefNode>();
 		for (int i = 0; i < module.getOpDefs().length; i++) {
 			OpDefNode def = module.getOpDefs()[i];
-			if(bDefinitions.contains(def))
+			if (bDefinitions.contains(def))
 				bDefs.add(def);
 		}
-		
+
 		if (bDefs.size() + globalLets.size() + definitionMacro.size() == 0)
 			return out;
 		out.append("DEFINITIONS\n");
@@ -359,7 +358,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		String defName = getPrintName(letDef);
 		out.append(" " + defName);
 		FormalParamNode[] shiftParams = letParams.get(letDef);
-		if(shiftParams == null)
+		if (shiftParams == null)
 			shiftParams = new FormalParamNode[0];
 		if (letDef.getParams().length + shiftParams.length > 0) {
 			out.append("(");
@@ -431,18 +430,18 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 
 	private StringBuilder evalConsDecl() {
 		StringBuilder out = new StringBuilder();
-		if (bConstants.size()+recursiveFunktions.size() == 0)
+		if (bConstants.size() + recursiveFunktions.size() == 0)
 			return out;
 		out.append("ABSTRACT_CONSTANTS ");
 		// out.append("CONSTANTS ");
 		for (int i = 0; i < bConstants.size(); i++) {
 			out.append(getPrintName(bConstants.get(i)));
-			if (i < bConstants.size() - 1|| recursiveFunktions.size()>0)
+			if (i < bConstants.size() - 1 || recursiveFunktions.size() > 0)
 				out.append(", ");
 		}
 		for (int i = 0; i < recursiveFunktions.size(); i++) {
 			out.append(getPrintName(recursiveFunktions.get(i).getOpDefNode()));
-			if (i < recursiveFunktions.size()-1)
+			if (i < recursiveFunktions.size() - 1)
 				out.append(", ");
 		}
 		out.append("\n");
@@ -461,30 +460,29 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 			if (notFirst) {
 				out.append(" & ");
 			}
-			if (constantAssignments != null &&  constantAssignments.containsKey(con)) {
+			if (constantAssignments != null
+					&& constantAssignments.containsKey(con)) {
 				ValueObj v = constantAssignments.get(con);
-					BType t = v.getType();
-					boolean isEnum = false;
-					if (t instanceof PowerSetType) {
-						BType sub = ((PowerSetType) t).getSubType();
-						if (sub instanceof EnumType) {
-							EnumType en = (EnumType) sub;
-							SetEnumValue set = (SetEnumValue) v.getValue();
-							if (set.elems.size() == en.modelvalues.size()) {
-								isEnum = true;
-							}
+				BType t = v.getType();
+				boolean isEnum = false;
+				if (t instanceof PowerSetType) {
+					BType sub = ((PowerSetType) t).getSubType();
+					if (sub instanceof EnumType) {
+						EnumType en = (EnumType) sub;
+						SetEnumValue set = (SetEnumValue) v.getValue();
+						if (set.elems.size() == en.modelvalues.size()) {
+							isEnum = true;
 						}
 					}
-					if (isEnum) {
-						out.append(String.format("%s = %s\n",
-								getPrintName(con),
-								((PowerSetType) t).getSubType()));
-					} else {
-						out.append(String.format("%s = %s\n",
-								getPrintName(con), v.getValue().toString()));
-					}
+				}
+				if (isEnum) {
+					out.append(String.format("%s = %s\n", getPrintName(con),
+							((PowerSetType) t).getSubType()));
+				} else {
+					out.append(String.format("%s = %s\n", getPrintName(con), v
+							.getValue().toString()));
+				}
 
-				
 			} else {
 				out.append(String.format("%s : %s\n", getPrintName(con),
 						con.getToolObject(TYPE_ID)));
@@ -514,10 +512,10 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		}
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
-		
-		if(recursiveFunktions.size() == 0)
+
+		if (recursiveFunktions.size() == 0)
 			return out;
-		if(bConstants.size()+assumes.length>0){
+		if (bConstants.size() + assumes.length > 0) {
 			out.append(" & ");
 		}
 		for (int i = 0; i < recursiveFunktions.size(); i++) {
@@ -527,7 +525,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 			out.append(visitRecursiveFunction(recursiveFunktions.get(i)));
 			out.append("\n");
 		}
-		
+
 		return out;
 	}
 
@@ -541,9 +539,9 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		OpApplNode ifThenElse = rf.getIfThenElse();
 		out.append(getPrintName(rf.getOpDefNode()));
 		out.append(" = ");
-		
+
 		DContext d = new DContext();
-		
+
 		FormalParamNode[][] vars = o.getBdedQuantSymbolLists();
 		StringBuilder pre = new StringBuilder();
 		for (int i = 0; i < vars.length; i++) {
@@ -558,15 +556,16 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 			}
 		}
 		StringBuilder bound = visitBounded(o, d);
-		
+
 		ExprReturn iif = visitExprOrOpArgNode(ifThenElse.getArgs()[0], d,
 				PREDICATE);
 		ExprReturn then = visitExprOrOpArgNode(ifThenElse.getArgs()[1], d,
 				VALUE);
 		ExprReturn eelse = visitExprOrOpArgNode(ifThenElse.getArgs()[2], d,
 				VALUE);
-		String res = String.format("%%%s.(%s & %s | %s) \\/ %%%s.(%s & not(%s) | %s)",pre, bound, iif.out,
-				then.out, pre, bound, iif.out, eelse.out);
+		String res = String.format(
+				"%%%s.(%s & %s | %s) \\/ %%%s.(%s & not(%s) | %s)", pre, bound,
+				iif.out, then.out, pre, bound, iif.out, eelse.out);
 		out.append(res);
 		return out;
 	}
@@ -585,7 +584,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		tempLetInNodes.add(l);
 		return visitExprNode(l.getBody(), d, VALUEORPREDICATE);
 	}
-	
+
 	@Override
 	protected ExprReturn visitUserdefinedOp(OpApplNode n, DContext d,
 			int expected) {
@@ -598,8 +597,10 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		}
 
 		out.append(getPrintName(def));
-
-		if (n.getArgs().length > 0) {
+		
+		FormalParamNode[] shiftedParams = letParams.get(def);
+		if (n.getArgs().length > 0
+				|| (shiftedParams != null && shiftedParams.length > 0)) {
 			out.append("(");
 			for (int i = 0; i < n.getArgs().length; i++) {
 				out.append(visitExprOrOpArgNode(n.getArgs()[i], d, VALUE).out);
@@ -607,12 +608,11 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 					out.append(", ");
 				}
 			}
-			if(letParams.containsKey(def)){
-				FormalParamNode[] shiftParams = letParams.get(def);
-				for (int i = 0; i < shiftParams.length; i++) {
+			if (shiftedParams != null) {
+				for (int i = 0; i < shiftedParams.length; i++) {
 					if (n.getArgs().length > 0 || i != 0)
 						out.append(", ");
-					out.append(shiftParams[i].getName().toString());
+					out.append(shiftedParams[i].getName().toString());
 
 				}
 			}
@@ -625,6 +625,5 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		}
 		return new ExprReturn(out);
 	}
-	
 
 }

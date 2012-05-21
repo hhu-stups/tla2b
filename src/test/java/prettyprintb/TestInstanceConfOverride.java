@@ -77,7 +77,7 @@ public class TestInstanceConfOverride {
 				+ "CONSTANTS a <-[Counter] def";
 
 		Main.start(module, config, true);
-	}
+	} 
 	
 	@Test (expected = ConfigFileErrorException.class)
 	public void testInstanceDefOverrideException2() throws Exception {

@@ -30,6 +30,7 @@ public class TestSet {
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER) & k = {1,2,3} \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));

@@ -6,6 +6,8 @@ package prettyprintb;
 
 import static org.junit.Assert.assertEquals;
 import static util.TestUtil.getTreeAsString;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import translation.Main;
 import util.ToolIO;
@@ -72,6 +74,7 @@ public class TestFunction {
 	 * recursive Function
 	 **********************************************************************/
 
+	@Ignore
 	@Test
 	public void testRecursiveFunction() throws Exception {
 		ToolIO.reset();

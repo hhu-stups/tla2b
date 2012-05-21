@@ -29,6 +29,7 @@ public class TestConstantOverride {
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
 		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES foo = 5 \n"
 				+ "DEFINITIONS foo == 5 \n"
