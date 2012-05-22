@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestStruct {
@@ -23,7 +23,7 @@ public class TestStruct {
 	 * Set of Records: [L1 : e1, L2 : e2]
 	 **********************************************************************/
 	@Test  
-	public void testStruct() throws FrontEndException, MyException {
+	public void testStruct() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -36,7 +36,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testStruct2() throws FrontEndException, MyException {
+	public void testStruct2() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -49,7 +49,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testStruct3() throws FrontEndException, MyException {
+	public void testStruct3() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -63,7 +63,7 @@ public class TestStruct {
 	}
 	
 	@Test (expected = TypeErrorException.class)  
-	public void testStructException() throws FrontEndException, MyException {
+	public void testStructException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -75,7 +75,7 @@ public class TestStruct {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testStructException2() throws FrontEndException, MyException {
+	public void testStructException2() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME [a : {1}, b : BOOLEAN] = [a : BOOLEAN, b : BOOLEAN] \n"
@@ -86,7 +86,7 @@ public class TestStruct {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testStructException3() throws FrontEndException, MyException {
+	public void testStructException3() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -103,7 +103,7 @@ public class TestStruct {
 	 **********************************************************************/
 	
 	@Test  
-	public void testRecord() throws FrontEndException, MyException {
+	public void testRecord() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -116,7 +116,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testRecord2() throws FrontEndException, MyException {
+	public void testRecord2() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -128,7 +128,7 @@ public class TestStruct {
 	}
 	
 	@Test// (expected = TypeErrorException.class)
-	public void testRecordException() throws FrontEndException, MyException {
+	public void testRecordException() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME 1 = [b |-> 1, a |-> TRUE] \n"
@@ -139,7 +139,7 @@ public class TestStruct {
 	
 	
 	@Test 
-	public void testRecord3() throws FrontEndException, MyException {
+	public void testRecord3() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -156,7 +156,7 @@ public class TestStruct {
 	 **********************************************************************/
 	
 	@Test  
-	public void testRecordSelect() throws FrontEndException, MyException {
+	public void testRecordSelect() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -169,7 +169,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testRecordSelect2() throws FrontEndException, MyException {
+	public void testRecordSelect2() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -182,7 +182,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testRecordSelect3() throws FrontEndException, MyException {
+	public void testRecordSelect3() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -196,7 +196,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testRecordSelect4() throws FrontEndException, MyException {
+	public void testRecordSelect4() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -210,7 +210,7 @@ public class TestStruct {
 	}
 	
 	@Test //(expected = TypeErrorException.class)
-	public void testRecordSelectException3() throws FrontEndException, MyException {
+	public void testRecordSelectException3() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -222,7 +222,7 @@ public class TestStruct {
 	
 	
 	@Test 
-	public void testRecordSelect5() throws FrontEndException, MyException {
+	public void testRecordSelect5() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -234,7 +234,7 @@ public class TestStruct {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testRecordSelectException() throws FrontEndException, MyException {
+	public void testRecordSelectException() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -247,7 +247,7 @@ public class TestStruct {
 	
 	
 	@Test (expected = TypeErrorException.class)
-	public void testRecordSelectException4() throws FrontEndException, MyException {
+	public void testRecordSelectException4() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -262,7 +262,7 @@ public class TestStruct {
 	 **********************************************************************/
 	
 	@Test  
-	public void testRecordExcept() throws FrontEndException, MyException {
+	public void testRecordExcept() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3, k4 \n"
@@ -277,7 +277,7 @@ public class TestStruct {
 	}
 	
 	@Test  
-	public void testRecordExcept2() throws FrontEndException, MyException {
+	public void testRecordExcept2() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -294,7 +294,7 @@ public class TestStruct {
 	 **********************************************************************/
 	
 	@Test  
-	public void testRecordExceptAt() throws FrontEndException, MyException {
+	public void testRecordExceptAt() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -308,7 +308,7 @@ public class TestStruct {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testRecordExceptAtException() throws FrontEndException, MyException {
+	public void testRecordExceptAtException() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"

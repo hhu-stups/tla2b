@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 import util.ToolIO;
@@ -18,7 +18,7 @@ import util.TypeCheckerTest;
 public class TestConstantTypes {
 
 	@Test
-	public void test1() throws FrontEndException, MyException {
+	public void test1() throws FrontEndException, TLA2BException {
 
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -33,7 +33,7 @@ public class TestConstantTypes {
 	}
 	
 	@Test
-	public void test2() throws FrontEndException, MyException {
+	public void test2() throws FrontEndException, TLA2BException {
 
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -48,7 +48,7 @@ public class TestConstantTypes {
 	}
 	
 	@Test
-	public void test3() throws FrontEndException, MyException {
+	public void test3() throws FrontEndException, TLA2BException {
 
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -65,7 +65,7 @@ public class TestConstantTypes {
 
 	
 	@Test
-	public void worstCaseUnification() throws FrontEndException, MyException{
+	public void worstCaseUnification() throws FrontEndException, TLA2BException{
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS a, b, c, d, e, f, g, h \n"
@@ -101,7 +101,7 @@ public class TestConstantTypes {
 
 	
 	@Test (expected = TypeErrorException.class) 
-	public void prime() throws FrontEndException, MyException {
+	public void prime() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "Next ==  1' = 1 \n"
@@ -112,7 +112,7 @@ public class TestConstantTypes {
 	}
 	
 	@Test (expected = TypeErrorException.class) 
-	public void prime2() throws FrontEndException, MyException {
+	public void prime2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k\n"
@@ -124,7 +124,7 @@ public class TestConstantTypes {
 	
 	
 	@Test 
-	public void ifThenElse() throws FrontEndException, MyException {
+	public void ifThenElse() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2\n"

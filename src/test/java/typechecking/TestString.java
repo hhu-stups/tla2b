@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestString {
@@ -21,7 +21,7 @@ public class TestString {
 	 **********************************************************************/
 
 	@Test
-	public void testAString() throws FrontEndException, MyException {
+	public void testAString() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -35,7 +35,7 @@ public class TestString {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testAStringException() throws FrontEndException, MyException {
+	public void testAStringException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -51,7 +51,7 @@ public class TestString {
 	 * STRING
 	 **********************************************************************/
 	@Test 
-	public void testString() throws FrontEndException, MyException {
+	public void testString() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -65,7 +65,7 @@ public class TestString {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testStringException() throws FrontEndException, MyException {
+	public void testStringException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

@@ -15,7 +15,6 @@ import java.util.Date;
 import exceptions.FrontEndException;
 import exceptions.TLA2BException;
 import global.TranslationGlobals;
-import tla2sany.drivers.SANY;
 import tla2sany.semantic.AbortException;
 import util.FileUtil;
 import util.ToolIO;

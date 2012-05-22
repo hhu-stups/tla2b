@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestFunction {
@@ -21,7 +21,7 @@ public class TestFunction {
 	 **********************************************************************/
 
 	@Test
-	public void testFunctionConstructor() throws FrontEndException, MyException {
+	public void testFunctionConstructor() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -39,7 +39,7 @@ public class TestFunction {
 
 	@Test
 	public void testFunctionConstructor2() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -57,7 +57,7 @@ public class TestFunction {
 
 	@Test
 	public void testFunctionConstructor3() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -73,7 +73,7 @@ public class TestFunction {
 
 	@Test
 	public void testFunctionConstructor4() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -91,7 +91,7 @@ public class TestFunction {
 
 	@Test
 	public void testFunctionConstructor5() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -107,7 +107,7 @@ public class TestFunction {
 
 	@Test(expected = TypeErrorException.class)
 	public void testFunctionConstructorException() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -123,7 +123,7 @@ public class TestFunction {
 	 * recursive Function
 	 **********************************************************************/
 	@Test
-	public void testRecursiveFunction() throws FrontEndException, MyException {
+	public void testRecursiveFunction() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -145,7 +145,7 @@ public class TestFunction {
 	 **********************************************************************/
 
 	@Test
-	public void testFunctionCall() throws FrontEndException, MyException {
+	public void testFunctionCall() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -159,7 +159,7 @@ public class TestFunction {
 	}
 
 	@Test
-	public void testFunctionCall2() throws FrontEndException, MyException {
+	public void testFunctionCall2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -175,7 +175,7 @@ public class TestFunction {
 	}
 
 	@Test
-	public void testFunctionCall3() throws FrontEndException, MyException {
+	public void testFunctionCall3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -194,7 +194,7 @@ public class TestFunction {
 	}
 	
 	@Test
-	public void testFunctionCall4() throws FrontEndException, MyException {
+	public void testFunctionCall4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -210,7 +210,7 @@ public class TestFunction {
 
 	@Test(expected = TypeErrorException.class)
 	public void testFunctionCallException() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -227,7 +227,7 @@ public class TestFunction {
 	 * Domain
 	 **********************************************************************/
 	@Test
-	public void testDomain() throws FrontEndException, MyException {
+	public void testDomain() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -244,7 +244,7 @@ public class TestFunction {
 	}
 
 	@Test
-	public void testDomain2() throws FrontEndException, MyException {
+	public void testDomain2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -266,7 +266,7 @@ public class TestFunction {
 	 * Set of Function
 	 **********************************************************************/
 	@Test
-	public void testSetOfFunction() throws FrontEndException, MyException {
+	public void testSetOfFunction() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -280,7 +280,7 @@ public class TestFunction {
 	}
 
 	@Test
-	public void testSetOfFunction2() throws FrontEndException, MyException {
+	public void testSetOfFunction2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -296,7 +296,7 @@ public class TestFunction {
 	
 	
 	@Test
-	public void testSetOfFunction3() throws FrontEndException, MyException {
+	public void testSetOfFunction3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -314,7 +314,7 @@ public class TestFunction {
 	 * Except
 	 **********************************************************************/
 	@Test
-	public void testFunctionExcept() throws FrontEndException, MyException {
+	public void testFunctionExcept() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -329,7 +329,7 @@ public class TestFunction {
 	}
 	
 	@Test
-	public void testFunctionExcept2() throws FrontEndException, MyException {
+	public void testFunctionExcept2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -346,7 +346,7 @@ public class TestFunction {
 	}
 	
 	@Test
-	public void testFunctionExcept3() throws FrontEndException, MyException {
+	public void testFunctionExcept3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -366,7 +366,7 @@ public class TestFunction {
 	}
 	
 	@Test
-	public void testFunctionExcept4() throws FrontEndException, MyException {
+	public void testFunctionExcept4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -385,7 +385,7 @@ public class TestFunction {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testFunctionExceptException() throws FrontEndException, MyException {
+	public void testFunctionExceptException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -397,7 +397,7 @@ public class TestFunction {
 		t.start();
 	}
 	@Test
-	public void testFunctionExceptException2() throws FrontEndException, MyException {
+	public void testFunctionExceptException2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -415,7 +415,7 @@ public class TestFunction {
 	 **********************************************************************/
 	
 	@Test
-	public void testAt2() throws FrontEndException, MyException {
+	public void testAt2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -432,7 +432,7 @@ public class TestFunction {
 	
 	
 	@Test (expected = TypeErrorException.class)
-	public void testAtException() throws FrontEndException, MyException {
+	public void testAtException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

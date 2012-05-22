@@ -189,5 +189,6 @@ public class TestLogicOperators {
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
+	
 
 }

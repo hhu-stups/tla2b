@@ -79,7 +79,7 @@ Records
 Strings and Numbers
 -------------------
  "abc"                        a string
- STRING                       set of a strings
+ STRING                       set of all strings
  123                          a number
  
 Miscellaneous constructs

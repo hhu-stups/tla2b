@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestSet {
@@ -21,7 +21,7 @@ public class TestSet {
 	 **********************************************************************/
 
 	@Test
-	public void testSetEnumeration() throws FrontEndException, MyException {
+	public void testSetEnumeration() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -38,7 +38,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetEnumeration2() throws FrontEndException, MyException {
+	public void testSetEnumeration2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -54,7 +54,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetEnumeration3() throws FrontEndException, MyException {
+	public void testSetEnumeration3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -70,7 +70,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetEnumeration4() throws FrontEndException, MyException {
+	public void testSetEnumeration4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -86,7 +86,7 @@ public class TestSet {
 
 	@Test(expected = TypeErrorException.class)
 	public void testSetEnumerationException() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -100,7 +100,7 @@ public class TestSet {
 
 	@Test(expected = TypeErrorException.class)
 	public void testSetEnumerationException2() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -115,7 +115,7 @@ public class TestSet {
 	 * Element of: \in, \notin
 	 **********************************************************************/
 	@Test
-	public void testElementOfSet() throws FrontEndException, MyException {
+	public void testElementOfSet() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -129,7 +129,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testElementOfSet2() throws FrontEndException, MyException {
+	public void testElementOfSet2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -143,7 +143,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testElementOfSet3() throws FrontEndException, MyException {
+	public void testElementOfSet3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -157,7 +157,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testElementOfSetError() throws FrontEndException, MyException {
+	public void testElementOfSetError() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -168,7 +168,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testElementOfSetError2() throws FrontEndException, MyException {
+	public void testElementOfSetError2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -181,7 +181,7 @@ public class TestSet {
 	 * set operators like difference, union, intersection
 	 **********************************************************************/
 	@Test
-	public void testSetOperators() throws FrontEndException, MyException {
+	public void testSetOperators() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -196,7 +196,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetOperators2() throws FrontEndException, MyException {
+	public void testSetOperators2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -211,7 +211,7 @@ public class TestSet {
 
 	@Test(expected = TypeErrorException.class)
 	public void testSetOperatorsException() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -224,7 +224,7 @@ public class TestSet {
 
 	@Test(expected = TypeErrorException.class)
 	public void testSetOperatorsException2() throws FrontEndException,
-			MyException {
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -239,7 +239,7 @@ public class TestSet {
 	 * set constructor: {x \in S : p}.
 	 **********************************************************************/
 	@Test
-	public void testSubsetOf() throws FrontEndException, MyException {
+	public void testSubsetOf() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -253,7 +253,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSubsetOf2() throws FrontEndException, MyException {
+	public void testSubsetOf2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -267,7 +267,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSubsetOf3() throws FrontEndException, MyException {
+	public void testSubsetOf3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -282,7 +282,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSubsetOf4() throws FrontEndException, MyException {
+	public void testSubsetOf4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -296,7 +296,7 @@ public class TestSet {
 	}
 
 	@Test (expected = TypeErrorException.class)
-	public void testSubsetOfException() throws FrontEndException, MyException {
+	public void testSubsetOfException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -308,7 +308,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testSubsetOfException2() throws FrontEndException, MyException {
+	public void testSubsetOfException2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -320,7 +320,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testSubsetOfException3() throws FrontEndException, MyException {
+	public void testSubsetOfException3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -335,7 +335,7 @@ public class TestSet {
 	 * set constructor: {e : x \in S}
 	 **********************************************************************/
 	@Test
-	public void testSetOfAll() throws FrontEndException, MyException {
+	public void testSetOfAll() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -350,7 +350,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetOfAll2() throws FrontEndException, MyException {
+	public void testSetOfAll2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -364,7 +364,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetOfAll3() throws FrontEndException, MyException {
+	public void testSetOfAll3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -379,7 +379,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSetOfAll4() throws FrontEndException, MyException {
+	public void testSetOfAll4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -395,7 +395,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testSetOfAllException() throws FrontEndException, MyException {
+	public void testSetOfAllException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -407,7 +407,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testSetOfAllException2() throws FrontEndException, MyException {
+	public void testSetOfAllException2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -419,7 +419,7 @@ public class TestSet {
 	}
 
 	@Test (expected = TypeErrorException.class)
-	public void testSetOfAllException3() throws FrontEndException, MyException {
+	public void testSetOfAllException3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -434,7 +434,7 @@ public class TestSet {
 	 * SUBSET: conforms POW in B
 	 **********************************************************************/
 	@Test
-	public void testSubset() throws FrontEndException, MyException {
+	public void testSubset() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -448,7 +448,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testSubset2() throws FrontEndException, MyException {
+	public void testSubset2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -462,7 +462,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testSubsetException() throws FrontEndException, MyException {
+	public void testSubsetException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -477,7 +477,7 @@ public class TestSet {
 	 * UNION
 	 **********************************************************************/
 	@Test
-	public void testUnion() throws FrontEndException, MyException {
+	public void testUnion() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -491,7 +491,7 @@ public class TestSet {
 	}
 
 	@Test
-	public void testUnion2() throws FrontEndException, MyException {
+	public void testUnion2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -505,7 +505,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testUnionException() throws FrontEndException, MyException {
+	public void testUnionException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -517,7 +517,7 @@ public class TestSet {
 	}
 
 	@Test(expected = TypeErrorException.class)
-	public void testUnionException2() throws FrontEndException, MyException {
+	public void testUnionException2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -532,7 +532,7 @@ public class TestSet {
 	 * Subseteq: subset or equal
 	 **********************************************************************/
 	@Test
-	public void testSubseteq() throws FrontEndException, MyException {
+	public void testSubseteq() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -547,7 +547,7 @@ public class TestSet {
 	}
 
 	@Test (expected = TypeErrorException.class)
-	public void testSubseteqException() throws FrontEndException, MyException {
+	public void testSubseteqException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -559,7 +559,7 @@ public class TestSet {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testSubseteqException2() throws FrontEndException, MyException {
+	public void testSubseteqException2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

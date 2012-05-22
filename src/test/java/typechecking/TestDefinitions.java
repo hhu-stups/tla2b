@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 
 public class TestDefinitions {
 
@@ -19,7 +19,7 @@ public class TestDefinitions {
 	 * Definition: foo(a,b) == e
 	 **********************************************************************/
 	@Test  
-	public void testDefinition() throws FrontEndException, MyException {
+	public void testDefinition() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -36,7 +36,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinition2() throws FrontEndException, MyException {
+	public void testDefinition2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -56,7 +56,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinition3() throws FrontEndException, MyException {
+	public void testDefinition3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -74,7 +74,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinition4() throws FrontEndException, MyException {
+	public void testDefinition4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -99,7 +99,7 @@ public class TestDefinitions {
 	 **********************************************************************/
 
 	@Test  
-	public void testDefinitionCall() throws FrontEndException, MyException {
+	public void testDefinitionCall() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -116,7 +116,7 @@ public class TestDefinitions {
 	
 	
 	@Test  
-	public void testDefinitionCall2() throws FrontEndException, MyException {
+	public void testDefinitionCall2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -135,7 +135,7 @@ public class TestDefinitions {
 	
 	
 	@Test  
-	public void testDefinitionCall3() throws FrontEndException, MyException {
+	public void testDefinitionCall3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -157,7 +157,7 @@ public class TestDefinitions {
 	
 	
 	@Test  
-	public void testDefinitionCall4() throws FrontEndException, MyException {
+	public void testDefinitionCall4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -178,7 +178,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinitionCall5() throws FrontEndException, MyException {
+	public void testDefinitionCall5() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -195,7 +195,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinitionCall6() throws FrontEndException, MyException {
+	public void testDefinitionCall6() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -217,7 +217,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinitionCall7() throws FrontEndException, MyException {
+	public void testDefinitionCall7() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -240,7 +240,7 @@ public class TestDefinitions {
 	
 	
 	@Test  
-	public void testDefinitionCall8() throws FrontEndException, MyException {
+	public void testDefinitionCall8() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -264,7 +264,7 @@ public class TestDefinitions {
 	
 	
 	@Test  
-	public void testDefinitionCall9() throws FrontEndException, MyException {
+	public void testDefinitionCall9() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -282,7 +282,7 @@ public class TestDefinitions {
 	}
 	
 	@Test  
-	public void testDefinitionCall10() throws FrontEndException, MyException {
+	public void testDefinitionCall10() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

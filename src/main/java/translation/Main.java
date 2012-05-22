@@ -26,11 +26,11 @@ public class Main implements TranslationGlobals {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		String module = "----MODULE testing ----\n" 
-				+ "ANY == 1 \n" 
-				+ "ASSUME ANY = 1" 
+				+ "CONSTANTS k \n" 
+				+ "ASSUME k = 1" 
 				+ "=======";
 		final String config = "CONSTANTS k = 3";
-		StringBuilder sb = Main.start(module, null, true);
+		StringBuilder sb = Main.start(module, config, true);
 
 		System.out.println(sb);
 	}
@@ -38,7 +38,6 @@ public class Main implements TranslationGlobals {
 	public static StringBuilder start(String fileName, String configName,
 			boolean moduleAsString) throws exceptions.FrontEndException,
 			TLA2BException, AbortException {
-		StringBuilder out = new StringBuilder();
 		String moduleName = fileName;
 		if (!moduleAsString)
 			moduleName = evalFileName(fileName);

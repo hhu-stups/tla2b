@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 
 public class TestMiscellaneousConstructs {
 
@@ -19,7 +19,7 @@ public class TestMiscellaneousConstructs {
 	 * IF THEN ELSE
 	 **********************************************************************/
 	@Test
-	public void testIfThenElse() throws FrontEndException, MyException {
+	public void testIfThenElse() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -39,7 +39,7 @@ public class TestMiscellaneousConstructs {
 	 * IF THEN ELSE
 	 **********************************************************************/
 	@Test
-	public void testCase() throws FrontEndException, MyException {
+	public void testCase() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -56,7 +56,7 @@ public class TestMiscellaneousConstructs {
 	}
 	
 	@Test
-	public void testCase2() throws FrontEndException, MyException {
+	public void testCase2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -77,7 +77,7 @@ public class TestMiscellaneousConstructs {
 	 * LET d == exp IN e
 	 **********************************************************************/
 	@Test
-	public void testLetIn() throws FrontEndException, MyException {
+	public void testLetIn() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -92,7 +92,7 @@ public class TestMiscellaneousConstructs {
 	}
 	
 	@Test
-	public void testLetIn2() throws FrontEndException, MyException {
+	public void testLetIn2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -107,7 +107,7 @@ public class TestMiscellaneousConstructs {
 	}
 	
 	@Test
-	public void testLetIn3() throws FrontEndException, MyException {
+	public void testLetIn3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

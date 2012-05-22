@@ -11,13 +11,13 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestTuple {
 
 	@Test  
-	public void testUnifyTuple() throws FrontEndException, MyException {
+	public void testUnifyTuple() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -31,7 +31,7 @@ public class TestTuple {
 	
 	
 	@Test  
-	public void testUnifyTuple2() throws FrontEndException, MyException {
+	public void testUnifyTuple2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -46,7 +46,7 @@ public class TestTuple {
 	}
 
 	@Test  
-	public void testUnifyTuple3() throws FrontEndException, MyException {
+	public void testUnifyTuple3() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2, k3 \n"
@@ -61,7 +61,7 @@ public class TestTuple {
 	}
 	
 	@Test  
-	public void testUnifyTuple4() throws FrontEndException, MyException {
+	public void testUnifyTuple4() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -74,7 +74,7 @@ public class TestTuple {
 	}
 	
 	@Test  
-	public void testUnifyTuple5() throws FrontEndException, MyException {
+	public void testUnifyTuple5() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
@@ -92,7 +92,7 @@ public class TestTuple {
 	 * Cartesian Product
 	 **********************************************************************/
 	@Test
-	public void testCartesianProduct() throws FrontEndException, MyException {
+	public void testCartesianProduct() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -105,7 +105,7 @@ public class TestTuple {
 	}
 	
 	@Test
-	public void testCartesianProduct2() throws FrontEndException, MyException {
+	public void testCartesianProduct2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -119,7 +119,7 @@ public class TestTuple {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testCartesianProductException() throws FrontEndException, MyException {
+	public void testCartesianProductException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

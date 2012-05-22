@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestLogicOperators {
@@ -20,7 +20,7 @@ public class TestLogicOperators {
 	 * equality and disequality: =, #,
 	 **********************************************************************/
 	@Test
-	public void testEquality() throws FrontEndException, MyException {
+	public void testEquality() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -35,7 +35,7 @@ public class TestLogicOperators {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testEqualityError() throws FrontEndException, MyException {
+	public void testEqualityError() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -46,7 +46,7 @@ public class TestLogicOperators {
 		t.start();
 	}
 	@Test (expected = TypeErrorException.class)
-	public void testEqualityError2() throws FrontEndException, MyException {
+	public void testEqualityError2() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -63,7 +63,7 @@ public class TestLogicOperators {
 	 * Logic Operators: \neg, \lnot, \land, \cl, \lor, \dl, \equiv, =>
 	 **********************************************************************/
 	@Test
-	public void testLogicOperators() throws FrontEndException, MyException {
+	public void testLogicOperators() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -79,7 +79,7 @@ public class TestLogicOperators {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testLogicOperatorsError() throws FrontEndException, MyException {
+	public void testLogicOperatorsError() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -97,7 +97,7 @@ public class TestLogicOperators {
 
 	
 	@Test 
-	public void testQuantification() throws FrontEndException, MyException {
+	public void testQuantification() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -113,7 +113,7 @@ public class TestLogicOperators {
 	}
 	
 	@Test(expected = TypeErrorException.class)
-	public void testQuantificationException() throws FrontEndException, MyException {
+	public void testQuantificationException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

@@ -5,6 +5,8 @@
 package translation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import pprint.ExpressionPrinter;
 import analysis.NewTypeChecker;
@@ -27,6 +29,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	public static String translateExpression(String bExpression)
 			throws TLA2BException {
+		ToolIO.reset();
 		ToolIO.setMode(ToolIO.TOOL);
 		ExpressionTranslator et = new ExpressionTranslator(bExpression);
 		et.start();
@@ -86,7 +89,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 */
 	private SpecObj parseModuleWithoutSemanticAnalyse(String module)
 			throws exceptions.FrontEndException {
-		// SANY.turnSemanticAnalyseOff();
+		SANY.turnSemanticAnalyseOff();
 		SpecObj spec = new SpecObj(module, null);
 		try {
 			SANY.frontEndMain(spec, module, ToolIO.out);
@@ -100,7 +103,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 					Main.allMessagesToString(ToolIO.getAllMessages())
 							+ spec.semanticErrors, spec);
 		}
-		// SANY.turnSemanticAnalyseOn();
+		SANY.turnSemanticAnalyseOn();
 		return spec;
 	}
 
@@ -119,17 +122,26 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		for (int i = 0; i < boundedVariables.size(); i++) {
 			constants.remove(boundedVariables.get(i));
 		}
-
+		
 	}
 
+	private final static Set<String> KEYWORDS = new HashSet<String>();
+	static {
+		KEYWORDS.add("TRUE");
+		KEYWORDS.add("FALSE");
+		KEYWORDS.add("Nat");
+	}
+	
+	
 	/**
 	 * 
 	 */
 	private void searchVarInSyntaxTree(TreeNode treeNode) {
+		//System.out.println(treeNode.getKind() + " " + treeNode.getImage());
 		switch (treeNode.getKind()) {
 		case N_GeneralId: {
 			String con = treeNode.heirs()[1].getImage();
-			if (!constants.contains(con)) {
+			if (!constants.contains(con)&& !KEYWORDS.contains(con)) {
 				constants.add(con);
 			}
 			break;

@@ -11,7 +11,7 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 public class TestBBuiltIns {
@@ -21,7 +21,7 @@ public class TestBBuiltIns {
 	 * BOOLEAN
 	 **********************************************************************/
 	@Test  
-	public void testBoolean() throws FrontEndException, MyException {
+	public void testBoolean() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -34,7 +34,7 @@ public class TestBBuiltIns {
 	}
 	
 	@Test (expected = TypeErrorException.class)  
-	public void testBooleanException() throws FrontEndException, MyException {
+	public void testBooleanException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -51,7 +51,7 @@ public class TestBBuiltIns {
 	 * String
 	 **********************************************************************/
 	@Test  
-	public void testString() throws FrontEndException, MyException {
+	public void testString() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -64,7 +64,7 @@ public class TestBBuiltIns {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testUnifyErrorString() throws FrontEndException, MyException {
+	public void testUnifyErrorString() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -79,7 +79,7 @@ public class TestBBuiltIns {
 	 * Bool value: TRUE, FALSE
 	 **********************************************************************/
 	@Test  
-	public void testBoolValue() throws FrontEndException, MyException {
+	public void testBoolValue() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -92,7 +92,7 @@ public class TestBBuiltIns {
 	}
 	
 	@Test (expected = TypeErrorException.class)
-	public void testUnifyErrorBoolValue() throws FrontEndException, MyException {
+	public void testUnifyErrorBoolValue() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME 1 = TRUE \n"

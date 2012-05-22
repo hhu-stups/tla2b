@@ -11,12 +11,12 @@ import org.junit.Test;
 import util.ToolIO;
 import util.TypeCheckerTest;
 import exceptions.FrontEndException;
-import exceptions.MyException;
+import exceptions.TLA2BException;
 
 public class TestConfig {
 
 	@Test
-	public void TestConAssignment() throws FrontEndException, MyException {
+	public void TestConAssignment() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
@@ -29,7 +29,7 @@ public class TestConfig {
 	
 
 	@Test
-	public void TestConOverride() throws FrontEndException, MyException {
+	public void TestConOverride() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k, k2 \n"
