@@ -37,6 +37,15 @@ public class TestKeywords {
 		final String expr = "x = [a EXCEPT ![1] = 1]";
 		String res = ExpressionTranslator.translateExpression(expr);
 		System.out.println(res);
-		//assertEquals("NATURAL", res);
+		assertEquals("x = a <+ {1 |-> 1}", res);
 	}
+	
+	@Test
+	public void testCardinality() throws TLA2BException {
+		final String expr = "Cardinality({1,2,3})";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		assertEquals("card({1, 2, 3})", res);
+	}
+	
 }

@@ -4,6 +4,8 @@
 
 package expression;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,6 +25,7 @@ public class TestExprWithVariables {
 		final String expr = "a + 2";
 		String res = ExpressionTranslator.translateExpression(expr);
 		System.out.println(res);
+		assertEquals("a + 2", res);
 	}
 	
 }

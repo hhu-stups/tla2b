@@ -43,11 +43,11 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	}
 
 	public void start() throws TLA2BException {
-		String module = "----MODULE Test----\n" + "EXTENDS Naturals\n"
+		String module = "----MODULE Test----\n"
 				+ "Expression == " + TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
-		evalConstants(spec);
+		evalVariables(spec);
 		StringBuilder sb = new StringBuilder();
 		sb.append("----MODULE Test----\n");
 		sb.append("EXTENDS Naturals, Sequences, FiniteSets\n");
@@ -110,7 +110,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 * @param spec
 	 * @return
 	 */
-	private void evalConstants(SpecObj spec) {
+	private void evalVariables(SpecObj spec) {
 		ParseUnit p = (ParseUnit) spec.parseUnitContext.get("Testing");
 		TreeNode n_module = p.getParseTree();
 		TreeNode n_body = n_module.heirs()[2];
@@ -146,7 +146,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 * 
 	 */
 	private void searchVarInSyntaxTree(TreeNode treeNode) {
-		// System.out.println(treeNode.getKind() + " " + treeNode.getImage());
+		//System.out.println(treeNode.getKind() + " " + treeNode.getImage());
 		switch (treeNode.getKind()) {
 		case N_GeneralId: {
 			String con = treeNode.heirs()[1].getImage();
@@ -157,9 +157,6 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		}
 		case N_IdentLHS: { // left side of a definition
 			TreeNode[] children = treeNode.heirs();
-			for (int i = 0; i < children.length; i++) {
-				// System.out.println(children[i].getImage());
-			}
 			noVariables.add(children[0].getImage());
 			break;
 		}
@@ -167,6 +164,11 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 							// e.g. x in LET foo(x) == e
 			noVariables.add(treeNode.heirs()[0].getImage());
 			break;
+		}
+		case N_FunctionDefinition:{
+			// the first child is the function name
+			noVariables.add(treeNode.heirs()[0].getImage());
+			return;
 		}
 		case N_UnboundQuant: {
 			TreeNode[] children = treeNode.heirs();
