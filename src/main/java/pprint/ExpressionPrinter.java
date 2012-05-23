@@ -18,7 +18,6 @@ import types.BType;
 
 public class ExpressionPrinter extends AbstractExpressionPrinter {
 
-	private ArrayList<OpDefNode> letInNodeList;
 	private Hashtable<FormalParamNode, ExprOrOpArgNode> paramterSubstitution;
 	private ModuleNode moduleNode;
 	private StringBuilder BExpression;
@@ -42,14 +41,12 @@ public class ExpressionPrinter extends AbstractExpressionPrinter {
 	@Override
 	protected ExprReturn visitUserdefinedOp(OpApplNode n, DContext d,
 			int expected) {
-		StringBuilder out = new StringBuilder();
 		OpDefNode def = (OpDefNode) n.getOperator();
 		if (BBuiltInOPs.contains(def.getName())) {
 			return evalBBuiltIns(n, d, expected);
 		}
 
-		out.append(getPrintName(def));
-
+		// substitute the parameters and inline the boby of the operator
 		FormalParamNode[] params = def.getParams();
 		if (params.length > 0) {
 			for (int i = 0; i < n.getArgs().length; i++) {

@@ -23,8 +23,8 @@ import util.ToolIO;
 
 public class ExpressionTranslator implements SyntaxTreeConstants {
 	private String TLAExpression;
-	private ArrayList<String> constants;
-	private ArrayList<String> boundedVariables;
+	private ArrayList<String> variables;
+	private ArrayList<String> noVariables;
 	private StringBuilder BExpression;
 
 	public static String translateExpression(String bExpression)
@@ -38,35 +38,34 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	public ExpressionTranslator(String TLAExpression) {
 		this.TLAExpression = TLAExpression;
-		this.constants = new ArrayList<String>();
-		this.boundedVariables = new ArrayList<String>();
+		this.variables = new ArrayList<String>();
+		this.noVariables = new ArrayList<String>();
 	}
 
 	public void start() throws TLA2BException {
 		String module = "----MODULE Test----\n" + "EXTENDS Naturals\n"
-				+ "foo == " + TLAExpression + "\n====";
+				+ "Expression == " + TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
-
 		evalConstants(spec);
 		StringBuilder sb = new StringBuilder();
 		sb.append("----MODULE Test----\n");
-		sb.append("EXTENDS Naturals\n");
-		sb.append("foo");
-		if (constants.size() > 0) {
-			sb.append("(");
-			for (int i = 0; i < constants.size(); i++) {
+		sb.append("EXTENDS Naturals, Sequences, FiniteSets\n");
+		if (variables.size() > 0) {
+			sb.append("VARIABLES ");
+			for (int i = 0; i < variables.size(); i++) {
 				if (i != 0) {
 					sb.append(", ");
 				}
-				sb.append(constants.get(i));
+				sb.append(variables.get(i));
 			}
-			sb.append(")");
+			sb.append("\n");
 		}
+		sb.append("Expression");
 		sb.append(" == ");
 		sb.append(TLAExpression);
 		sb.append("\n====================");
-		// System.out.println(sb);
+		//System.out.println(sb);
 		BExpression = translate(sb.toString());
 	}
 
@@ -119,10 +118,10 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		TreeNode expr = n_operatorDefintion.heirs()[2];
 		searchVarInSyntaxTree(expr);
 
-		for (int i = 0; i < boundedVariables.size(); i++) {
-			constants.remove(boundedVariables.get(i));
+		for (int i = 0; i < noVariables.size(); i++) {
+			variables.remove(noVariables.get(i));
 		}
-		
+
 	}
 
 	private final static Set<String> KEYWORDS = new HashSet<String>();
@@ -130,26 +129,49 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		KEYWORDS.add("TRUE");
 		KEYWORDS.add("FALSE");
 		KEYWORDS.add("Nat");
+		KEYWORDS.add("Int");
+		KEYWORDS.add("Cardinality");
+		KEYWORDS.add("IsFiniteSet");
+		KEYWORDS.add("Append");
+		KEYWORDS.add("Head");
+		KEYWORDS.add("Tail");
+		KEYWORDS.add("Len");
+		KEYWORDS.add("Seq");
+		KEYWORDS.add("SubSeq");
+		KEYWORDS.add("SelectSeq");
+		
 	}
-	
-	
+
 	/**
 	 * 
 	 */
 	private void searchVarInSyntaxTree(TreeNode treeNode) {
-		//System.out.println(treeNode.getKind() + " " + treeNode.getImage());
+		// System.out.println(treeNode.getKind() + " " + treeNode.getImage());
 		switch (treeNode.getKind()) {
 		case N_GeneralId: {
 			String con = treeNode.heirs()[1].getImage();
-			if (!constants.contains(con)&& !KEYWORDS.contains(con)) {
-				constants.add(con);
+			if (!variables.contains(con) && !KEYWORDS.contains(con)) {
+				variables.add(con);
 			}
+			break;
+		}
+		case N_IdentLHS: { // left side of a definition
+			TreeNode[] children = treeNode.heirs();
+			for (int i = 0; i < children.length; i++) {
+				// System.out.println(children[i].getImage());
+			}
+			noVariables.add(children[0].getImage());
+			break;
+		}
+		case N_IdentDecl: { // parameter of a LET definition
+							// e.g. x in LET foo(x) == e
+			noVariables.add(treeNode.heirs()[0].getImage());
 			break;
 		}
 		case N_UnboundQuant: {
 			TreeNode[] children = treeNode.heirs();
 			for (int i = 1; i < children.length - 2; i = i + 2) {
-				System.out.println(children[i].getImage());
+				// System.out.println(children[i].getImage());
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
 			break;
@@ -158,8 +180,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			TreeNode[] children = treeNode.heirs();
 			for (int i = 0; i < children.length - 2; i = i + 2) {
 				String boundedVar = children[i].getImage();
-				if (!boundedVariables.contains(boundedVar)) {
-					boundedVariables.add(boundedVar);
+				if (!noVariables.contains(boundedVar)) {
+					noVariables.add(boundedVar);
 				}
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[children.length - 1]);
@@ -168,8 +190,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		case N_SubsetOf: { // { x \in S : e }
 			TreeNode[] children = treeNode.heirs();
 			String boundedVar = children[1].getImage(); // x
-			if (!boundedVariables.contains(boundedVar)) {
-				boundedVariables.add(boundedVar);
+			if (!noVariables.contains(boundedVar)) {
+				noVariables.add(boundedVar);
 			}
 			searchVarInSyntaxTree(treeNode.heirs()[3]); // S
 			searchVarInSyntaxTree(treeNode.heirs()[5]); // e
