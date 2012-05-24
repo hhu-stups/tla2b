@@ -104,8 +104,8 @@ public class Main implements TranslationGlobals {
 
 		if (spec.semanticErrors.isFailure()) {
 			throw new exceptions.FrontEndException(
-					allMessagesToString(ToolIO.getAllMessages())
-							+ spec.semanticErrors, spec);
+					//allMessagesToString(ToolIO.getAllMessages())
+							 ""+spec.semanticErrors, spec);
 		}
 
 		// RootModule

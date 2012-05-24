@@ -13,7 +13,6 @@ import java.util.Hashtable;
 
 import config.TLCValueNode;
 
-
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AtNode;
 import tla2sany.semantic.ExprNode;
@@ -456,9 +455,10 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			return new ExprReturn(out);
 		}
 
-		case OPCODE_fa: // f[1]
-		{
-			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+		case OPCODE_fa: { // f[1]
+			out.append(brackets(
+					visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL), P_max,
+					true));
 			out.append("(");
 			ExprOrOpArgNode dom = n.getArgs()[1];
 			if (dom instanceof OpApplNode
@@ -647,7 +647,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		case OPCODE_ite: // IF THEN ELSE
 		{
 			return evalIfThenElse(n, d, expected);
-			
+
 		}
 
 		case OPCODE_case: { // CASE p1 -> e1 [] p2 -> e2
@@ -766,10 +766,8 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 		if (t.getKind() == BOOL) {
 			d.indent.append(" ");
-			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d,
-					PREDICATE);
-			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d,
-					PREDICATE);
+			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE);
+			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, PREDICATE);
 			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
 					PREDICATE);
 			String res = String.format(
@@ -791,8 +789,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			// return new ExprReturn(res);
 			ExprReturn iif = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
 			ExprReturn then = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
-			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d,
-					VALUE);
+			ExprReturn eelse = visitExprOrOpArgNode(n.getArgs()[2], d, VALUE);
 			String res = String.format("IF_THEN_ELSE(%s, %s, %s)", iif.out,
 					then.out, eelse.out);
 			return new ExprReturn(res);

@@ -168,7 +168,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		case N_FunctionDefinition:{
 			// the first child is the function name
 			noVariables.add(treeNode.heirs()[0].getImage());
-			return;
+			break;
 		}
 		case N_UnboundQuant: {
 			TreeNode[] children = treeNode.heirs();

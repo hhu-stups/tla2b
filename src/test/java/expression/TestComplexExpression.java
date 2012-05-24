@@ -58,4 +58,23 @@ public class TestComplexExpression {
 		assertEquals("%n.(n : {1}| 1)(1)", res);
 	}
 	
+	@Test
+	public void testQuantifier() throws TLA2BException {
+		final String expr = "\\E x,z \\in Nat, y \\in Nat: x = y";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		assertEquals("#x,z,y.(x : NATURAL & z : NATURAL & y : NATURAL & x = y)", res);
+	}
+	
+	@Test
+	public void testFunctions() throws TLA2BException {
+		final String expr = "LET"
+				+ " f[x \\in 1..10] == x*x\n"
+				+ " h == [f EXCEPT ![3] = 6]\n" +
+				"IN	h[3]";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
+	}
+	
 }
