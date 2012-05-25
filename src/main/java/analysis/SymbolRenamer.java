@@ -94,6 +94,13 @@ public class SymbolRenamer implements TranslationGlobals {
 		this.moduleNode = moduleNode;
 		this.usedDefinitions = specAnalyser.getUsedDefinitions();
 	}
+	
+	public SymbolRenamer(ModuleNode moduleNode){
+		this.moduleNode = moduleNode;
+		usedDefinitions = new HashSet<OpDefNode>();
+		OpDefNode[] defs = moduleNode.getOpDefs();
+		usedDefinitions.add(defs[defs.length-1]);
+	}
 
 	public void start() {
 		// Variables

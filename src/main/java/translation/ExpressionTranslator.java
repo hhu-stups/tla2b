@@ -10,6 +10,7 @@ import java.util.Set;
 
 import pprint.ExpressionPrinter;
 import analysis.NewTypeChecker;
+import analysis.SymbolRenamer;
 
 import exceptions.TLA2BException;
 import tla2sany.drivers.FrontEndException;
@@ -76,6 +77,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		NewTypeChecker tc = new NewTypeChecker(moduleNode);
 		tc.start();
 
+		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode);
+		symRenamer.start();
+		
 		ExpressionPrinter p = new ExpressionPrinter(moduleNode);
 		p.start();
 		return p.getBExpression();

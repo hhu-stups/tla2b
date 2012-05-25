@@ -15,6 +15,7 @@ public interface Priorities {
 	
 	public static final int P_plus = 180;
 	public static final int P_minus = 180;
+	public static final int P_setdiff = 180;
 	
 	public static final int P_dotdot = 170;
 	
@@ -26,7 +27,7 @@ public interface Priorities {
 	
 	public static final int P_intersect = 140;
 	public static final int P_union = 140;
-	public static final int P_setdiff = 140;
+	
 	
 	public static final int P_append = 130;
 	
