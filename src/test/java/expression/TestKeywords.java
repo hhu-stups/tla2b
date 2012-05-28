@@ -48,4 +48,19 @@ public class TestKeywords {
 		assertEquals("card({1, 2, 3})", res);
 	}
 	
+	@Test
+	public void testDom() throws TLA2BException {
+		final String expr = "dom = 1";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		assertEquals("dom_1 = 1", res);
+	}
+	
+	@Test
+	public void testMinOfSet() throws TLA2BException {
+		final String expr = "MinOfSet({2,3,4})";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		assertEquals("min({2, 3, 4})", res);
+	}
 }

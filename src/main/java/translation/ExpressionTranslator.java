@@ -51,7 +51,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		evalVariables(spec);
 		StringBuilder sb = new StringBuilder();
 		sb.append("----MODULE Test----\n");
-		sb.append("EXTENDS Naturals, Sequences, FiniteSets\n");
+		sb.append("EXTENDS Naturals, Sequences, FiniteSets, TLA2B \n");
 		if (variables.size() > 0) {
 			sb.append("VARIABLES ");
 			for (int i = 0; i < variables.size(); i++) {
@@ -143,6 +143,11 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		KEYWORDS.add("Seq");
 		KEYWORDS.add("SubSeq");
 		KEYWORDS.add("SelectSeq");
+		KEYWORDS.add("MinOfSet");
+		KEYWORDS.add("MaxOfSet");
+		KEYWORDS.add("SetProduct");
+		KEYWORDS.add("SetSummation");
+		KEYWORDS.add("PermutedSequences");
 		
 	}
 

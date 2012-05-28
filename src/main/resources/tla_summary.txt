@@ -130,7 +130,7 @@ Tail(s)
 FiniteSets
 ----------
 Cardinality(S)
-IsFiniteSet(S)                (ProB can only handle certain infinite sets as argument) 
+IsFiniteSet(S)
 
 
 
