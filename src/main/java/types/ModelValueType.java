@@ -48,4 +48,9 @@ public class ModelValueType extends BType {
 	public ModelValueType cloneBType() {
 		return this;
 	}
+	
+	@Override
+	public boolean contains(BType o) {
+		return false;
+	}
 }

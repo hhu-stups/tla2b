@@ -97,6 +97,8 @@ public class PairType extends AbstractHasFollowers {
 
 	@Override
 	public boolean compare(BType o) {
+		if (this.contains(o))
+			return false;
 		if (o.getKind() == UNTYPED)
 			return true;
 
@@ -111,6 +113,12 @@ public class PairType extends AbstractHasFollowers {
 	@Override
 	public PairType cloneBType() {
 		return new PairType(this.first.cloneBType(), this.second.cloneBType());
+	}
+
+	@Override
+	public boolean contains(BType o) {
+		return first.equals(o) || first.contains(o) || second.equals(o)
+				|| second.contains(o);
 	}
 
 }

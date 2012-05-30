@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import pprint.ExpressionPrinter;
-import analysis.NewTypeChecker;
+import analysis.TypeChecker;
 import analysis.SymbolRenamer;
 
 import exceptions.TLA2BException;
@@ -44,13 +44,13 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	}
 
 	public void start() throws TLA2BException {
-		String module = "----MODULE Test----\n"
+		String module = "----MODULE Testing----\n"
 				+ "Expression == " + TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
 		evalVariables(spec);
 		StringBuilder sb = new StringBuilder();
-		sb.append("----MODULE Test----\n");
+		sb.append("----MODULE Testing----\n");
 		sb.append("EXTENDS Naturals, Sequences, FiniteSets, TLA2B \n");
 		if (variables.size() > 0) {
 			sb.append("VARIABLES ");
@@ -72,9 +72,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	private static StringBuilder translate(String expr)
 			throws exceptions.FrontEndException, TLA2BException {
-		ModuleNode moduleNode = Main.parseModule(expr);
+		ModuleNode moduleNode = parseModule(expr);
 
-		NewTypeChecker tc = new NewTypeChecker(moduleNode);
+		TypeChecker tc = new TypeChecker(moduleNode);
 		tc.start();
 
 		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode);
@@ -102,12 +102,55 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		}
 
 		if (spec.parseErrors.isFailure()) {
+			String[] m = ToolIO.getAllMessages();
+			String message = m[0]+"\n\n" +module + "\n\n" + m[1];
 			throw new exceptions.FrontEndException(
-					Main.allMessagesToString(ToolIO.getAllMessages())
-							+ spec.semanticErrors, spec);
+					message, spec);
 		}
 		SANY.turnSemanticAnalyseOn();
 		return spec;
+	}
+	
+	
+	public static ModuleNode parseModule(String module)
+			throws exceptions.FrontEndException {
+
+		SpecObj spec = new SpecObj(module, null);
+		try {
+			SANY.frontEndMain(spec, module, ToolIO.out);
+		} catch (FrontEndException e) {
+			// Error in Frontend, should never happens
+			return null;
+		}
+
+		if (spec.parseErrors.isFailure()) {
+			String[] m = ToolIO.getAllMessages();
+			String message = m[0]+"\n\n" +module + "\n\n" + m[1];
+			throw new exceptions.FrontEndException(
+					message, spec);
+		}
+
+		if (spec.semanticErrors.isFailure()) {
+			String[] m = ToolIO.getAllMessages();
+			String message = m[0]+"\n\n" +module + "\n\n" + spec.semanticErrors;
+			//System.out.println(message);
+			throw new exceptions.FrontEndException(
+					message, spec);
+		}
+
+		// RootModule
+		ModuleNode n = spec.getExternalModuleTable().rootModule;
+		if (spec.getInitErrors().isFailure()) {
+			System.err.println(spec.getInitErrors());
+			return null;
+		}
+
+		if (n == null) { // Parse Error
+			// System.out.println("Rootmodule null");
+			throw new exceptions.FrontEndException(
+					Main.allMessagesToString(ToolIO.getAllMessages()), spec);
+		}
+		return n;
 	}
 
 	/**
@@ -130,6 +173,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	private final static Set<String> KEYWORDS = new HashSet<String>();
 	static {
+		KEYWORDS.add("BOOLEAN");
 		KEYWORDS.add("TRUE");
 		KEYWORDS.add("FALSE");
 		KEYWORDS.add("Nat");
@@ -148,6 +192,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		KEYWORDS.add("SetProduct");
 		KEYWORDS.add("SetSummation");
 		KEYWORDS.add("PermutedSequences");
+		KEYWORDS.add("@");
 		
 	}
 

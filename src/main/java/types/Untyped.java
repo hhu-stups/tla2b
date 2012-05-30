@@ -20,13 +20,20 @@ public class Untyped extends AbstractHasFollowers {
 	
 	@Override
 	public boolean compare(BType o){
-		o.getKind();
+		if(o.contains(this)){
+			return false;
+		}
 		return true;
+	}
+	
+	@Override
+	public boolean contains(BType o){
+		return false;
 	}
 
 	@Override
 	public String toString() {
-		return "UNTYPED";
+		return "UNTYPED_"+hashCode();
 	}
 
 	@Override

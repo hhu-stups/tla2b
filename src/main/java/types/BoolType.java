@@ -47,4 +47,9 @@ public class BoolType extends BType {
 	public BoolType cloneBType() {
 		return this;
 	}
+	
+	@Override
+	public boolean contains(BType o) {
+		return false;
+	}
 }

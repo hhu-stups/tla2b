@@ -18,6 +18,8 @@ public abstract class BType implements IType {
 
 	public abstract boolean compare(BType o);
 	
+	public abstract boolean contains(BType o);
+	
 	public abstract boolean isUntyped();
 	
 	public abstract BType cloneBType();

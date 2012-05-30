@@ -1,7 +1,7 @@
 package translation;
 
 import analysis.InstanceTransformation;
-import analysis.NewTypeChecker;
+import analysis.TypeChecker;
 import analysis.SpecAnalyser;
 import analysis.SymbolRenamer;
 import analysis.SymbolSorter;
@@ -68,7 +68,7 @@ public class Main implements TranslationGlobals {
 
 		specAnalyser.start();
 
-		NewTypeChecker tc = new NewTypeChecker(moduleNode, conEval,
+		TypeChecker tc = new TypeChecker(moduleNode, conEval,
 				specAnalyser);
 		tc.start();
 		

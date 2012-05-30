@@ -68,4 +68,10 @@ public class EnumType extends AbstractHasFollowers {
 	public EnumType cloneBType() {
 		return this;
 	}
+	
+	@Override
+	public boolean contains(BType o) {
+		//TODO is this really false
+		return false;
+	}
 }

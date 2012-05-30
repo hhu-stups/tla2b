@@ -47,4 +47,9 @@ public class IntType extends BType {
 	public IntType cloneBType() {
 		return this;
 	}
+	
+	@Override
+	public boolean contains(BType o) {
+		return false;
+	}
 }

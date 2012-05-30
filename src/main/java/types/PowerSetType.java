@@ -24,7 +24,7 @@ public class PowerSetType extends AbstractHasFollowers {
 			// set new reference
 			((AbstractHasFollowers) t).addFollower(this);
 		}
-		subType = t;
+		this.subType = t;
 
 		// setting subType can lead to a completely typed type
 		if (!this.isUntyped()) {
@@ -35,7 +35,7 @@ public class PowerSetType extends AbstractHasFollowers {
 
 	public PowerSetType unify(BType o) throws UnificationException {
 
-		if (!this.compare(o)) {
+		if (!this.compare(o)|| this.contains(o)) {
 			throw new UnificationException();
 		}
 		// if o has followers than switch pointer to this
@@ -55,6 +55,9 @@ public class PowerSetType extends AbstractHasFollowers {
 
 	@Override
 	public boolean compare(BType o) {
+		if(this.contains(o))
+			return false;
+		
 		if (o.getKind() == UNTYPED)
 			return true;
 
@@ -81,6 +84,12 @@ public class PowerSetType extends AbstractHasFollowers {
 	@Override
 	public PowerSetType cloneBType() {
 		return new PowerSetType(this.subType.cloneBType());
+	}
+
+
+	@Override
+	public boolean contains(BType o) {
+		return this.getSubType().equals(o) || this.getSubType().contains(o);
 	}
 
 }

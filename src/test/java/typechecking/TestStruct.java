@@ -127,7 +127,7 @@ public class TestStruct {
 		assertEquals("struct(a:INTEGER,b:BOOL)", t.constants.get("k").toString());
 	}
 	
-	@Test// (expected = TypeErrorException.class)
+	@Test (expected = TypeErrorException.class)
 	public void testRecordException() throws FrontEndException, TLA2BException {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

@@ -71,6 +71,8 @@ public class StructType extends AbstractHasFollowers {
 	}
 
 	public boolean compare(BType o) {
+		if(this.contains(o)|| o.contains(this))
+			return false;
 		if (o.getKind() == UNTYPED)
 			return true;
 		if (o instanceof StructType) {
@@ -144,5 +146,16 @@ public class StructType extends AbstractHasFollowers {
 			fields.add(fieldName);
 		}
 		return fields;
+	}
+
+	@Override
+	public boolean contains(BType o) {
+		Iterator<BType> ts = types.values().iterator();
+		while (ts.hasNext()) {
+			BType bType = (BType) ts.next();
+			if (bType.equals(o) || bType.contains(o))
+				return true;
+		}
+		return false;
 	}
 }

@@ -501,6 +501,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		{
 			BType t = (BType) n.getToolObject(TYPE_ID);
 			if (t.getKind() == STRUCT) {
+				String oldRec = visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out
+						.toString();
+				
 				Hashtable<String, String> temp = new Hashtable<String, String>();
 				for (int i = 1; i < n.getArgs().length; i++) {
 					OpApplNode pair = (OpApplNode) n.getArgs()[i];
@@ -510,10 +513,10 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					String val = visitExprOrOpArgNode(
 							(ExprOrOpArgNode) pair.getChildren()[1], d, VALUE).out
 							.toString();
+					String newVal = evalRecVal(t, pair, oldRec, d);
 					temp.put(fieldName, val);
 				}
-				String oldRec = visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out
-						.toString();
+
 				out.append("rec(");
 				StructType st = (StructType) t;
 				for (int i = 0; i < st.getFields().size(); i++) {
@@ -525,6 +528,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 						value = oldRec + "'" + fieldName;
 					}
 					out.append(value);
+
 					if (i < st.getFields().size() - 1) {
 						out.append(", ");
 					}
@@ -755,6 +759,31 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 		}
 		throw new RuntimeException(n.toString(2));
+	}
+
+	/**
+	 * @param t
+	 * @param pair
+	 * @return
+	 */
+	private String evalRecVal(BType t, OpApplNode pair, String oldRec, DContext d) {
+		ExprOrOpArgNode first = pair.getArgs()[0];
+		ExprOrOpArgNode second = pair.getArgs()[1];
+		
+		OpApplNode seq = (OpApplNode) first;
+		if(seq.getArgs().length == 1){
+			String val = visitExprOrOpArgNode(
+					(ExprOrOpArgNode) pair.getChildren()[1], d, VALUE).out
+					.toString();
+			return val;
+		}
+		StringNode s1 = (StringNode) seq.getArgs()[0];
+		String field1 = s1.getRep().toString();
+		
+		StructType sType = (StructType) t;
+		BType field1Type = sType.getType(field1);
+		//System.out.println(seq.toString(2));
+		return null;
 	}
 
 	/**

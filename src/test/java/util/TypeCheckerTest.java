@@ -7,7 +7,7 @@ package util;
 import java.util.Hashtable;
 
 import analysis.InstanceTransformation;
-import analysis.NewTypeChecker;
+import analysis.TypeChecker;
 import analysis.SpecAnalyser;
 import analysis.SymbolSorter;
 
@@ -31,7 +31,7 @@ public class TypeCheckerTest {
 
 	public ModuleNode moduleNode;
 	public final int toolId = 5;
-	private NewTypeChecker tc;
+	private TypeChecker tc;
 	public Hashtable<String, BType> constants;
 	public Hashtable<String, BType> variables;
 	public Hashtable<String, DefCon> definitions;
@@ -81,7 +81,7 @@ public class TypeCheckerTest {
 
 		specAnalyser.start();
 
-		tc = new NewTypeChecker(moduleNode, conEval,
+		tc = new TypeChecker(moduleNode, conEval,
 				specAnalyser);
 	}
 

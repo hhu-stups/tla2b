@@ -42,7 +42,7 @@ import tlc2.tool.BuiltInOPs;
 import types.*;
 import util.StandardModules;
 
-public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
+public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		BBuildIns, TranslationGlobals {
 
 	private final int TEMP_TYPE_ID = 6;
@@ -64,7 +64,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 	 * @param conEval
 	 * @param specAnalyser
 	 */
-	public NewTypeChecker(ModuleNode moduleNode, ConfigfileEvaluator conEval,
+	public TypeChecker(ModuleNode moduleNode, ConfigfileEvaluator conEval,
 			SpecAnalyser specAnalyser) {
 		this.moduleNode = moduleNode;
 		if (conEval != null) {
@@ -78,7 +78,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		paramId = TYPE_ID;
 	}
 	
-	public NewTypeChecker(ModuleNode moduleNode) {
+	public TypeChecker(ModuleNode moduleNode) {
 		this.moduleNode = moduleNode;
 
 		Set<OpDefNode> usedDefinitions = new HashSet<OpDefNode>();
@@ -903,10 +903,13 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 			// Struct
 			if (t instanceof StructType) {
+//				if(1==1)
+//					return t;
 				StructType struct = new StructType();
 				for (int i = 1; i < n.getArgs().length; i++) {
 					OpApplNode pair = (OpApplNode) n.getArgs()[i];
 					OpApplNode seq = (OpApplNode) pair.getArgs()[0];
+					//System.out.println(seq.toString(2));
 					if (seq.getArgs().length > 1) {
 						throw new TypeErrorException(
 								String.format(
@@ -947,6 +950,7 @@ public class NewTypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				OpApplNode pair = (OpApplNode) n.getArgs()[i]; // Pair
 				// domain
 				OpApplNode domSeq = (OpApplNode) pair.getArgs()[0];
+				//System.out.println(domSeq.toString(3));
 				if (domSeq.getArgs().length > 1) {
 					throw new TypeErrorException(
 							String.format(

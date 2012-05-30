@@ -4,6 +4,7 @@
 
 package expression;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import translation.ExpressionTranslator;
@@ -77,4 +78,32 @@ public class TestComplexExpression {
 		assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
 	}
 	
+	@Test
+	public void testRecord() throws TLA2BException {
+		final String expr =  "[[a|->1, b |->TRUE] EXCEPT !.a= @+@]";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		//assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
+	}
+	
+	
+	@Ignore
+	@Test
+	public void testRecord2() throws TLA2BException {
+		final String expr =  "LET r == [a |-> [x|->1,y|->TRUE], b |-> 1] " +
+				"IN [r EXCEPT !.a.x = 2]";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		//assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
+	}
+	
+	@Ignore
+	@Test
+	public void testFunction2() throws TLA2BException {
+		final String expr =  "LET r[x,y \\in {1,2}] == x+y " +
+				"IN [r EXCEPT ![1][2] = 10]";
+		String res = ExpressionTranslator.translateExpression(expr);
+		System.out.println(res);
+		//assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
+	}
 }

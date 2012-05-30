@@ -128,7 +128,7 @@ public class TestDefinitions {
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		assertEquals("UNTYPED", t.definitions.get("foo").getType().toString());
+		assertTrue(t.definitions.get("foo").getType().toString().startsWith("UNTYPED"));
 		assertEquals("INTEGER", t.definitions.get("bar").getType().toString());
 		assertEquals("BOOL", t.definitions.get("baz").getType().toString());
 	}
@@ -148,7 +148,7 @@ public class TestDefinitions {
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		assertEquals("UNTYPED", t.definitions.get("foo").getType().toString());
+		assertTrue(t.definitions.get("foo").getType().toString().startsWith("UNTYPED"));
 		assertEquals("INTEGER", t.definitions.get("bar").getType().toString());
 		assertEquals("BOOL", t.definitions.get("baz").getType().toString());
 		assertEquals("INTEGER", t.constants.get("k").toString());
@@ -170,7 +170,7 @@ public class TestDefinitions {
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getType().toString());
+		assertTrue(t.definitions.get("foo").getType().toString().startsWith("POW(UNTYPED"));
 		assertEquals("POW(INTEGER)", t.definitions.get("bar").getType().toString());
 		assertEquals("POW(BOOL)", t.definitions.get("baz").getType().toString());
 		assertEquals("POW(INTEGER)", t.constants.get("k").toString());
@@ -208,8 +208,8 @@ public class TestDefinitions {
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
 		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
-		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("a").toString());
-		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("b").toString());
+		assertTrue(t.definitions.get("foo").getParams().get("a").toString().startsWith("UNTYPED"));
+		assertTrue(t.definitions.get("foo").getParams().get("b").toString().startsWith("UNTYPED"));
 		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
 		
 		assertEquals("INTEGER", t.constants.get("k").toString());
@@ -229,9 +229,9 @@ public class TestDefinitions {
 	
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getType().toString());
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getParams().get("a").toString());
-		assertEquals("POW(UNTYPED)", t.definitions.get("foo").getParams().get("b").toString());
+		assertTrue(t.definitions.get("foo").getType().toString().startsWith("POW(UNTYPED"));
+		assertTrue(t.definitions.get("foo").getParams().get("a").toString().startsWith("POW(UNTYPED"));
+		assertTrue(t.definitions.get("foo").getParams().get("b").toString().startsWith("POW(UNTYPED"));
 		assertEquals("BOOL", t.definitions.get("bar").getType().toString());
 		assertEquals("POW(INTEGER)", t.definitions.get("bar").getParams().get("x").toString());
 		assertEquals("POW(INTEGER)", t.definitions.get("bar").getParams().get("y").toString());
@@ -278,7 +278,8 @@ public class TestDefinitions {
 		assertEquals("INTEGER", t.constants.get("k").toString());
 		assertEquals("BOOL", t.constants.get("k2").toString());
 		assertEquals("BOOL", t.definitions.get("foo").getType().toString());
-		assertEquals("UNTYPED", t.definitions.get("foo").getParams().get("a").toString());
+		assertTrue(t.definitions.get("foo").getParams().get("a").toString().startsWith("UNTYPED"));
+		assertTrue(t.definitions.get("foo").getParams().get("a").toString().startsWith("UNTYPED"));
 	}
 	
 	@Test  
