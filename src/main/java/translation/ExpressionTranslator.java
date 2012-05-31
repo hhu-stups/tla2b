@@ -13,6 +13,7 @@ import analysis.TypeChecker;
 import analysis.SymbolRenamer;
 
 import exceptions.TLA2BException;
+import exceptions.TypeErrorException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.ParseUnit;
@@ -44,8 +45,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	}
 
 	public void start() throws TLA2BException {
-		String module = "----MODULE Testing----\n"
-				+ "Expression == " + TLAExpression + "\n====";
+		String module = "----MODULE Testing----\n" + "Expression == "
+				+ TLAExpression + "\n====";
 
 		SpecObj spec = parseModuleWithoutSemanticAnalyse(module);
 		evalVariables(spec);
@@ -66,20 +67,27 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		sb.append(" == ");
 		sb.append(TLAExpression);
 		sb.append("\n====================");
-		//System.out.println(sb);
+		// System.out.println(sb);
 		BExpression = translate(sb.toString());
 	}
 
-	private static StringBuilder translate(String expr)
-			throws exceptions.FrontEndException, TLA2BException {
+	private static StringBuilder translate(String expr) throws TLA2BException {
 		ModuleNode moduleNode = parseModule(expr);
 
 		TypeChecker tc = new TypeChecker(moduleNode);
-		tc.start();
+		try {
+			tc.start();
+		} catch (TLA2BException e) {
+			String[] m = ToolIO.getAllMessages();
+			String message = m[0] + "\n" + expr + "\n\n"
+					+ e.getLocalizedMessage();
+			//System.out.println(message);
+			throw new TypeErrorException(message);
+		}
 
 		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode);
 		symRenamer.start();
-		
+
 		ExpressionPrinter p = new ExpressionPrinter(moduleNode);
 		p.start();
 		return p.getBExpression();
@@ -103,15 +111,13 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 		if (spec.parseErrors.isFailure()) {
 			String[] m = ToolIO.getAllMessages();
-			String message = m[0]+"\n\n" +module + "\n\n" + m[1];
-			throw new exceptions.FrontEndException(
-					message, spec);
+			String message = m[0] + "\n\n" + module + "\n\n" + m[1];
+			throw new exceptions.FrontEndException(message, spec);
 		}
 		SANY.turnSemanticAnalyseOn();
 		return spec;
 	}
-	
-	
+
 	public static ModuleNode parseModule(String module)
 			throws exceptions.FrontEndException {
 
@@ -125,17 +131,16 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 		if (spec.parseErrors.isFailure()) {
 			String[] m = ToolIO.getAllMessages();
-			String message = m[0]+"\n\n" +module + "\n\n" + m[1];
-			throw new exceptions.FrontEndException(
-					message, spec);
+			String message = m[0] + "\n\n" + module + "\n\n" + m[1];
+			throw new exceptions.FrontEndException(message, spec);
 		}
 
 		if (spec.semanticErrors.isFailure()) {
 			String[] m = ToolIO.getAllMessages();
-			String message = m[0]+"\n\n" +module + "\n\n" + spec.semanticErrors;
-			//System.out.println(message);
-			throw new exceptions.FrontEndException(
-					message, spec);
+			String message = m[0] + "\n\n" + module + "\n\n"
+					+ spec.semanticErrors;
+			// System.out.println(message);
+			throw new exceptions.FrontEndException(message, spec);
 		}
 
 		// RootModule
@@ -193,14 +198,14 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		KEYWORDS.add("SetSummation");
 		KEYWORDS.add("PermutedSequences");
 		KEYWORDS.add("@");
-		
+
 	}
 
 	/**
 	 * 
 	 */
 	private void searchVarInSyntaxTree(TreeNode treeNode) {
-		//System.out.println(treeNode.getKind() + " " + treeNode.getImage());
+		// System.out.println(treeNode.getKind() + " " + treeNode.getImage());
 		switch (treeNode.getKind()) {
 		case N_GeneralId: {
 			String con = treeNode.heirs()[1].getImage();
@@ -219,7 +224,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			noVariables.add(treeNode.heirs()[0].getImage());
 			break;
 		}
-		case N_FunctionDefinition:{
+		case N_FunctionDefinition: {
 			// the first child is the function name
 			noVariables.add(treeNode.heirs()[0].getImage());
 			break;

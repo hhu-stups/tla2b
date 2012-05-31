@@ -384,7 +384,7 @@ public class TestFunction {
 		assertEquals("INTEGER", t.constants.get("k5").toString());
 	}
 	
-	@Test (expected = TypeErrorException.class)
+	@Test
 	public void testFunctionExceptException() throws FrontEndException, TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
@@ -395,6 +395,8 @@ public class TestFunction {
 
 		TypeCheckerTest t = new TypeCheckerTest(module, null, true);
 		t.start();
+		assertEquals("POW(INTEGER*POW(INTEGER*INTEGER))", t.constants.get("k").toString());
+		assertEquals("POW(INTEGER*POW(INTEGER*INTEGER))", t.constants.get("k2").toString());
 	}
 	@Test
 	public void testFunctionExceptException2() throws FrontEndException, TLA2BException {

@@ -8,9 +8,6 @@ import static org.junit.Assert.*;
 import static util.TestUtil.fileToString;
 import static util.TestUtil.getTreeAsString;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,6 +38,7 @@ public class ExamplesForDistribution {
 	public void testChannel() throws Exception {
 		ToolIO.reset();
 		StringBuilder sb = Main.start("Channel", "Channel.cfg", false);
+		System.out.println(sb);
 		String expected = fileToString(path + "Channel.mch");
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

@@ -9,7 +9,9 @@ import global.BBuiltInOPs;
 import global.Priorities;
 import global.TranslationGlobals;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedList;
 
 import config.TLCValueNode;
 
@@ -28,6 +30,7 @@ import tlc2.tool.BuiltInOPs;
 import types.BType;
 import types.EnumType;
 import types.IType;
+import types.PairType;
 import types.PowerSetType;
 import types.StructType;
 
@@ -500,21 +503,33 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		case OPCODE_exc: // Except
 		{
 			BType t = (BType) n.getToolObject(TYPE_ID);
+			String oldRecOrFunc = visitExprOrOpArgNode(n.getArgs()[0], d,
+					NOBOOL).out.toString();
+
 			if (t.getKind() == STRUCT) {
-				String oldRec = visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out
-						.toString();
-				
+				StructType structType = (StructType) t;
+
 				Hashtable<String, String> temp = new Hashtable<String, String>();
 				for (int i = 1; i < n.getArgs().length; i++) {
 					OpApplNode pair = (OpApplNode) n.getArgs()[i];
-					StringNode s = (StringNode) pair.getChildren()[0]
-							.getChildren()[0];
+					ExprOrOpArgNode first = pair.getArgs()[0];
+					ExprOrOpArgNode second = pair.getArgs()[1];
+					OpApplNode seq = (OpApplNode) first;
+
+					String val = visitExprOrOpArgNode((ExprOrOpArgNode) second,
+							d, VALUE).out.toString();
+
+					LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
+					for (int j = 0; j < seq.getArgs().length; j++) {
+						list.add(seq.getArgs()[j]);
+					}
+
+					StringNode s = (StringNode) list.poll();
 					String fieldName = s.getRep().toString();
-					String val = visitExprOrOpArgNode(
-							(ExprOrOpArgNode) pair.getChildren()[1], d, VALUE).out
-							.toString();
-					String newVal = evalRecVal(t, pair, oldRec, d);
-					temp.put(fieldName, val);
+
+					String res = evalValue(list, structType.getType(fieldName),
+							val, oldRecOrFunc + "'" + fieldName);
+					temp.put(fieldName, res);
 				}
 
 				out.append("rec(");
@@ -525,7 +540,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					out.append(" : ");
 					String value = temp.get(fieldName);
 					if (value == null) {
-						value = oldRec + "'" + fieldName;
+						value = oldRecOrFunc + "'" + fieldName;
 					}
 					out.append(value);
 
@@ -538,33 +553,57 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 			} else {
 				// function
+				PowerSetType p = (PowerSetType) t;
+				PairType pairType = (PairType) p.getSubType();
+
 				out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 				out.append(" <+ {");
 				for (int i = 1; i < n.getArgs().length; i++) {
 					OpApplNode pair = (OpApplNode) n.getArgs()[i];
+					// System.out.println(pair.toString(4));
 					OpApplNode domSeq = (OpApplNode) pair.getArgs()[0];
 					ExprOrOpArgNode domExpr = domSeq.getArgs()[0];
+					StringBuilder dom = new StringBuilder();
 					if (domExpr instanceof OpApplNode
 							&& ((OpApplNode) domExpr).getOperator().getName()
 									.toString().equals("$Tuple")) {
 						OpApplNode domOpAppl = (OpApplNode) domExpr;
-						out.append("(");
+						dom.append("(");
 						for (int j = 0; j < domOpAppl.getArgs().length; j++) {
 							if (j != 0) {
-								out.append(", ");
+								dom.append(", ");
 							}
-							out.append(visitExprOrOpArgNode(
+							dom.append(visitExprOrOpArgNode(
 									domOpAppl.getArgs()[j], d, VALUE).out);
 						}
-						out.append(")");
+						dom.append(")");
 					} else {
-						out.append(visitExprOrOpArgNode(pair.getArgs()[0], d,
+						dom.append(visitExprOrOpArgNode(pair.getArgs()[0], d,
 								VALUE).out);
 					}
+					out.append(dom);
+
 					out.append(" |-> ");
-					out.append(brackets(
-							visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE),
-							P_maplet, false));
+
+					ExprOrOpArgNode first = pair.getArgs()[0];
+					ExprOrOpArgNode second = pair.getArgs()[1];
+					OpApplNode seq = (OpApplNode) first;
+
+					String val = visitExprOrOpArgNode((ExprOrOpArgNode) second,
+							d, VALUE).out.toString();
+
+					LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
+					for (int j = 0; j < seq.getArgs().length; j++) {
+						list.add(seq.getArgs()[j]);
+					}
+					list.poll();
+					String res = evalValue(list, pairType.getSecond(), val,
+							oldRecOrFunc+"("+dom+")");
+					//System.out.println(res);
+					out.append(res);
+					// out.append(brackets(
+					// visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE),
+					// P_maplet, false));
 					if (i < n.getArgs().length - 1) {
 						out.append(", ");
 					}
@@ -762,28 +801,71 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 	}
 
 	/**
-	 * @param t
-	 * @param pair
+	 * @param list
+	 * @param type
+	 * @param string
 	 * @return
 	 */
-	private String evalRecVal(BType t, OpApplNode pair, String oldRec, DContext d) {
-		ExprOrOpArgNode first = pair.getArgs()[0];
-		ExprOrOpArgNode second = pair.getArgs()[1];
-		
-		OpApplNode seq = (OpApplNode) first;
-		if(seq.getArgs().length == 1){
-			String val = visitExprOrOpArgNode(
-					(ExprOrOpArgNode) pair.getChildren()[1], d, VALUE).out
-					.toString();
+	private String evalValue(LinkedList<ExprOrOpArgNode> list, BType type,
+			String val, String prefix) {
+		StringBuilder sb = new StringBuilder();
+		ExprOrOpArgNode head = list.poll();
+		if (head == null) {
 			return val;
 		}
-		StringNode s1 = (StringNode) seq.getArgs()[0];
-		String field1 = s1.getRep().toString();
-		
-		StructType sType = (StructType) t;
-		BType field1Type = sType.getType(field1);
-		//System.out.println(seq.toString(2));
-		return null;
+		if (type.getKind() == STRUCT) {
+			StructType structType = (StructType) type;
+			String field = ((StringNode) head).getRep().toString();
+
+			ArrayList<String> fields = structType.getFields();
+			sb.append("rec(");
+
+			for (int i = 0; i < fields.size(); i++) {
+				String currentField = fields.get(i);
+				sb.append(currentField);
+				sb.append(" : ");
+				if (currentField.equals(field)) {
+					String value;
+					if (list.size() > 0) {
+						value = evalValue(list,
+								structType.getType(currentField), val, prefix
+										+ "'" + currentField);
+					} else {
+						value = val;
+					}
+
+					sb.append(value);
+				} else {
+					sb.append(prefix + "'" + currentField);
+				}
+				if (i < fields.size() - 1) {
+					sb.append(", ");
+				}
+			}
+			sb.append(")");
+
+		} else {
+			PowerSetType p = (PowerSetType) type;
+			PairType pairType = (PairType) p.getSubType();
+			sb.append("(");
+			sb.append(prefix);
+			sb.append(" <+ {");
+			String dom = visitExprOrOpArgNode(head, new DContext(), VALUE).out
+					.toString();
+			sb.append(dom);
+			sb.append(" |-> ");
+
+			if (list.size() > 0) {
+				String res = evalValue(list, pairType.getSecond(), val, prefix
+						+ "(" + dom + ")");
+				sb.append(res);
+			} else {
+				sb.append(val);
+			}
+			sb.append("}");
+			sb.append(")");
+		}
+		return sb.toString();
 	}
 
 	/**

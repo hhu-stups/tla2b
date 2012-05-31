@@ -10,5 +10,6 @@ public interface IType {
 	public final int PAIR = 6;
 	public final int STRUCT = 7;
 	public final int TUPLEORSEQ  =8;
+	public final int STRUCT_OR_FUNCTION = 9;
 	
 }

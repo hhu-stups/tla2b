@@ -70,6 +70,8 @@ public abstract class AbstractHasFollowers extends BType {
 
 			} else if (follower instanceof StructType) {
 				((StructType) follower).setNewType(this, o);
+			} else if (follower instanceof StructOrFunction) {
+				((StructOrFunction) follower).setNewType(this, o);
 			} else {
 				throw new RuntimeException("Unknown follower type: "
 						+ follower.getClass());

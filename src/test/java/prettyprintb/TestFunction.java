@@ -200,6 +200,7 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) &  k2 : POW(INTEGER*INTEGER) & k = %x.(x : {1, 2}| x) & k2 = k <+ {1 |-> k(1) + 1} \n"

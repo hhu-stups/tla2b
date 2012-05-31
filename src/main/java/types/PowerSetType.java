@@ -42,6 +42,10 @@ public class PowerSetType extends AbstractHasFollowers {
 		if (o instanceof AbstractHasFollowers) {
 			((AbstractHasFollowers) o).setFollowersTo(this);
 		}
+		
+		if (o instanceof StructOrFunction){
+			return (PowerSetType)o.unify(this);
+		}
 		if (o instanceof PowerSetType) {
 			PowerSetType p = (PowerSetType) o;
 			this.subType = this.subType.unify(p.subType);
@@ -60,6 +64,10 @@ public class PowerSetType extends AbstractHasFollowers {
 		
 		if (o.getKind() == UNTYPED)
 			return true;
+		
+		if (o instanceof StructOrFunction){
+			return o.compare(this);
+		}
 
 		if (o instanceof PowerSetType) {
 			PowerSetType p = (PowerSetType) o;

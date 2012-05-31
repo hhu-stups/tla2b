@@ -7,14 +7,12 @@ package analysis;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Set;
 
 import config.ConfigfileEvaluator;
 import config.TLCValueNode;
 import config.ValueObj;
-
-
-
 
 import exceptions.FrontEndException;
 import exceptions.TLA2BException;
@@ -77,14 +75,14 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		paramId = TYPE_ID;
 	}
-	
+
 	public TypeChecker(ModuleNode moduleNode) {
 		this.moduleNode = moduleNode;
 
 		Set<OpDefNode> usedDefinitions = new HashSet<OpDefNode>();
 		OpDefNode[] defs = moduleNode.getOpDefs();
 		// used the last definition of the module
-		usedDefinitions.add(defs[defs.length-1]);
+		usedDefinitions.add(defs[defs.length - 1]);
 		this.usedDefinitions = usedDefinitions;
 
 		paramId = TYPE_ID;
@@ -115,9 +113,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		evalDefinitions(moduleNode.getOpDefs());
 		evalAssumptions(moduleNode.getAssumptions());
-		
-		
-		if(inits!= null){
+
+		if (inits != null) {
 			for (int i = 0; i < inits.size(); i++) {
 				visitExprNode(inits.get(i), BoolType.getInstance());
 			}
@@ -222,7 +219,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 	}
 
-	private void evalAssumptions(AssumeNode[] assumptions) throws TLA2BException {
+	private void evalAssumptions(AssumeNode[] assumptions)
+			throws TLA2BException {
 		for (AssumeNode assumeNode : assumptions) {
 			visitExprNode(assumeNode.getAssume(), BoolType.getInstance());
 		}
@@ -896,94 +894,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		 **********************************************************************/
 		case OPCODE_exc: // Except
 		{
-			BType t = visitExprOrOpArgNode(n.getArgs()[0], expected);
-			n.setToolObject(TYPE_ID, t);
-			if (t instanceof AbstractHasFollowers) {
-				((AbstractHasFollowers) t).addFollower(n);
-			}
-			// Struct
-			if (t instanceof StructType) {
-//				if(1==1)
-//					return t;
-				StructType struct = new StructType();
-				for (int i = 1; i < n.getArgs().length; i++) {
-					OpApplNode pair = (OpApplNode) n.getArgs()[i];
-					OpApplNode seq = (OpApplNode) pair.getArgs()[0];
-					//System.out.println(seq.toString(2));
-					if (seq.getArgs().length > 1) {
-						throw new TypeErrorException(
-								String.format(
-										"Fields of Field are not supported in 'EXCEPT' clause.\n%s",
-										seq.getLocation()));
-					}
-					StringNode sn;
-					try {
-						sn = (StringNode) seq.getArgs()[0];
-					} catch (ClassCastException e) {
-						throw new TypeErrorException(String.format(
-								"Expected field name.\n%s",
-								seq.getArgs()[0].getLocation()));
-					}
-					String field = sn.getRep().toString();
-					BType fieldType = visitExprOrOpArgNode(pair.getArgs()[1],
-							new Untyped());
-					struct.add(field, fieldType);
-				}
-				return visitExprOrOpArgNode(n.getArgs()[0], struct);
-			}
-
-			// function
-			PowerSetType found = new PowerSetType(new PairType());
-			try {
-				found = found.unify(expected);
-			} catch (UnificationException e) {
-				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(_A*_B) at Except,\n%s",
-						expected, n.getArgs()[0].getLocation()));
-			}
-			found = (PowerSetType) visitExprOrOpArgNode(n.getArgs()[0], found);
-
-			PairType found_pair = (PairType) found.getSubType();
-			BType domType = found_pair.getFirst();
-			BType rangeType = found_pair.getSecond();
-			for (int i = 1; i < n.getArgs().length; i++) {
-				OpApplNode pair = (OpApplNode) n.getArgs()[i]; // Pair
-				// domain
-				OpApplNode domSeq = (OpApplNode) pair.getArgs()[0];
-				//System.out.println(domSeq.toString(3));
-				if (domSeq.getArgs().length > 1) {
-					throw new TypeErrorException(
-							String.format(
-									"Multidimensional functions like 'f[x][y]' are not supported.\n%s",
-									domSeq.getLocation()));
-				}
-				ExprOrOpArgNode domExpr = domSeq.getArgs()[0];
-				if (domExpr instanceof OpApplNode
-						&& ((OpApplNode) domExpr).getOperator().getName()
-								.toString().equals("$Tuple")) {
-					ArrayList<BType> domList = new ArrayList<BType>();
-					OpApplNode domOpAppl = (OpApplNode) domExpr;
-					for (int j = 0; j < domOpAppl.getArgs().length; j++) {
-						BType d = visitExprOrOpArgNode(domOpAppl.getArgs()[j],
-								new Untyped());
-						domList.add(d);
-					}
-					try {
-						domType = domType.unify(makePair(domList));
-					} catch (UnificationException e) {
-						throw new TypeErrorException(String.format(
-								"Expected %s, found %s at Except,\n%s",
-								domType, makePair(domList),
-								domOpAppl.getLocation()));
-					}
-				} else {
-					domType = visitExprOrOpArgNode(domExpr, domType);
-				}
-				// range
-				rangeType = visitExprOrOpArgNode(pair.getArgs()[1], rangeType);
-			}
-
-			return found;
+			return evalExcept(n, expected);
 		}
 
 		/***********************************************************************
@@ -1160,6 +1071,186 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		throw new NotImplementedException("Not supported Operator: "
 				+ n.getOperator().getName().toString() + "\n" + n.getLocation());
+	}
+
+	/**
+	 * @param n
+	 * @param expected
+	 * @return
+	 * @throws TLA2BException
+	 */
+	private BType evalExcept(OpApplNode n, BType expected)
+			throws TLA2BException {
+		BType t = visitExprOrOpArgNode(n.getArgs()[0], expected);
+		n.setToolObject(TYPE_ID, t);
+		if (t instanceof AbstractHasFollowers) {
+			((AbstractHasFollowers) t).addFollower(n);
+		}
+
+		if (1 == 1) {
+			for (int i = 1; i < n.getArgs().length; i++) {
+				OpApplNode pair = (OpApplNode) n.getArgs()[i];
+				ExprOrOpArgNode leftside = pair.getArgs()[0];
+				ExprOrOpArgNode rightside = pair.getArgs()[1];
+				OpApplNode seq = (OpApplNode) leftside;
+				LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
+				for (int j = 0; j < seq.getArgs().length; j++) {
+					list.add(seq.getArgs()[j]);
+				}
+				ExprOrOpArgNode first = list.poll();
+
+				if (first instanceof StringNode) {
+					String field = ((StringNode) first).getRep().toString();
+					BType fieldType = visitExprOrOpArgNode(rightside,
+							new Untyped());
+					BType res = evalType(list, fieldType);
+					StructOrFunction s = new StructOrFunction(field, res);
+					t = t.unify(s);
+				} else {
+					ExprOrOpArgNode domExpr = first;
+					BType domType;
+					BType rangeType;
+					if (domExpr instanceof OpApplNode
+							&& ((OpApplNode) domExpr).getOperator().getName()
+									.toString().equals("$Tuple")) {
+						ArrayList<BType> domList = new ArrayList<BType>();
+						OpApplNode domOpAppl = (OpApplNode) domExpr;
+						for (int j = 0; j < domOpAppl.getArgs().length; j++) {
+							BType d = visitExprOrOpArgNode(
+									domOpAppl.getArgs()[j], new Untyped());
+							domList.add(d);
+						}
+						domType = makePair(domList);
+					} else {
+						domType = visitExprOrOpArgNode(domExpr, new Untyped());
+					}
+					BType valueType = visitExprOrOpArgNode(rightside, new Untyped());
+					rangeType = evalType(list, valueType);
+					PowerSetType p = new PowerSetType(new PairType(domType, rangeType));
+					t = t.unify(p);
+				}
+			}
+			return t;
+		}
+		// Struct
+		if (t instanceof StructType) {
+			StructType struct = new StructType();
+			for (int i = 1; i < n.getArgs().length; i++) {
+				OpApplNode pair = (OpApplNode) n.getArgs()[i];
+				ExprOrOpArgNode leftside = pair.getArgs()[0];
+				ExprOrOpArgNode rightside = pair.getArgs()[1];
+				OpApplNode seq = (OpApplNode) leftside;
+				LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
+				for (int j = 0; j < seq.getArgs().length; j++) {
+					list.add(seq.getArgs()[j]);
+				}
+				ExprOrOpArgNode first = list.poll();
+
+				StringNode sn;
+				try {
+					sn = (StringNode) first;
+				} catch (ClassCastException e) {
+					throw new TypeErrorException(String.format(
+							"Expected field name.\n%s",
+							seq.getArgs()[0].getLocation()));
+				}
+				String field = sn.getRep().toString();
+
+				BType fieldType = visitExprOrOpArgNode(rightside, new Untyped());
+				BType res = evalType(list, fieldType);
+				struct.add(field, res);
+			}
+			return visitExprOrOpArgNode(n.getArgs()[0], struct);
+		}
+
+		// function
+		PowerSetType found = new PowerSetType(new PairType());
+		try {
+			found = found.unify(expected);
+		} catch (UnificationException e) {
+			throw new TypeErrorException(String.format(
+					"Expected %s, found POW(_A*_B) at Except,\n%s", expected,
+					n.getArgs()[0].getLocation()));
+		}
+		found = (PowerSetType) visitExprOrOpArgNode(n.getArgs()[0], found);
+
+		PairType pairFound = (PairType) found.getSubType();
+		BType domType = pairFound.getFirst();
+		BType rangeType = pairFound.getSecond();
+		for (int i = 1; i < n.getArgs().length; i++) {
+			OpApplNode pair = (OpApplNode) n.getArgs()[i]; // Pair
+
+			ExprOrOpArgNode leftside = pair.getArgs()[0];
+			ExprOrOpArgNode rightside = pair.getArgs()[1];
+			OpApplNode seq = (OpApplNode) leftside;
+
+			LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
+			for (int j = 0; j < seq.getArgs().length; j++) {
+				list.add(seq.getArgs()[j]);
+			}
+
+			ExprOrOpArgNode domExpr = list.poll();
+			if (domExpr instanceof OpApplNode
+					&& ((OpApplNode) domExpr).getOperator().getName()
+							.toString().equals("$Tuple")) {
+				ArrayList<BType> domList = new ArrayList<BType>();
+				OpApplNode domOpAppl = (OpApplNode) domExpr;
+				for (int j = 0; j < domOpAppl.getArgs().length; j++) {
+					BType d = visitExprOrOpArgNode(domOpAppl.getArgs()[j],
+							new Untyped());
+					domList.add(d);
+				}
+				try {
+					domType = domType.unify(makePair(domList));
+				} catch (UnificationException e) {
+					throw new TypeErrorException(String.format(
+							"Expected %s, found %s at Except,\n%s", domType,
+							makePair(domList), domOpAppl.getLocation()));
+				}
+			} else {
+				domType = visitExprOrOpArgNode(domExpr, domType);
+			}
+			BType valueType = visitExprOrOpArgNode(rightside, new Untyped());
+			BType res = evalType(list, valueType);
+			try {
+				rangeType = rangeType.unify(res);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at Except,\n%s", rangeType, res,
+						rightside.getLocation()));
+			}
+
+			// range
+			// rangeType = visitExprOrOpArgNode(rightside, rangeType);
+		}
+
+		return found;
+
+	}
+
+	/**
+	 * @param list
+	 * @param valueType
+	 * @return
+	 * @throws TLA2BException
+	 */
+	private BType evalType(LinkedList<ExprOrOpArgNode> list, BType valueType)
+			throws TLA2BException {
+		if (list.size() == 0) {
+			return valueType;
+		}
+		ExprOrOpArgNode head = list.poll();
+		if (head instanceof StringNode) {
+			// record or function of strings
+			String name = ((StringNode) head).getRep().toString();
+			StructOrFunction res = new StructOrFunction(name, evalType(list,
+					valueType));
+			return res;
+		}
+		BType t = visitExprOrOpArgNode(head, new Untyped());
+		PowerSetType res = new PowerSetType(new PairType(t, evalType(list,
+				valueType)));
+		return res;
 	}
 
 	private BType evalBBuiltIns(OpApplNode n, BType expected)

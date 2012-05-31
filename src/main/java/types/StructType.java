@@ -49,6 +49,8 @@ public class StructType extends AbstractHasFollowers {
 	public String toString() {
 		String res = "struct(";
 		Iterator<String> keys = types.keySet().iterator();
+		if(!keys.hasNext())
+			res += "...";
 		while (keys.hasNext()) {
 			String fieldName = (String) keys.next();
 			res += fieldName + ":" + types.get(fieldName);
@@ -75,6 +77,10 @@ public class StructType extends AbstractHasFollowers {
 			return false;
 		if (o.getKind() == UNTYPED)
 			return true;
+		
+		if (o instanceof StructOrFunction){
+			return o.compare(this);
+		}
 		if (o instanceof StructType) {
 			StructType s = (StructType) o;
 
@@ -88,8 +94,9 @@ public class StructType extends AbstractHasFollowers {
 					}
 				}
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	public StructType unify(BType o) throws UnificationException {
@@ -99,6 +106,10 @@ public class StructType extends AbstractHasFollowers {
 		if (o instanceof AbstractHasFollowers)
 			((AbstractHasFollowers) o).setFollowersTo(this);
 
+		if (o instanceof StructOrFunction){
+			return (StructType) o.unify(this);
+		}
+		
 		if (o instanceof StructType) {
 			StructType s = (StructType) o;
 			Iterator<String> keys = s.types.keySet().iterator();
@@ -113,7 +124,7 @@ public class StructType extends AbstractHasFollowers {
 						// set new reference
 						((AbstractHasFollowers) sType).addFollower(this);
 					}
-					this.types.put(fieldName, s.types.get(fieldName));
+					this.types.put(fieldName, sType);
 				}
 			}
 			return this;
