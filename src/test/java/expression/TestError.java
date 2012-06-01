@@ -7,6 +7,7 @@ package expression;
 import org.junit.Test;
 
 import exceptions.FrontEndException;
+import exceptions.TLA2BException;
 import exceptions.TypeErrorException;
 
 import translation.ExpressionTranslator;

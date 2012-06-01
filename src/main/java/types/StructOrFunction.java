@@ -45,12 +45,10 @@ public class StructOrFunction extends AbstractHasFollowers {
 
 	@Override
 	public String toString() {
-		// Iterator<BType> itr = types.values().iterator();
-		// return "POW(STRING*" + itr.next() + ")";
 		String res = "StructOrFunction(";
 		for (Iterator<String> keys = types.keySet().iterator(); keys.hasNext();) {
 			String key = keys.next();
-			res += key + " : " + types.get(key);
+			res += "\""+key + "\" : " + types.get(key);
 			if (keys.hasNext())
 				res += ", ";
 		}

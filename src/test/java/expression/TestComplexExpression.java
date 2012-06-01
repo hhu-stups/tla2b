@@ -113,6 +113,7 @@ public class TestComplexExpression {
 		// assertEquals("(%x.(x : 1 .. 10| x * x) <+ {3 |-> 6})(3)", res);
 	}
 	
+	
 	@Ignore
 	@Test
 	public void testFunction2() throws TLA2BException {

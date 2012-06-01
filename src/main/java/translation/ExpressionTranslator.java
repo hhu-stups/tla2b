@@ -79,7 +79,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			tc.start();
 		} catch (TLA2BException e) {
 			String[] m = ToolIO.getAllMessages();
-			String message = m[0] + "\n" + expr + "\n\n"
+			String message = m[0] + "\n" + expr + "\n\n****TypeError****\n"
 					+ e.getLocalizedMessage();
 			//System.out.println(message);
 			throw new TypeErrorException(message);

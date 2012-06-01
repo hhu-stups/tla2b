@@ -69,7 +69,7 @@ public class TestFunction {
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
+
 	/**********************************************************************
 	 * recursive Function
 	 **********************************************************************/
@@ -96,7 +96,7 @@ public class TestFunction {
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
-	
+
 	/**********************************************************************
 	 * Function call
 	 **********************************************************************/
@@ -218,10 +218,13 @@ public class TestFunction {
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k, k2\n"
-				+ "PROPERTIES  k : POW(INTEGER*INTEGER*INTEGER) &  k2 : POW(INTEGER*INTEGER*INTEGER) & k = %x,y.(x : {1, 2} & y : {1, 2}| x + y) & k2 = k <+ {(1, 1) |-> k(1, 1) + 4} \n"
-				+ "END";
+				+ "PROPERTIES  k : POW(INTEGER*INTEGER*INTEGER) "
+				+ "&  k2 : POW(INTEGER*INTEGER*INTEGER) "
+				+ "& k = %x,y.(x : {1, 2} & y : {1, 2}| x + y) "
+				+ "& k2 = k <+ {(1, 1) |-> k(1, 1) + 4} \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 }
