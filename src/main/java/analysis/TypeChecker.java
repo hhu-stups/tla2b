@@ -294,38 +294,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						"Expected %s, found %s at '@',\n%s ", expected,
 						type,exprNode.getLocation()));
 			}
-//			if (1 == 1)
-//				return expected;
-//			BType base = visitExprNode(a.getAtBase(), new Untyped());
-//			if (base.getKind() == STRUCT) {
-//				StructType baseStruct = (StructType) base;
-//				OpApplNode seq = (OpApplNode) a.getAtModifier();
-//				StringNode sn = (StringNode) seq.getArgs()[0];
-//				String field = sn.getRep().toString();
-//				StructType struct = new StructType();
-//				struct.add(field, expected);
-//				try {
-//					struct = struct.unify(baseStruct);
-//				} catch (UnificationException e) {
-//					throw new TypeErrorException(String.format(
-//							"Expected %s, found %s at '@',\n%s ", expected,
-//							baseStruct.getType(field), exprNode.getLocation()));
-//				}
-//				return struct.getType(field);
-//			} else { // function
-//				PowerSetType found = new PowerSetType(new PairType());
-//				found = found.unify(base);
-//				PairType pair = (PairType) found.getSubType();
-//				BType res = new Untyped();
-//				try {
-//					res = pair.getSecond().unify(expected);
-//				} catch (UnificationException e) {
-//					throw new TypeErrorException("Can not unify "
-//							+ pair.getSecond() + " and " + expected + "\n"
-//							+ a.getLocation());
-//				}
-//				return res;
-//			}
+
 		}
 
 		case LetInKind: {
