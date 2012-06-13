@@ -58,12 +58,12 @@ public class TestModuleNaturals {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "EXTENDS Naturals \n"
-				+ "ASSUME 1 + 2 = 4-1 /\\ 1 * 2 = 4 \\div 2 /\\  6 % 5 = 1 ^ 1 \n"
+				+ "ASSUME 1 + 2 = 4-1 /\\ 1 * 2 = 4 \\div 2 /\\  1 ^ 1 = 1 \n"
 				+ "=================================";
 
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
-				+ "PROPERTIES 1 + 2 = 4 - 1 & 1 * 2 = 4 / 2 & 6 mod 5 = 1 ** 1 \n"
+				+ "PROPERTIES 1 + 2 = 4 - 1 & 1 * 2 = 4 / 2 & 1 ** 1 = 1 \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
@@ -100,6 +100,21 @@ public class TestModuleNaturals {
 		StringBuilder sb = Main.start(module, null, true);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 : NATURAL \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	@Test
+	public void testMod() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals, Integers \n"
+				+ "ASSUME -3 % 2 = 1 \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES (%t_.( t_ = 0 & -3 < 0 | -(-3) mod 2 )\\/%t_.( t_ = 0 & not(-3<0) | -3 mod 2))(0) = 1 \n"
 				+ "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}

@@ -1035,8 +1035,14 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 		case B_OPCODE_mod: // modulo
 		{
-			out.append(evalOpMoreArgs(n, " mod ", d, NOBOOL, P_mod));
-			return new ExprReturn(out, P_mod);
+			ExprReturn first = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
+			ExprReturn second = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
+			String res = String
+					.format("(%%t_.( t_ = 0 & %s < 0 | -%s mod %s )\\/%%t_.( t_ = 0 & not(%s<0) | %s mod %s))(0)",
+							first.out, brackets(first, P_uminus, false), second.out, first.out, first.out, second.out);
+			return new ExprReturn(res);
+//			out.append(evalOpMoreArgs(n, " mod ", d, NOBOOL, P_mod));
+//			return new ExprReturn(out, P_mod);
 		}
 
 		case B_OPCODE_div: // /

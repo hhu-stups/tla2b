@@ -8,8 +8,6 @@ public class ExprReturn {
 	public ExprReturn(){
 		priority = 300;
 	}
-	
-
 
 	public ExprReturn(String s){
 		out.append(s);
