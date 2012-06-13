@@ -52,7 +52,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		evalVariables(spec);
 		StringBuilder sb = new StringBuilder();
 		sb.append("----MODULE Testing----\n");
-		sb.append("EXTENDS Naturals, Sequences, FiniteSets, TLA2B \n");
+		sb.append("EXTENDS Naturals, Integers, Sequences, FiniteSets, TLA2B \n");
 		if (variables.size() > 0) {
 			sb.append("VARIABLES ");
 			for (int i = 0; i < variables.size(); i++) {

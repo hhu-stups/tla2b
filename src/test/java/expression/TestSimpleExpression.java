@@ -24,6 +24,13 @@ public class TestSimpleExpression {
 		String res = ExpressionTranslator.translateExpression(expr);
 		assertEquals("1 + 2", res);
 	}
+	
+	@Test
+	public void testModulIntegers() throws TLA2BException {
+		final String expr = "-1 \\in Int";
+		String res = ExpressionTranslator.translateExpression(expr);
+		assertEquals("-1 : INTEGER", res);
+	}
 
 	@Test
 	public void testSimpleExpr2() throws Exception {
