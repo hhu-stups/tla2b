@@ -404,7 +404,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		for (int i = 0; i < tempLetInNodes.size(); i++) {
 			LetInNode letInNode = tempLetInNodes.get(i);
 			for (int j = 0; j < letInNode.getLets().length; j++) {
-				out.append(evalLet(letInNode.getLets()[0]));
+				out.append(evalLet(letInNode.getLets()[j]));
 				out.append(";\n");
 			}
 

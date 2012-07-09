@@ -188,6 +188,10 @@ public class InstanceTransformation extends BuiltInOPs implements ASTConstants {
 		case FormalParamKind: {
 			FormalParamNode f = (FormalParamNode) n.getOperator()
 					.getToolObject(substitutionId);
+			if (f == null) {
+				System.out.println(n.toString(4));
+				System.out.println(n);
+			}
 			return new OpApplNode(f, generateNewArgs(n.getArgs(), prefix),
 					n.getTreeNode(), null);
 		}
@@ -254,6 +258,21 @@ public class InstanceTransformation extends BuiltInOPs implements ASTConstants {
 			return newNode;
 
 		}
+		case OPCODE_uc: { // CHOOSE x : P
+			FormalParamNode[] oldSymbols = n.getUnbdedQuantSymbols();
+			FormalParamNode[] newSymbols = new FormalParamNode[oldSymbols.length];
+			for (int i = 0; i < n.getUnbdedQuantSymbols().length; i++) {
+				FormalParamNode f = oldSymbols[i];
+				newSymbols[i] = new FormalParamNode(f.getName(), f.getArity(),
+						f.getTreeNode(), null, null);
+				f.setToolObject(substitutionId, newSymbols[i]);
+			}
+			OpApplNode newNode = new OpApplNode(n.getOperator().getName(),
+					newSymbols, generateNewArgs(n.getArgs(), prefix), null,
+					null, null, n.getTreeNode(), null);
+			return newNode;
+		}
+
 		case OPCODE_rfs:
 		case OPCODE_nrfs:
 		case OPCODE_fc: // Represents [x \in S |-> e]
@@ -264,18 +283,18 @@ public class InstanceTransformation extends BuiltInOPs implements ASTConstants {
 		case OPCODE_soa: // $SetOfAll Represents {e : p1 \in S, p2,p3 \in S2}
 		{
 			// new formalparamnodes
-			FormalParamNode[][] old = n.getBdedQuantSymbolLists();
-			FormalParamNode[][] formalParams = new FormalParamNode[old.length][0];
-			for (int i = 0; i < old.length; i++) {
-				FormalParamNode[] temp = new FormalParamNode[old[i].length];
-				for (int j = 0; j < old[i].length; j++) {
-					FormalParamNode f = old[i][j];
+			FormalParamNode[][] oldParams = n.getBdedQuantSymbolLists();
+			FormalParamNode[][] newParams = new FormalParamNode[oldParams.length][0];
+			for (int i = 0; i < oldParams.length; i++) {
+				FormalParamNode[] temp = new FormalParamNode[oldParams[i].length];
+				for (int j = 0; j < oldParams[i].length; j++) {
+					FormalParamNode f = oldParams[i][j];
 					temp[j] = new FormalParamNode(f.getName(), f.getArity(),
 							f.getTreeNode(), null, null);
 					// set reference the old param to the new
 					f.setToolObject(substitutionId, temp[j]);
 				}
-				formalParams[i] = temp;
+				newParams[i] = temp;
 			}
 
 			// new ranges
@@ -285,7 +304,7 @@ public class InstanceTransformation extends BuiltInOPs implements ASTConstants {
 						prefix);
 			}
 			OpApplNode newNode = new OpApplNode(n.getOperator().getName(),
-					null, generateNewArgs(n.getArgs(), prefix), formalParams,
+					null, generateNewArgs(n.getArgs(), prefix), newParams,
 					n.isBdedQuantATuple(), ranges, n.getTreeNode(), null);
 			return newNode;
 		}

@@ -414,8 +414,9 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				FormalParamNode p = params[i];
 				BType pType = ((BType) p.getToolObject(TYPE_ID));
 				if (pType == null) {
-					throw new RuntimeException("Parameter " + p.getName()
-							+ " has no type yet!\n" + p.getLocation());
+					pType = new Untyped();
+//					throw new RuntimeException("Parameter " + p.getName()
+//							+ " has no type yet!\n" + p.getLocation());
 				}
 				pType = pType.cloneBType();
 				if (pType.isUntyped())
