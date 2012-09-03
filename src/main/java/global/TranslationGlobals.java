@@ -8,7 +8,7 @@ package global;
 import tla2sany.semantic.FrontEnd;
 
 public interface TranslationGlobals {
-	final String VERSION = "1.0.6";
+	final String VERSION = "1.0.7";
 	
 	final int TLCValueKind = 100;
 	
