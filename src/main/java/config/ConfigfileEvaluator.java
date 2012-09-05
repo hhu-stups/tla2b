@@ -10,7 +10,10 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 
 
 import exceptions.ConfigFileErrorException;
@@ -31,6 +34,7 @@ import types.BType;
 import types.BoolType;
 import types.EnumType;
 import types.IntType;
+import types.ModelValueType;
 import types.PowerSetType;
 import types.StringType;
 import types.Untyped;
@@ -61,6 +65,8 @@ public class ConfigfileEvaluator {
 	// contains it type
 	private Hashtable<OpDefNode, ValueObj> operatorAssignments;
 	// def = 1
+	
+	private ArrayList<OpDefNode> operatorModelvalues;
 
 	private ArrayList<OpDeclNode> bConstantList;
 	// List of constants in the resulting B machine. This list does not contain
@@ -103,6 +109,7 @@ public class ConfigfileEvaluator {
 
 		this.constantAssignments = new Hashtable<OpDeclNode, ValueObj>();
 		this.operatorAssignments = new Hashtable<OpDefNode, ValueObj>();
+		this.operatorModelvalues = new ArrayList<OpDefNode>();
 
 		this.enumeratedSet = new ArrayList<String>();
 		this.enumeratedTypes = new LinkedHashMap<String, EnumType>();
@@ -279,13 +286,22 @@ public class ConfigfileEvaluator {
 				 * same as the name of constants, then the constant declaration
 				 * in the resulting B machine disappears
 				 **/
-				if (symbolName.equals(symbolValue.toString())) {
+				if (symbolType instanceof EnumType && symbolName.equals(symbolValue.toString())) {
 					bConstantList.remove(c);
 				}
 			} else if (definitions.containsKey(symbolName)) {
 				OpDefNode def = definitions.get(symbolName);
 				ValueObj valueObj = new ValueObj(symbolValue, symbolType);
 				operatorAssignments.put(def, valueObj);
+				
+				if (symbolType instanceof PowerSetType) {
+					if (((PowerSetType) symbolType).getSubType() instanceof EnumType) {
+						operatorModelvalues.add(def);
+					}
+				} else if ((symbolType instanceof EnumType)) {
+					operatorModelvalues.add(def);
+				}
+				
 			} else {
 				// every constants or operator in the configuration file must
 				// appear in the TLA+
@@ -334,9 +350,15 @@ public class ConfigfileEvaluator {
 					OpDefNode def = (OpDefNode) opDefOrDeclNode;
 					ValueObj valueObj = new ValueObj(symbolValue, symbolType);
 					operatorAssignments.put(def, valueObj);
-					if (symbolName.equals(symbolValue.toString())) {
-						// no B definition
+
+					if (symbolType instanceof PowerSetType) {
+						if (((PowerSetType) symbolType).getSubType() instanceof EnumType) {
+							operatorModelvalues.add(def);
+						}
+					} else if ((symbolType instanceof EnumType)) {
+						operatorModelvalues.add(def);
 					}
+					
 				}
 			}
 		}
@@ -581,5 +603,9 @@ public class ConfigfileEvaluator {
 
 	public ArrayList<String> getEnumerationSet() {
 		return this.enumeratedSet;
+	}
+	
+	public ArrayList<OpDefNode> getOperatorModelvalues(){
+		return this.operatorModelvalues;
 	}
 }

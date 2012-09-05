@@ -35,4 +35,36 @@ public class TestConstantAssignment {
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
 	
+	@Test
+	public void testModelvalueAssignedToConstant() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k \n"
+				+ "=================================";
+		final String config = "CONSTANTS k = a";
+		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "SETS ENUM1 = {a}"
+				+ "ABSTRACT_CONSTANTS k \n"
+				+ "PROPERTIES k = a \n"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	@Test
+	public void testModelvalueAssignedToConstantWithTheSameName() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k \n"
+				+ "=================================";
+		final String config = "CONSTANTS k = k";
+		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "SETS ENUM1 = {k}"
+				+ "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
 }

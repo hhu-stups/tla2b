@@ -23,6 +23,7 @@ public class TestModelvalues {
 		final String config = "CONSTANTS \n" + "a = {a1, a2, a3}\n"
 				+ "b = {b1, b2, b3}\n" + "c = c";
 		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
 		String expected = "MACHINE Testing\n"
 				+ "SETS ENUM1 = {a1, a2, a3}; ENUM2 = {b1, b2, b3}; ENUM3 = {c} \n"
 				+ "ABSTRACT_CONSTANTS a, b \n"
@@ -55,6 +56,7 @@ public class TestModelvalues {
 		final String config = "CONSTANTS \n" + "a = {a1, a2} \n"
 				+ "b = {b1, b2} \n" + "c = c";
 		StringBuilder sb = Main.start(module, config, true);
+		System.out.println(sb);
 		String expected = "MACHINE Testing\n"
 				+ "SETS ENUM1 = {c, a1, a2, b1, b2} \n"
 				+ "ABSTRACT_CONSTANTS a, b \n"

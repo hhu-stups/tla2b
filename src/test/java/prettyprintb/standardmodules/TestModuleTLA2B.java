@@ -25,11 +25,12 @@ public class TestModuleTLA2B {
 	public void testMinOfSet() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "MinOfSet(a) == 1 \n"
+				+ "EXTENDS TLA2B \n"
 				+ "ASSUME MinOfSet({1,2,3}) = 1 \n"
 				+ "=================================";
 		
 		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES min({1, 2, 3}) = 1 \n" + "END";
 		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -43,7 +44,7 @@ public class TestModuleTLA2B {
 	public void testSetProduct() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "SetProduct(a) == {} \n"
+				+ "EXTENDS TLA2B \n"
 				+ "ASSUME SetProduct({1,2,3}) = 6 \n"
 				+ "=================================";
 		
@@ -60,7 +61,7 @@ public class TestModuleTLA2B {
 	public void testSetSummation() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "SetSummation(a) == {} \n"
+				+ "EXTENDS TLA2B \n"
 				+ "ASSUME SetSummation({1,2,3}) = 6 \n"
 				+ "=================================";
 		
@@ -77,7 +78,7 @@ public class TestModuleTLA2B {
 	public void testPerm() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"
-				+ "PermutedSequences(a) == {} \n"
+				+ "EXTENDS TLA2B \n"
 				+ "ASSUME PermutedSequences({1,2}) = {<<1,2>>,<<2,1>>} \n"
 				+ "=================================";
 		

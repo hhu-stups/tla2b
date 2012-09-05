@@ -51,7 +51,7 @@ public class PowerSetType extends AbstractHasFollowers {
 			this.subType = this.subType.unify(p.subType);
 
 //			if (this.subType instanceof AbstractHasFollowers) {
-//				((AbstractHasFollowers) this.subType).removeFollower(o);
+//				((AbstractHasFollowers) this.subType).removeFollower(p);
 //			}
 		}
 		return this;

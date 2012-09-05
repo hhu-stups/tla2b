@@ -8,7 +8,7 @@ DEFINITIONS
  IF_THEN_ELSE(P, a, b) == (%t_.(t_ = TRUE & P = TRUE | a )\/%t_.(t_= TRUE & not(P= TRUE) | b ))(TRUE);
  MCJug == {"j1", "j2"};
 
- MCCapacity == %j.(j : MCJug| (%t_.(t_ = 0 & j = "j1" | 3) \/ %t_.(t_ = 0 & j = "j2" | 5))(0));
+ MCCapacity == %j_1.(j_1 : MCJug| (%t_.(t_ = 0 & j_1 = "j1" | 3) \/ %t_.(t_ = 0 & j_1 = "j2" | 5))(0));
 
  Min(m,n) == IF_THEN_ELSE(bool(m < n), m, n);
 

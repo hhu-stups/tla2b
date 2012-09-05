@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import old.ConstantObj;
@@ -33,6 +34,7 @@ import tlc2.value.SetEnumValue;
 import types.BType;
 import types.EnumType;
 import types.PowerSetType;
+import util.StandardModules;
 
 public class BMachinePrinter extends AbstractExpressionPrinter {
 	private ModuleNode module;
@@ -44,6 +46,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 	private ArrayList<String> setEnumeration;
 	private ArrayList<String> definitionMacro;
 	private Hashtable<OpDeclNode, ValueObj> constantAssignments;
+	private ArrayList<OpDefNode> operatorModelvalues;
 	private Set<OpDefNode> bDefinitions;
 	// set of OpDefNodes which are called in the specification
 	private Hashtable<OpDefNode, FormalParamNode[]> letParams;
@@ -70,6 +73,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 			this.invariants = conEval.getInvariants();
 			this.setEnumeration = conEval.getEnumerationSet();
 			this.constantAssignments = conEval.getConstantAssignments();
+			this.operatorModelvalues = conEval.getOperatorModelvalues();
 		}
 
 		this.inits = specAnalyser.getInits();
@@ -96,7 +100,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
 
-		out.append(evalDefinition());
+		out.append(evalDefinitions());
 
 		out.append(evalVariables());
 
@@ -114,9 +118,13 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 	 */
 	private StringBuilder evalEnumeratedSets() {
 		StringBuilder out = new StringBuilder();
+		
 		if (setEnumeration == null || setEnumeration.size() == 0)
 			return out;
+		
 		out.append("SETS\n ");
+
+
 		ArrayList<EnumType> printed = new ArrayList<EnumType>();
 		int counter = 1;
 
@@ -141,6 +149,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 				if (!first) {
 					out.append("; ");
 				}
+				System.out.println(cons[i].toString(2));
 				out.append("ENUM" + counter + " = {");
 				Iterator<String> it2 = e.modelvalues.iterator();
 				while (it2.hasNext()) {
@@ -158,6 +167,49 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 				first = false;
 			}
 		}
+		
+		if(operatorModelvalues!=null && operatorModelvalues.size()>0){
+			for (int i = 0; i < operatorModelvalues.size(); i++) {
+				OpDefNode def = operatorModelvalues.get(i);
+				BType type = (BType) def.getToolObject(TYPE_ID);
+				EnumType e = null;
+				if (type instanceof PowerSetType) {
+					if (((PowerSetType) type).getSubType() instanceof EnumType) {
+						e = (EnumType) ((PowerSetType) type).getSubType();
+					} else
+						continue;
+
+				} else if ((type instanceof EnumType)) {
+					e = (EnumType) type;
+				} else
+					continue;
+
+				if (!printed.contains(e)) {
+					e.id = counter;
+					if (!first) {
+						out.append("; ");
+					}
+					out.append("ENUM" + counter + " = {");
+					Iterator<String> it2 = e.modelvalues.iterator();
+					while (it2.hasNext()) {
+						out.append(it2.next());
+						if (it2.hasNext()) {
+							out.append(", ");
+						}
+					}
+					if (e.hasNoVal()) {
+						out.append(", noVal" + counter);
+					}
+					out.append("}");
+					printed.add(e);
+					counter++;
+					first = false;
+				}
+				
+			}
+			
+		}
+		
 		out.append("\n");
 		return out;
 	}
@@ -309,7 +361,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		return out;
 	}
 
-	private StringBuilder evalDefinition() {
+	private StringBuilder evalDefinitions() {
 		StringBuilder out = new StringBuilder();
 		ArrayList<OpDefNode> bDefs = new ArrayList<OpDefNode>();
 		for (int i = 0; i < module.getOpDefs().length; i++) {
@@ -387,15 +439,20 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 	 */
 	private StringBuilder visitOpDefNode(OpDefNode def) {
 		StringBuilder out = new StringBuilder();
-		String defName = def.getName().toString();
-		ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
-				CONSTANT_OBJECT);
-		if (conObj != null) {
-			// config substitution
-			out.append(" " + defName.replace('!', '_'));
-			out.append(" == " + conObj.getValue());
-			return out;
-		}
+//		ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
+//				CONSTANT_OBJECT);
+//		if (conObj != null) {
+//			System.out.println("hier");
+//			// config substitution
+//			// out.append(" " + defName.replace('!', '_'));
+//			String defName = getPrintName(def);
+//			String defValue = conObj.getValue().toString();
+//			if(defName.equals(defName.equals(defValue)))
+//				return out;
+//			out.append(" " + defName);
+//			out.append(" == " + defValue);
+//			return out;
+//		}
 
 		DContext d = new DContext("\t");
 		tempLetInNodes.clear();
@@ -411,15 +468,14 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		}
 		tempLetInNodes.clear();
 
-		defName = defName.replace('!', '_');
 		out.append(" " + getPrintName(def));
 		FormalParamNode[] params = def.getParams();
 		if (params.length > 0) {
 			out.append("(");
 			for (int i = 0; i < params.length; i++) {
 				if (i != 0)
-					out.append(",");
-				out.append(params[i].getName().toString());
+					out.append(", ");
+				out.append(getPrintName(params[i]));
 			}
 			out.append(")");
 		}
@@ -591,13 +647,16 @@ public class BMachinePrinter extends AbstractExpressionPrinter {
 		StringBuilder out = new StringBuilder();
 		OpDefNode def = (OpDefNode) n.getOperator();
 
-		// Operator ist ein B-BuiltIn-Operator
-		if (BBuiltInOPs.contains(def.getName())) {
+		// Operator is a B built-in operator
+		if (BBuiltInOPs.contains(def.getName())
+				&& StandardModules.contains(def.getSource()
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())) {
 			return evalBBuiltIns(n, d, expected);
 		}
 
 		out.append(getPrintName(def));
-		
+
 		FormalParamNode[] shiftedParams = letParams.get(def);
 		if (n.getArgs().length > 0
 				|| (shiftedParams != null && shiftedParams.length > 0)) {

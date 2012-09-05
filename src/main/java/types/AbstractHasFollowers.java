@@ -79,4 +79,11 @@ public abstract class AbstractHasFollowers extends BType {
 		}
 	}
 
+	
+	public boolean hasFollower(){
+		if(followers.size()==0){
+			return false;
+		}else 
+			return true;
+	}
 }

@@ -33,6 +33,7 @@ import types.IType;
 import types.PairType;
 import types.PowerSetType;
 import types.StructType;
+import util.StandardModules;
 
 public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		ASTConstants, IType, BBuildIns, Priorities, TranslationGlobals {
@@ -207,8 +208,10 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		StringBuilder out = new StringBuilder();
 		OpDefNode def = (OpDefNode) n.getOperator();
 
-		// Operator ist ein B-BuiltIn-Operator
-		if (BBuiltInOPs.contains(def.getName())) {
+		// Operator is a B built-in operator
+		if (BBuiltInOPs.contains(def.getName()) && StandardModules.contains(def.getSource()
+				.getOriginallyDefinedInModuleNode().getName()
+				.toString())) {
 			return evalBBuiltIns(n, d, expected);
 		}
 
@@ -403,10 +406,10 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 **********************************************************************/
 		case OPCODE_sso: { // $SubsetOf Represents {x \in S : P}
 			out.append("{");
-			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
-			out.append(x.getName().toString());
+			FormalParamNode p = n.getBdedQuantSymbolLists()[0][0];
+			out.append(getPrintName(p));
 			out.append("|");
-			out.append(x.getName().toString());
+			out.append(p.getName().toString());
 			out.append(" : ");
 			ExprNode in = n.getBdedQuantBounds()[0];
 			out.append(visitExprNode(in, d, NOBOOL).out);
@@ -423,7 +426,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			for (int i = 0; i < bounds.length; i++) {
 				for (int j = 0; j < params[i].length; j++) {
 					FormalParamNode p = params[i][j];
-					out.append(p.getName().toString());
+					out.append(getPrintName(p));
 					if (i < bounds.length - 1 || j < params[i].length - 1)
 						out.append(", ");
 				}
@@ -463,7 +466,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			FormalParamNode[][] vars = n.getBdedQuantSymbolLists();
 			for (int i = 0; i < vars.length; i++) {
 				for (int j = 0; j < vars[i].length; j++) {
-					out.append(vars[i][j].getName());
+					out.append(getPrintName(vars[i][j]));
 					if (j < vars[i].length - 1) {
 						out.append(",");
 					}
@@ -746,9 +749,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		case OPCODE_bc: { // CHOOSE x \in S: P
 			out.append("CHOOSE({");
 			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
-			out.append(x.getName().toString());
+			out.append(getPrintName(x));
 			out.append("|");
-			out.append(x.getName().toString());
+			out.append(getPrintName(x));
 			out.append(" : ");
 			ExprNode in = n.getBdedQuantBounds()[0];
 			out.append(visitExprNode(in, d, NOBOOL).out);
@@ -936,7 +939,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		for (int i = 0; i < params.length; i++) {
 			for (int j = 0; j < params[i].length; j++) {
-				out.append(params[i][j].getName());
+				out.append(getPrintName(params[i][j]));
 				if (j < params[i].length - 1) {
 					out.append(",");
 				}
@@ -1219,14 +1222,14 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 	protected StringBuilder visitBounded(OpApplNode n, DContext d) {
 		StringBuilder out = new StringBuilder();
-		FormalParamNode[][] nodes = n.getBdedQuantSymbolLists();
+		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		ExprNode[] in = n.getBdedQuantBounds();
-		for (int i = 0; i < nodes.length; i++) {
-			for (int j = 0; j < nodes[i].length; j++) {
-				out.append(nodes[i][j].getName());
+		for (int i = 0; i < params.length; i++) {
+			for (int j = 0; j < params[i].length; j++) {
+				out.append(getPrintName(params[i][j]));
 				out.append(" : ");
 				out.append(visitExprNode(in[i], d, NOBOOL).out);
-				if (j < nodes[i].length - 1 || i < nodes.length - 1) {
+				if (j < params[i].length - 1 || i < params.length - 1) {
 					out.append(" & ");
 				}
 			}

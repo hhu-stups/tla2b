@@ -13,8 +13,6 @@ import java.util.Set;
 
 import config.ConfigfileEvaluator;
 
-
-
 import exceptions.ConfigFileErrorException;
 import exceptions.FrontEndException;
 import exceptions.NotImplementedException;
@@ -41,9 +39,10 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ToolGlobals;
 import types.BType;
 import types.IType;
+import util.StandardModules;
 
-public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobals, IType,
-		TranslationGlobals {
+public class SpecAnalyser extends BuiltInOPs implements ASTConstants,
+		ToolGlobals, IType, TranslationGlobals {
 	private OpDefNode spec;
 	private OpDefNode init;
 	private OpDefNode next;
@@ -75,7 +74,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 	private ArrayList<String> definitionMacros = new ArrayList<String>();
 
 	private ArrayList<RecursiveFunktion> recursiveFunctions = new ArrayList<RecursiveFunktion>();
-	
+
 	/**
 	 * @param m
 	 * @param conEval
@@ -99,7 +98,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 		this.spec = definitions.get("Spec");
 		this.init = definitions.get("Init");
 		this.next = definitions.get("Next");
-		
+
 		// TODO are constant in the right order
 		this.bConstants = new ArrayList<OpDeclNode>();
 		this.bConstants.addAll(Arrays.asList(m.getConstantDecls()));
@@ -133,10 +132,9 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 								con.getName()));
 			}
 		}
-		
+
 		evalRecursiveFunctions();
 	}
-
 
 	private void evalInit() {
 		if (init != null) {
@@ -360,11 +358,12 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 						.toString(), n.getLocation().toString()));
 
 	}
+
 	/**
 	 * 
 	 * @throws ConfigFileErrorException
 	 */
-	
+
 	private void findDefinitions() throws ConfigFileErrorException {
 		AssumeNode[] assumes = moduleNode.getAssumptions();
 		for (int i = 0; i < assumes.length; i++) {
@@ -398,7 +397,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 		}
 
 	}
-	
+
 	/**
 	 * @param exprOrOpArgNode
 	 */
@@ -462,7 +461,12 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 
 		case UserDefinedOpKind: {
 			OpDefNode def = (OpDefNode) node.getOperator();
-			if (BBuiltInOPs.contains(def.getName())) {
+
+			if (BBuiltInOPs.contains(def.getName())
+					&& StandardModules.contains(def.getSource()
+							.getOriginallyDefinedInModuleNode().getName()
+							.toString())) {
+				
 				visitBuiltInKind(node, parameters);
 				return;
 			}
@@ -520,19 +524,18 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 			visitExprOrOpArgNode(node.getArgs()[i], parameters);
 		}
 	}
-	
+
 	/**
-	 * @throws NotImplementedException 
+	 * @throws NotImplementedException
 	 * 
 	 */
 	private void evalRecursiveFunctions() throws NotImplementedException {
-		
+
 		for (OpDefNode def : bDefinitionsSet) {
 			if (def.getBody() instanceof OpApplNode) {
 				OpApplNode o = (OpApplNode) def.getBody();
-				switch (getOpCode(o.getOperator().getName()))
-				{
-				case OPCODE_rfs:{ // recursive Function
+				switch (getOpCode(o.getOperator().getName())) {
+				case OPCODE_rfs: { // recursive Function
 					bDefinitionsSet.remove(def);
 					ifThenElseNodes.remove(o.getArgs()[0]);
 					RecursiveFunktion rf = new RecursiveFunktion(def, o);
@@ -543,7 +546,6 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 			}
 		}
 	}
-	
 
 	public void evalIfThenElse() {
 		boolean b = false;
@@ -572,7 +574,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 	public ExprNode getNext() {
 		return this.nextExpr;
 	}
-	
+
 	public Set<OpDefNode> getBDefinitions() {
 		return bDefinitionsSet;
 	}
@@ -584,12 +586,12 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants, ToolGlobal
 	public ArrayList<String> getDefinitionMacros() {
 		return definitionMacros;
 	}
-	
-	public Set<OpDefNode> getUsedDefinitions(){
+
+	public Set<OpDefNode> getUsedDefinitions() {
 		return usedDefinitions;
 	}
-	
-	public ArrayList<RecursiveFunktion> getRecursiveFunctions(){
+
+	public ArrayList<RecursiveFunktion> getRecursiveFunctions() {
 		return recursiveFunctions;
 	}
 }
