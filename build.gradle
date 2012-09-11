@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile (group: 'de.stups', name: 'tla', version: '1.0.8-SNAPSHOT')
+    compile (group: 'de.stups', name: 'tla', version: '1.0.9-SNAPSHOT')
 	testCompile (group: 'de.prob', name: 'prologlib', version: '2.4.2-SNAPSHOT')
  	testCompile (group: 'de.prob', name: 'parserbase', version: '2.4.2-SNAPSHOT')
   	testCompile (group: 'de.prob', name: 'bparser', version: '2.4.2-SNAPSHOT')
