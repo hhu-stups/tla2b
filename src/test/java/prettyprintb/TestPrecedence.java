@@ -19,6 +19,21 @@ public class TestPrecedence {
 	}
 
 	@Test
+	public void testSetConstructor() throws Exception {
+		ToolIO.reset();
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals \n"
+				+ "ASSUME {x \\in {1,2,3} : x \\in {1}  \\/ x \\in {2}} = {1,2} \n"
+				+ "=================================";
+
+		StringBuilder sb = Main.start(module, null, true);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES {x|x : {1, 2, 3} & (x : {1} or x : {2})} = {1, 2} \n" + "END";
+		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	@Test
 	public void testPrecedence() throws Exception {
 		ToolIO.reset();
 		final String module = "-------------- MODULE Testing ----------------\n"

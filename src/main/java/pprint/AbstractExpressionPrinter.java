@@ -414,7 +414,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			ExprNode in = n.getBdedQuantBounds()[0];
 			out.append(visitExprNode(in, d, NOBOOL).out);
 			out.append(" & ");
-			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE).out);
+			out.append(brackets(visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE), P_and, false));
 			out.append("}");
 			return new ExprReturn(out);
 		}
