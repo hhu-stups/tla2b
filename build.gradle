@@ -56,7 +56,7 @@ copy {
 
 task deploy(type: Zip, dependsOn: copy) {
    from('build/') { include 'tla2b/**' }
-   baseName = 'tla2b'
+   archiveName = 'tla2b.zip'
 }
 
 
