@@ -890,8 +890,9 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 						n.getArgs()[i], new PowerSetType(new Untyped()));
 				list.add(t.getSubType());
 			}
-
+			System.out.println(list);
 			PowerSetType found = new PowerSetType(makePair(list));
+			System.out.println(found);
 			try {
 				found = found.unify(expected);
 			} catch (UnificationException e) {

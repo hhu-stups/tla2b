@@ -6,6 +6,7 @@ package examples;
 
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import translation.Main;
@@ -31,4 +32,18 @@ public class ComplexExamples {
 		//String expected = fileToString(path + "AsynchInterface.mch");
 		//assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
 	}
+	
+	@Ignore
+	@Test
+	public void testSecCtx() throws Exception {
+		ToolIO.reset();
+		path = "src/test/resources/examples/";
+		ToolIO.setUserDir(path);
+		StringBuilder sb = Main.start("SecCtx", "SecCtx.cfg", false);
+		System.out.println(sb);
+		//String expected = fileToString(path + "AsynchInterface.mch");
+		//assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+	}
+	
+	
 }
