@@ -5,6 +5,7 @@ apply plugin: 'maven'
 project.version = '1.0.3-SNAPSHOT'
 project.group = 'de.prob'
 
+sourceCompatibility = 1.5
 
 repositories {
 	mavenCentral()
