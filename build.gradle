@@ -5,6 +5,8 @@ apply plugin: 'maven'
 project.version = '1.0.3-SNAPSHOT'
 project.group = 'de.prob'
 
+
+
 sourceCompatibility = 1.5
 
 repositories {
@@ -13,51 +15,50 @@ repositories {
 }
 
 dependencies {
-    compile (group: 'de.stups', name: 'tla', version: '1.0.9-SNAPSHOT')
+	compile files('externalLibs/tla')
 	testCompile (group: 'de.prob', name: 'prologlib', version: '2.4.10-SNAPSHOT')
  	testCompile (group: 'de.prob', name: 'parserbase', version: '2.4.10-SNAPSHOT')
   	testCompile (group: 'de.prob', name: 'bparser', version: '2.4.10-SNAPSHOT')
 	testCompile (group: 'junit', name: 'junit', version: '4.+')
 }
 
+ant.importBuild 'build.xml'
+
+compileJava {
+	dependsOn tla
+}
+
 jar {
 	from sourceSets.main.allJava
  }
 
+manifest.mainAttributes("Main-Class" : 'de.tla2b.translation.TLA2B')
+manifest.mainAttributes("Class-Path": './tla/')
 
-task pack(type: Jar, dependsOn: [jar]) {
-	baseName = 'TLA2B'
-	deps = configurations.runtime + configurations.archives.allArtifacts.getFiles()
-		depClasses = {
-		deps.collect {
-			it.isDirectory() ? it : zipTree(it)
-		}
-	}
-	from(depClasses) {
-		exclude 'META-INF/MANIFEST.MF'
-	}
-	manifest { attributes 'Main-Class': 'translation.TLA2B' }
-
-	doLast{
-		println "Created archive: "+archivePath
-	}
-}
-
-task copy(dependsOn: pack) << {
+task copy(dependsOn: jar) << {
 	copy {
-   from('build/libs/') { include 'TLA2B-'+project.version+'.jar' }
-   into 'build/tla2b'
-   rename '(TLA2B)-(.+)', '$1.jar'
+		from('build/libs/')
+		into('build/tla2b')
+		include('tla2b-'+project.version+'.jar')
+		rename('(tla2b)-(.+)', 'B2TLA.jar')
+	}
+	copy {
+		from('src/main/resources/') { include '**/*' }
+		into 'build/tla2b'
+	}
+	copy {
+		from('externalLibs/')
+		into 'build/tla2b'
+		exclude('tla-1.4.4.zip')
+	}
 }
-copy {
-   from('src/main/resources/') { include '**/*' }
-   into 'build/tla2b'
-}}
 
 
 task deploy(type: Zip, dependsOn: copy) {
    from('build/') { include 'tla2b/**' }
    archiveName = 'tla2b.zip'
+   doLast{ println "Created archive: "+archivePath }
 }
+
 
 

@@ -1,0 +1,3 @@
+-------------- MODULE ExtendsCounter ----------------
+EXTENDS Counter
+=================================
