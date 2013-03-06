@@ -49,7 +49,7 @@ task copy(dependsOn: jar) << {
 	copy {
 		from('externalLibs/')
 		into 'build/tla2b'
-		exclude('tla-1.4.4.zip')
+		include('tla')
 	}
 }
 

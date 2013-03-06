@@ -7,13 +7,12 @@
   
   <target name="tla" depends = "tla.check" unless = "tla.exists">
   	<mkdir dir="externalLibs/" />
-  	<get src= "http://ftp.research.microsoft.com/downloads/41b4a0aa-5fad-4118-916a-45ed9fd48bf0/tla-1.4.4.zip" dest="externalLibs/"/>
-  	<unzip src = "externalLibs/tla-1.4.4.zip" dest = "externalLibs/"/>
+  	<get src= "http://ftp.research.microsoft.com/downloads/41b4a0aa-5fad-4118-916a-45ed9fd48bf0/tla.zip" dest="externalLibs/"/>
+  	<unzip src = "externalLibs/tla.zip" dest = "externalLibs/"/>
   </target>
   
   <target name="delete">
-	<delete file = "tla-1.4.4.zip"/>
-	<delete dir = "externalLibs/tla"/>
+	<delete dir = "externalLibs"/>
   </target>
   
 </project>
