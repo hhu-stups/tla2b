@@ -40,7 +40,7 @@ task copy(dependsOn: jar) << {
 		from('build/libs/')
 		into('build/tla2b')
 		include('tla2b-'+project.version+'.jar')
-		rename('(tla2b)-(.+)', 'B2TLA.jar')
+		rename('(tla2b)-(.+)', 'TLA2B.jar')
 	}
 	copy {
 		from('src/main/resources/') { include '**/*' }
