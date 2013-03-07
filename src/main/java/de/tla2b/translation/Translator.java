@@ -18,7 +18,6 @@ import de.tla2b.pprint.BMachinePrinter;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ModuleNode;
 import tlc2.tool.ModelConfig;
 import util.FileUtil;
@@ -28,6 +27,15 @@ public class Translator implements TranslationGlobals {
 	private ModuleNode moduleNode;
 	private ModelConfig modelConfig;
 	private TypeChecker typechecker;
+	private String moduleName;
+
+	public Translator() {
+		this.moduleName = "Testing";
+	}
+
+	public Translator(String moduleName) {
+		this.moduleName = moduleName;
+	}
 
 	public void start(String moduleFileName, String configFileName)
 			throws TLA2BException {
@@ -40,9 +48,10 @@ public class Translator implements TranslationGlobals {
 			modelConfig.parse();
 		}
 	}
-	
-	public static StringBuilder translateString(String moduleString, String configString)
-			throws FrontEndException, TLA2BException, AbortException {
+
+	public static StringBuilder translateString(String moduleName,
+			String moduleString, String configString) throws FrontEndException,
+			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
 		Translator translator = new Translator();
@@ -50,10 +59,10 @@ public class Translator implements TranslationGlobals {
 		return translator.translate();
 	}
 
-	public static void createTempfile(String moduleString){
+	public static void createTempfile(String fileName, String moduleString) {
 		File dir = new File("temp/");
 		dir.mkdirs();
-		File tempFile = new File("temp/Testing.tla");
+		File tempFile = new File("temp/" + fileName + ".tla");
 		try {
 			tempFile.createNewFile();
 		} catch (IOException e1) {
@@ -70,18 +79,18 @@ public class Translator implements TranslationGlobals {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void startTest(String moduleString, String configString)
 			throws de.tla2b.exceptions.FrontEndException, TLA2BException {
 
-		createTempfile(moduleString);
-		
+		createTempfile(moduleName, moduleString);
+
 		ToolIO.setUserDir("temp/");
 
-		moduleNode = parseModule("Testing.tla");
+		moduleNode = parseModule(moduleName + ".tla");
 
 		// TODO delete every time: finally
-		File tempFile = new File("temp/Testing.tla");
+		File tempFile = new File("temp/" + moduleName + ".tla");
 		tempFile.delete();
 
 		modelConfig = null;
@@ -105,6 +114,7 @@ public class Translator implements TranslationGlobals {
 			}
 			modelConfig = new ModelConfig("Testing.cfg", null);
 			modelConfig.parse();
+			configFile.delete();
 		}
 		File dir = new File("temp/");
 		dir.delete();
@@ -212,7 +222,7 @@ public class Translator implements TranslationGlobals {
 			ToolIO.setUserDir(path);
 		return sourceModuleName;
 	}
-	
+
 	public ModuleNode getModuleNode() {
 		return moduleNode;
 	}
@@ -221,8 +231,8 @@ public class Translator implements TranslationGlobals {
 		return modelConfig;
 	}
 
-	public TypeChecker getTypecheChecker(){
+	public TypeChecker getTypecheChecker() {
 		return typechecker;
 	}
-	
+
 }
