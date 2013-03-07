@@ -4,12 +4,11 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TupleTest {
@@ -24,10 +23,10 @@ public class TupleTest {
 				+ "ASSUME k = <<TRUE,FALSE,TRUE>>\n"
 				+ "=================================";
 		
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : BOOL*BOOL*BOOL & k = (TRUE,FALSE,TRUE) \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	/**********************************************************************
@@ -40,10 +39,10 @@ public class TupleTest {
 				+ "ASSUME k = BOOLEAN \\X {1} \n"
 				+ "=================================";
 		
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(BOOL*INTEGER) & k = BOOL*{1} \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -53,10 +52,10 @@ public class TupleTest {
 				+ "ASSUME k = BOOLEAN \\X ({1} \\X BOOLEAN) \n"
 				+ "=================================";
 		
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(BOOL*(INTEGER*BOOL)) & k = BOOL*({1}*BOOL) \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	

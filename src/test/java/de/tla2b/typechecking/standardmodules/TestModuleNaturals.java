@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleNaturals {
@@ -28,7 +28,7 @@ public class TestModuleNaturals {
 				+ "CONSTANTS k, k2, k3 \n"
 				+ "ASSUME k = (k2 > k3) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
@@ -41,7 +41,7 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME 1 = (2 > 1) \n" + "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -55,7 +55,7 @@ public class TestModuleNaturals {
 				+ "CONSTANTS k, k2, k3 \n"
 				+ "ASSUME k = k2 + k3 \n" + "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("k3"));
@@ -69,7 +69,7 @@ public class TestModuleNaturals {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME TRUE = 1 + 1 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -83,7 +83,7 @@ public class TestModuleNaturals {
 				+ "CONSTANTS k, k2, k3 \n"
 				+ "ASSUME k = k2 .. k3 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER)", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("k3"));
@@ -96,7 +96,7 @@ public class TestModuleNaturals {
 				+ "CONSTANTS  k2, k3 \n"
 				+ "ASSUME TRUE \\in  k2 .. k3 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -108,7 +108,7 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Nat \n" + "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER)", t.getConstantType("k"));
 	}
 
@@ -118,7 +118,7 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "ASSUME TRUE \\in Nat \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 }

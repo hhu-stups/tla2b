@@ -4,14 +4,13 @@
 
 package de.tla2b.configfile;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import de.tla2b.exceptions.ConfigFileErrorException;
 import de.tla2b.exceptions.FrontEndException;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 
@@ -26,12 +25,12 @@ public class OpArgSubstitutionTest {
 				+ "ASSUME k(1,2) = 3 \n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES foo(1, 2) = 3 \n"
 				+ "DEFINITIONS foo(a,b) == a + b \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -42,12 +41,12 @@ public class OpArgSubstitutionTest {
 				+ "ASSUME k(TRUE,TRUE)\n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- def";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES def(TRUE, TRUE) \n"
 				+ "DEFINITIONS def(a,b) == a = TRUE & b = TRUE \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test(expected = FrontEndException.class)
@@ -58,7 +57,7 @@ public class OpArgSubstitutionTest {
 				+ "foo(bar(_,_),a,b) == bar(a,b) \n"
 				+ "ASSUME foo(plus, 1,3) = 4 \n"
 				+ "=================================";
-		Util.translateString(module);
+		TestUtil.translateString(module);
 	}
 
 	@Test
@@ -68,11 +67,11 @@ public class OpArgSubstitutionTest {
 				+ "CONSTANTS k(_,_) \n"
 				+ "ASSUME k(1,2) \n" + "=================================";
 		final String config = "CONSTANTS k <- < ";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n" + "PROPERTIES 1 < 2 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test (expected = ConfigFileErrorException.class)
@@ -83,7 +82,7 @@ public class OpArgSubstitutionTest {
 				+ "ASSUME foo(TRUE, FALSE) \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo <- def";
-		Util.translateString(module, config);
+		TestUtil.translateString(module, config);
 	}
 	
 }

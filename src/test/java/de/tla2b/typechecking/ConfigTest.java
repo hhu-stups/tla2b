@@ -11,7 +11,7 @@ import org.junit.Test;
 import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ConfigTest {
@@ -21,7 +21,7 @@ public class ConfigTest {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n" + "=================================";
 		final String config = "CONSTANTS k = 1";
-		TestTypeChecker t = Util.typeCheckString(module, config);
+		TestTypeChecker t = TestUtil.typeCheckString(module, config);
 		assertEquals("INTEGER", t.getConstantType("k").toString());
 	}
 
@@ -33,7 +33,7 @@ public class ConfigTest {
 				+ "ASSUME k2 = k\n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
-		TestTypeChecker t = Util.typeCheckString(module, config);
+		TestTypeChecker t = TestUtil.typeCheckString(module, config);
 		assertEquals("INTEGER", t.getConstantType("k2").toString());
 	}
 

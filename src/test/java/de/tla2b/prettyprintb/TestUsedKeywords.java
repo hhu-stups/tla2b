@@ -4,14 +4,12 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.tla2b.translation.Translator;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -30,12 +28,12 @@ public class TestUsedKeywords {
 				+ "ASSUME seq = 1 \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS seq_1 \n"
 				+ "PROPERTIES seq_1 : INTEGER & seq_1 = 1 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -46,13 +44,13 @@ public class TestUsedKeywords {
 				+ "Init == seq = 1 \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "VARIABLES seq_1 \n"
 				+ "INVARIANT seq_1 : INTEGER\n"
 				+ "INITIALISATION seq_1:(seq_1 = 1)\n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -63,12 +61,12 @@ public class TestUsedKeywords {
 				+ "ASSUME seq \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES seq_1 \n"
 				+ "DEFINITIONS seq_1 == 1 = 1\n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -80,11 +78,11 @@ public class TestUsedKeywords {
 				+ "ASSUME  3 \\prec 1 \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES prec(3, 1) \n"
 				+ "DEFINITIONS prec(a,b) == a > b\n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

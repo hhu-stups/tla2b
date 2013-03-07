@@ -4,13 +4,12 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import de.tla2b.translation.Translator;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -30,13 +29,13 @@ public class TestVariables {
 				+ "Init == x = 1 /\\ y = 1 \n"
 				+ "=================================";
 		
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "VARIABLES x, y\n"
 				+ "INVARIANT x : INTEGER & y : INTEGER \n"
 				+ "INITIALISATION  x, y:(x = 1 & y = 1) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 }

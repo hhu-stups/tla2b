@@ -4,12 +4,11 @@
 
 package de.tla2b.prettyprintb.standardmodules;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleSequences {
@@ -25,10 +24,10 @@ public class TestModuleSequences {
 				+ "ASSUME SubSeq(<<1,2,3,4,5,6>>, 2, 4) = <<2,3,4>> \n"
 				+ "=================================";
 		
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES ([1, 2, 3, 4, 5, 6]/|\\4)\\|/2-1 = [2, 3, 4] \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	//TODO test other operators of module sequences

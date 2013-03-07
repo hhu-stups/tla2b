@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class StringTest {
@@ -27,7 +27,7 @@ public class StringTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = \"abc\" \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("STRING", t.getConstantType("k").toString());
 	}
 	
@@ -36,7 +36,7 @@ public class StringTest {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME 1 = \"abc\" \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	
@@ -49,7 +49,7 @@ public class StringTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = STRING \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(STRING)", t.getConstantType("k").toString());
 	}
 	
@@ -59,6 +59,6 @@ public class StringTest {
 				+ "ASSUME 1 = STRING \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 }

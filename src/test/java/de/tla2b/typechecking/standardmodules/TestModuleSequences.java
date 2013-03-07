@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleSequences {
@@ -27,7 +27,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Seq({TRUE}) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(POW(INTEGER*BOOL))", t.getConstantType("k"));
 	}
 	
@@ -38,7 +38,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME <<k>> \\in Seq({TRUE}) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k"));
 	}
 	
@@ -50,7 +50,7 @@ public class TestModuleSequences {
 				+ "EXTENDS Sequences \n"
 				+ "ASSUME 1 = Seq({1}) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test (expected = TypeErrorException.class)
@@ -60,7 +60,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Seq(1) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	
@@ -74,7 +74,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Len(<<1,2,3>>) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 	}
 	
@@ -85,7 +85,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME TRUE = Len(<<1,2,3>>) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test (expected = TypeErrorException.class)
@@ -95,7 +95,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME 3 = Len({1,2,3}) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test (expected = TypeErrorException.class)
@@ -105,7 +105,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME 1 = Len(1) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	
@@ -119,7 +119,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = k2 \\o <<TRUE>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 	}
@@ -131,7 +131,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME <<TRUE>> = k \\o k2 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 	}
@@ -143,7 +143,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2, k3 \n"
 				+ "ASSUME k= k2 \\o k3 /\\ k3 = <<TRUE>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k3"));
@@ -156,7 +156,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2  \n"
 				+ "ASSUME k = 1 \\o k2 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test (expected = TypeErrorException.class)
@@ -166,7 +166,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2  \n"
 				+ "ASSUME 1 = k \\o k2 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test (expected = TypeErrorException.class)
@@ -176,7 +176,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2  \n"
 				+ "ASSUME <<TRUE>> = <<1>> \\o <<2>> \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	
@@ -191,7 +191,7 @@ public class TestModuleSequences {
 				+ "ASSUME k = Append(k2, k3) /\\ k3 = TRUE \n"
 				+ "=================================";
 	
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 		assertEquals("BOOL", t.getConstantType("k3"));
@@ -205,7 +205,7 @@ public class TestModuleSequences {
 				+ "ASSUME k = Append(k2, k3) /\\ k = <<TRUE>> \n"
 				+ "=================================";
 	
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 		assertEquals("BOOL", t.getConstantType("k3"));
@@ -219,7 +219,7 @@ public class TestModuleSequences {
 				+ "ASSUME k = Append(k2, 1) \n"
 				+ "=================================";
 	
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*INTEGER)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*INTEGER)", t.getConstantType("k2"));
 	}
@@ -233,7 +233,7 @@ public class TestModuleSequences {
 				+ "ASSUME k = Append(1, k3) \n"
 				+ "=================================";
 	
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 
@@ -247,7 +247,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = Head(k2) /\\ k2 = <<1>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*INTEGER)", t.getConstantType("k2"));
 	}
@@ -259,7 +259,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = Head(k2) /\\ k = 1 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*INTEGER)", t.getConstantType("k2"));
 	}
@@ -271,7 +271,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Head(1) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	/**********************************************************************
@@ -284,7 +284,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = Tail(k2) /\\ k = <<TRUE>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 	}
@@ -297,7 +297,7 @@ public class TestModuleSequences {
 				+ "ASSUME k = Tail(k2) /\\ k2 = <<TRUE>> \n"
 				+ "=================================";
 	
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 	}
@@ -309,7 +309,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Tail(1) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	/**********************************************************************
@@ -322,7 +322,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2, m, n \n"
 				+ "ASSUME k = SubSeq(k2, m, n) /\\ k = <<TRUE>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("m"));
@@ -336,7 +336,7 @@ public class TestModuleSequences {
 				+ "CONSTANTS k, k2, m, n \n"
 				+ "ASSUME k = SubSeq(k2, m, n) /\\ k2= <<TRUE>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("m"));
@@ -351,6 +351,6 @@ public class TestModuleSequences {
 				+ "ASSUME k = SubSeq(1, m, n) \n"
 				+ "=================================";
 	
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 }

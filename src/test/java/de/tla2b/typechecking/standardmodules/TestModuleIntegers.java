@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleIntegers {
@@ -26,7 +26,7 @@ public class TestModuleIntegers {
 				+ "EXTENDS Integers \n"
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Int \n" + "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER)", t.getConstantType("k"));
 	}
 
@@ -37,7 +37,7 @@ public class TestModuleIntegers {
 				+ "ASSUME TRUE \\in Int \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -50,7 +50,7 @@ public class TestModuleIntegers {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = -k2 \n" + "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 	}
@@ -61,7 +61,7 @@ public class TestModuleIntegers {
 				+ "EXTENDS Integers \n"
 				+ "ASSUME TRUE = -1 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 }

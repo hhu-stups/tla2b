@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ConstantTypesTest {
@@ -23,7 +23,7 @@ public class ConstantTypesTest {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = 1 /\\ k2 = k\n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 	}
@@ -35,7 +35,7 @@ public class ConstantTypesTest {
 				+ "ASSUME k = k2 /\\ k = 1\n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 	}
@@ -46,7 +46,7 @@ public class ConstantTypesTest {
 				+ "CONSTANTS k, k2, k3 \n"
 				+ "ASSUME k = k2 /\\ k = k3 /\\ k3 = 1\n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 		assertEquals("INTEGER", t.getConstantType("k3"));
@@ -66,7 +66,7 @@ public class ConstantTypesTest {
 				+ "ASSUME h = 1 \n" 
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("a"));
 		assertEquals("INTEGER", t.getConstantType("b"));
 		assertEquals("INTEGER", t.getConstantType("c"));
@@ -81,7 +81,7 @@ public class ConstantTypesTest {
 	public void prime() throws FrontEndException, TLA2BException {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "Next ==  1' = 1 \n" + "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -90,7 +90,7 @@ public class ConstantTypesTest {
 				+ "CONSTANTS k\n"
 				+ "foo ==  k' = 1 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class ConstantTypesTest {
 				+ "CONSTANTS k, k2\n"
 				+ "ASSUME k = IF 1 = 1 THEN k2 ELSE 1 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 	}

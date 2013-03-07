@@ -4,12 +4,11 @@
 
 package de.tla2b.configfile;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ConstantOverrideTest {
@@ -22,12 +21,12 @@ public class ConstantOverrideTest {
 				+ "ASSUME k = 5"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES foo = 5 \n"
 				+ "DEFINITIONS foo == 5 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -38,13 +37,13 @@ public class ConstantOverrideTest {
 				+ "ASSUME k(1,1) = TRUE"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		System.out.println(sb);
 		
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES bool(foo(1,1)) = TRUE \n"
 				+ "DEFINITIONS foo(a, b) == a = b \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

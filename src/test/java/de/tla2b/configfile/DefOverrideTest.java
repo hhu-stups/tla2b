@@ -4,12 +4,11 @@
 
 package de.tla2b.configfile;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class DefOverrideTest {
@@ -22,11 +21,11 @@ public class DefOverrideTest {
 				+ "ASSUME foo = 2 \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo <- bar";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		String expected = "MACHINE Testing \n"
 				+ "PROPERTIES bar = 2 \n"
 				+ "DEFINITIONS bar == 2 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

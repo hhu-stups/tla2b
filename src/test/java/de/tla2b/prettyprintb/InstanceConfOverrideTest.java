@@ -4,15 +4,13 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.fileToString;
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import de.tla2b.exceptions.ConfigFileErrorException;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 
@@ -23,15 +21,15 @@ public class InstanceConfOverrideTest {
 
 	@Test
 	public void testInstanceDefOverride() throws Exception {
-		StringBuilder sb = Util.translate(path + "InstanceCounter.tla", "InstanceCounter.cfg");
-		String expected = fileToString(path + "InstanceCounter.mch");
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		StringBuilder sb = TestUtil.translate(path + "InstanceCounter.tla", "InstanceCounter.cfg");
+		String expected = TestUtil.fileToString(path + "InstanceCounter.mch");
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Ignore //TODO find Exception
 	@Test //(expected = ConfigFileErrorException.class)
 	public void testInstanceConOverrideException() throws Exception {
-		StringBuilder sb = Util.translate(path + "InstanceCounterException.tla", "InstanceCounterException.cfg");
+		StringBuilder sb = TestUtil.translate(path + "InstanceCounterException.tla", "InstanceCounterException.cfg");
 		System.out.println(sb);
 	}
 	
@@ -44,7 +42,7 @@ public class InstanceConfOverrideTest {
 		final String config = "INIT Init\n" + "NEXT Next \n"
 				+ "CONSTANTS a <-[Counter] def";
 
-		Util.translateString(module);
+		TestUtil.translateString(module);
 	} 
 	@Ignore
 	@Test (expected = ConfigFileErrorException.class)
@@ -55,7 +53,7 @@ public class InstanceConfOverrideTest {
 		final String config = "INIT Init\n" + "NEXT Next \n"
 				+ "CONSTANTS val <-[Cou] def";
 
-		Util.translateString(module);
+		TestUtil.translateString(module);
 	}
 	@Ignore
 	@Test (expected = ConfigFileErrorException.class)
@@ -66,7 +64,7 @@ public class InstanceConfOverrideTest {
 		final String config = "INIT Init\n" + "NEXT Next \n"
 				+ "CONSTANTS val <-[Counter] d";
 
-		Util.translateString(module);
+		TestUtil.translateString(module);
 	}
 	
 }

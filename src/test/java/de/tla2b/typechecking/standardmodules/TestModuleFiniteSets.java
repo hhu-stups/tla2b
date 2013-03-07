@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleFiniteSets {
@@ -27,7 +27,7 @@ public class TestModuleFiniteSets {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = IsFiniteSet({1,2,3}) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k"));
 	}
 
@@ -38,7 +38,7 @@ public class TestModuleFiniteSets {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = IsFiniteSet(k2) /\\ k2 = {1} \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k"));
 		assertEquals("POW(INTEGER)", t.getConstantType("k2"));
 
@@ -51,7 +51,7 @@ public class TestModuleFiniteSets {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = IsFiniteSet({}) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k"));
 	}
 
@@ -61,7 +61,7 @@ public class TestModuleFiniteSets {
 				+ "EXTENDS FiniteSets \n"
 				+ "ASSUME IsFiniteSet(1)\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -70,7 +70,7 @@ public class TestModuleFiniteSets {
 				+ "EXTENDS FiniteSets \n"
 				+ "ASSUME 1 = IsFiniteSet({1})\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -83,7 +83,7 @@ public class TestModuleFiniteSets {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Cardinality({1,2,3}) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 	}
 
@@ -94,7 +94,7 @@ public class TestModuleFiniteSets {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = Cardinality(k2) /\\ k2 = {1} \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("k"));
 		assertEquals("POW(INTEGER)", t.getConstantType("k2"));
 	}
@@ -105,7 +105,7 @@ public class TestModuleFiniteSets {
 				+ "EXTENDS FiniteSets \n"
 				+ "ASSUME Cardinality(1)\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -114,7 +114,7 @@ public class TestModuleFiniteSets {
 				+ "EXTENDS FiniteSets \n"
 				+ "ASSUME TRUE = Cardinality({1})\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 }

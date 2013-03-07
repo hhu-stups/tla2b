@@ -4,12 +4,11 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -25,10 +24,10 @@ public class BBuiltInsTest {
 				+ "ASSUME TRUE \\in BOOLEAN\n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES TRUE : BOOL \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -41,10 +40,10 @@ public class BBuiltInsTest {
 				+ "ASSUME \"abc\" \\in STRING\n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES \"abc\" : STRING \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -56,10 +55,10 @@ public class BBuiltInsTest {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME TRUE \n" + "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES TRUE = TRUE \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -69,9 +68,9 @@ public class BBuiltInsTest {
 				+ "ASSUME TRUE = FALSE \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES TRUE = FALSE \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

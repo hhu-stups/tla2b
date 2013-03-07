@@ -4,12 +4,10 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.fileToString;
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestInstanceLet {
@@ -17,8 +15,8 @@ public class TestInstanceLet {
 	@Test
 	public void testInstance() throws Exception {
 		String path = "src/test/resources/prettyprint/instance/let/";
-		StringBuilder sb = Util.translate(path + "InstanceLet.tla");
-		String expected = fileToString(path + "InstanceLet.mch");
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		StringBuilder sb = TestUtil.translate(path + "InstanceLet.tla");
+		String expected = TestUtil.fileToString(path + "InstanceLet.mch");
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

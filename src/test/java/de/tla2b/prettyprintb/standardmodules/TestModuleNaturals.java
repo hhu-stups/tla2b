@@ -4,12 +4,11 @@
 
 package de.tla2b.prettyprintb.standardmodules;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestModuleNaturals {
@@ -23,10 +22,10 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "ASSUME 1 < 2 /\\ 2 > 1 /\\ 1 <= 1 /\\ 1 >= 1 \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 < 2 & 2 > 1 & 1 <= 1 & 1 >= 1 \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -36,11 +35,11 @@ public class TestModuleNaturals {
 				+ "ASSUME (1 < 2) = (2 > 1) /\\ (1 <= 1) = (1 >= 1) \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES bool(1 < 2) = bool(2 > 1) & bool(1 <= 1) = bool(1 >= 1) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -52,11 +51,11 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "ASSUME 1 + 2 = 4-1 /\\ 1 * 2 = 4 \\div 2 /\\  1 ^ 1 = 1 \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 + 2 = 4 - 1 & 1 * 2 = 4 / 2 & 1 ** 1 = 1 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -68,11 +67,11 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "ASSUME 1 \\in 1 .. 2 \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 : 1..2 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -84,11 +83,11 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals \n"
 				+ "ASSUME 1 \\in Nat \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES 1 : NATURAL \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test
@@ -97,11 +96,11 @@ public class TestModuleNaturals {
 				+ "EXTENDS Naturals, Integers \n"
 				+ "ASSUME -3 % 2 = 1 \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES (%t_.( t_ = 0 & -3 < 0 | -(-3) mod 2 )\\/%t_.( t_ = 0 & not(-3<0) | -3 mod 2))(0) = 1 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 }

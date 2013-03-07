@@ -7,7 +7,7 @@ import org.junit.Test;
 import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TupleVsSequenceTest {
@@ -19,7 +19,7 @@ public class TupleVsSequenceTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = Append(<<>>, TRUE) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 	}
 	
@@ -30,7 +30,7 @@ public class TupleVsSequenceTest {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = Append(<<1,2,3>>, k2) \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*INTEGER)", t.getConstantType("k"));
 		assertEquals("INTEGER", t.getConstantType("k2"));
 	}
@@ -41,7 +41,7 @@ public class TupleVsSequenceTest {
 				+ "CONSTANTS a, b, c\n"
 				+ "ASSUME <<1,2,3,4>> = <<a,b,c>> \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER", t.getConstantType("a"));
 		assertEquals("INTEGER", t.getConstantType("b"));
 		assertEquals("INTEGER", t.getConstantType("c"));

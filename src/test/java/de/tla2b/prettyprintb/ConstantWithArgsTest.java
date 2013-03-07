@@ -4,23 +4,21 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.fileToString;
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import de.tla2b.exceptions.ConfigFileErrorException;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 public class ConstantWithArgsTest {
 
 	@Test
 	public void TestInstanceOpSubstitution() throws Exception {
 		String path = "src/test/resources/prettyprint/constantWithArgs/";
-		StringBuilder sb = Util.translate(path + "InstanceCounter.tla");
-		String expected = fileToString(path + "InstanceCounter.mch");
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		StringBuilder sb = TestUtil.translate(path + "InstanceCounter.tla");
+		String expected = TestUtil.fileToString(path + "InstanceCounter.mch");
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Test (expected= ConfigFileErrorException.class)
@@ -29,7 +27,7 @@ public class ConstantWithArgsTest {
 				+ "CONSTANTS c(_) \n"
 				+ "ASSUME c(1) = 2 \n"
 				+ "=================================";
-		Util.translateString(module);
+		TestUtil.translateString(module);
 	}
 	
 }

@@ -5,12 +5,11 @@
 package de.tla2b.examples;
 
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ComplexExamples {
@@ -21,7 +20,7 @@ public class ComplexExamples {
 	@Test
 	public void testFastPaxos() throws Exception {
 		String path = "src/test/resources/examples/FastPaxos/";
-		StringBuilder sb = Util.translate(path + "MCFastPaxos", "MCFastPaxos.cfg");
+		StringBuilder sb = TestUtil.translate(path + "MCFastPaxos", "MCFastPaxos.cfg");
 		System.out.println(sb);
 		//String expected = fileToString(path + "AsynchInterface.mch");
 		//assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -31,7 +30,7 @@ public class ComplexExamples {
 	@Test
 	public void testSecCtx() throws Exception {
 		String path = "src/test/resources/examples/";
-		StringBuilder sb = Util.translate("SecCtx", "SecCtx.cfg");
+		StringBuilder sb = TestUtil.translate("SecCtx", "SecCtx.cfg");
 		System.out.println(sb);
 		//String expected = fileToString(path + "AsynchInterface.mch");
 		//assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
@@ -42,8 +41,8 @@ public class ComplexExamples {
 	@Ignore
 	public void testUf50_2() throws Exception {
 		String path = "src/test/resources/examples/";
-		StringBuilder sb = Util.translate(path + "uf50_02.tla"); 
-		getTreeAsString(sb.toString());
+		StringBuilder sb = TestUtil.translate(path + "uf50_02.tla"); 
+		TestUtil.getTreeAsString(sb.toString());
 	}
 	
 	

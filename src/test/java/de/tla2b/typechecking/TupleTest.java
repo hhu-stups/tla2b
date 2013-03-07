@@ -8,7 +8,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TupleTest {
@@ -21,7 +21,7 @@ public class TupleTest {
 				+ "ASSUME k = <<1,TRUE>> \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*BOOL", t.getConstantType("k").toString());
 	}
 
@@ -33,7 +33,7 @@ public class TupleTest {
 				+ "ASSUME k = <<1,TRUE,1>> \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*BOOL*INTEGER", t.getConstantType("k").toString());
 	}
 
@@ -45,7 +45,7 @@ public class TupleTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = <<1,1>> \n" + "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*INTEGER", t.getConstantType("k").toString());
 	}
 
@@ -57,7 +57,7 @@ public class TupleTest {
 				+ "ASSUME k = <<1,k2>> /\\ k2 = TRUE \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*BOOL", t.getConstantType("k").toString());
 		assertEquals("BOOL", t.getConstantType("k2").toString());
 	}
@@ -70,7 +70,7 @@ public class TupleTest {
 				+ "ASSUME k = {1} \\times BOOLEAN \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k").toString());
 	}
 
@@ -82,7 +82,7 @@ public class TupleTest {
 				+ "ASSUME k = <<TRUE>> \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k").toString());
 	}
 
@@ -93,7 +93,7 @@ public class TupleTest {
 				+ "ASSUME k = <<k2, k3>> /\\ k3 = TRUE \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test
@@ -103,7 +103,7 @@ public class TupleTest {
 				+ "ASSUME k = <<k2, <<k3>> >> /\\ k3 = TRUE /\\ k2 = 1\n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*POW(INTEGER*BOOL)", t.getConstantType("k")
 				.toString());
 		assertEquals("INTEGER", t.getConstantType("k2").toString());
@@ -117,7 +117,7 @@ public class TupleTest {
 				+ "ASSUME k \\in <<TRUE>>\n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	/**********************************************************************
@@ -130,7 +130,7 @@ public class TupleTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = BOOLEAN \\X {1} \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(BOOL*INTEGER)", t.getConstantType("k").toString());
 	}
 
@@ -141,7 +141,7 @@ public class TupleTest {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME BOOLEAN \\X {1} = k \\X k2 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(BOOL)", t.getConstantType("k").toString());
 		assertEquals("POW(INTEGER)", t.getConstantType("k2").toString());
 	}
@@ -153,7 +153,7 @@ public class TupleTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = BOOLEAN \\X 1 \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 }

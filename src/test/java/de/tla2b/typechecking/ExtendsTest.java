@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ExtendsTest {
@@ -17,7 +17,7 @@ public class ExtendsTest {
 	@Test
 	public void TestExtendsCounter() throws Exception {
 		String path = "src/test/resources/typechecking/modules/";
-		TestTypeChecker t = Util.typeCheck(path + "ExtendsCounter.tla");
+		TestTypeChecker t = TestUtil.typeCheck(path + "ExtendsCounter.tla");
 		assertEquals("INTEGER", t.getVariableType("x"));
 		assertEquals("INTEGER", t.getConstantType("start"));
 	}

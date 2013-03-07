@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import de.tla2b.exceptions.ConfigFileErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 
@@ -23,7 +23,7 @@ public class OpArgTest {
 				+ "CONSTANTS k(_,_), k2 \n"
 				+ "ASSUME k2 = k(1,2)\n" + "=================================";
 		final String config = "CONSTANTS k <- <";
-		TestTypeChecker t = Util.typeCheckString(module, config);
+		TestTypeChecker t = TestUtil.typeCheckString(module, config);
 		assertEquals("BOOL", t.getConstantType("k2"));
 	}
 
@@ -34,7 +34,7 @@ public class OpArgTest {
 				+ "def == TRUE /\\ FALSE \n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- def";
-		Util.typeCheckString(module, config);
+		TestUtil.typeCheckString(module, config);
 	}
 
 	@Test(expected = ConfigFileErrorException.class)
@@ -45,7 +45,7 @@ public class OpArgTest {
 				+ "ASSUME foo(TRUE, FALSE) \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo <- def";
-		Util.typeCheckString(module, config);
+		TestUtil.typeCheckString(module, config);
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class OpArgTest {
 				+ "ASSUME k2 = k(TRUE,TRUE)\n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- def";
-		TestTypeChecker t = Util.typeCheckString(module, config);
+		TestTypeChecker t = TestUtil.typeCheckString(module, config);
 		assertEquals("BOOL", t.getConstantType("k2"));
 		System.out.println(t.getDefinitionType("def"));
 		assertEquals("BOOL", t.getDefinitionType("def"));

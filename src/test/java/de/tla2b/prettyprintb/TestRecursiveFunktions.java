@@ -7,7 +7,7 @@ package de.tla2b.prettyprintb;
 import org.junit.Test;
 
 import de.tla2b.translation.Translator;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -27,7 +27,7 @@ public class TestRecursiveFunktions {
 				+ "ASSUME k[3] = 6 \n"
 				+ "=================================";
 		final String config = "CONSTANTS k <- foo";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 //		final String expected = "MACHINE Testing\n"
 //				+ "PROPERTIES foo(1, 2) = 3 \n"
@@ -43,7 +43,7 @@ public class TestRecursiveFunktions {
 				+ "fact[n \\in Nat] == IF n = 0 THEN 1 ELSE n * fact[n-1] \n"
 				+ "ASSUME fact[0] = 1 /\\ fact[3] = 6 \n"
 				+ "=================================";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 //		final String expected = "MACHINE Testing\n"
 //				+ "PROPERTIES foo(1, 2) = 3 \n"

@@ -4,13 +4,12 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -28,12 +27,12 @@ public class FunctionTest {
 				+ "ASSUME k = [x \\in {1} |-> TRUE = TRUE] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*BOOL) & k = %x.(x : {1}| bool(TRUE = TRUE)) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -44,12 +43,12 @@ public class FunctionTest {
 				+ "ASSUME k = [x,y \\in {1} |-> 1] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER*INTEGER) & k = %x,y.(x : {1} & y : {1}| 1) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -60,12 +59,12 @@ public class FunctionTest {
 				+ "ASSUME k = [x \\in {1}, y \\in BOOLEAN |-> 1] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES k : POW(INTEGER*BOOL*INTEGER) & k = %x,y.(x : {1} & y : BOOL| 1) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -83,7 +82,7 @@ public class FunctionTest {
 				+ "ASSUME k = fact /\\ fact[k2] = k3 \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k,k2,k3\n"
@@ -92,7 +91,7 @@ public class FunctionTest {
 				+ "DEFINITIONS IF_THEN_ELSE(P, a, b) == (%t_.(t_=TRUE & P = TRUE | a )\\/%t_.(t_=TRUE & not(P= TRUE) | b ))(TRUE); \n"
 				+ "fact == %n.(n : {1, 2}| IF_THEN_ELSE(bool(n = 0), 1, n + fact(n - 1))) \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -107,11 +106,11 @@ public class FunctionTest {
 				+ "ASSUME k = [x,y \\in {1} |-> x+y] /\\ k[1,2] = 1 \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*INTEGER*INTEGER)"
 				+ "& k = %x,y.(x : {1} & y : {1}| x + y) & k(1, 2) = 1" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -123,11 +122,11 @@ public class FunctionTest {
 				+ "ASSUME k = [x \\in {1} |-> TRUE] /\\ k[1] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*BOOL)"
 				+ "& k = %x.(x : {1}| TRUE) & k(1) = TRUE\n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/***********************************************************************
@@ -142,11 +141,11 @@ public class FunctionTest {
 				+ "ASSUME k = [x \\in {1} |-> x] /\\ DOMAIN k = {1} \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(INTEGER*INTEGER)"
 				+ "& k = %x.(x : {1}| x) & dom(k) = {1}" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -160,11 +159,11 @@ public class FunctionTest {
 				+ "ASSUME k = [BOOLEAN -> {1}] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + "k : POW(POW(BOOL*INTEGER))"
 				+ "& k = BOOL --> {1}" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -178,11 +177,11 @@ public class FunctionTest {
 				+ "ASSUME k = [k EXCEPT ![TRUE] = 0, ![FALSE] = 0]  \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		final String expected = "MACHINE Testing\n" + "ABSTRACT_CONSTANTS k\n"
 				+ "PROPERTIES " + " k : POW(BOOL*INTEGER)"
 				+ "& k = k <+ {TRUE |-> 0, FALSE |-> 0}" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	/**********************************************************************
@@ -197,13 +196,13 @@ public class FunctionTest {
 				+ "ASSUME k = [x \\in {1,2} |-> x] /\\ k2 = [k EXCEPT ![1] = @ + 1] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k, k2\n"
 				+ "PROPERTIES k : POW(INTEGER*INTEGER) &  k2 : POW(INTEGER*INTEGER) & k = %x.(x : {1, 2}| x) & k2 = k <+ {1 |-> k(1) + 1} \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
@@ -215,7 +214,7 @@ public class FunctionTest {
 				+ "ASSUME k = [x,y \\in {1,2} |-> x+y] /\\ k2 = [k EXCEPT ![1,1] = @ + 4] \n"
 				+ "=================================";
 
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
 				+ "ABSTRACT_CONSTANTS k, k2\n"
@@ -223,6 +222,6 @@ public class FunctionTest {
 				+ "&  k2 : POW(INTEGER*INTEGER*INTEGER) "
 				+ "& k = %x,y.(x : {1, 2} & y : {1, 2}| x + y) "
 				+ "& k2 = k <+ {(1, 1) |-> k(1, 1) + 4} \n" + "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

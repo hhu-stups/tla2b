@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class LogicOperatorsTest {
@@ -26,7 +26,7 @@ public class LogicOperatorsTest {
 				+ "CONSTANTS k, k2\n"
 				+ "ASSUME k = (k2 = 1)\n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k").toString());
 		assertEquals("INTEGER", t.getConstantType("k2").toString());
 	}
@@ -36,14 +36,14 @@ public class LogicOperatorsTest {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME 1 = TRUE\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	@Test (expected = TypeErrorException.class)
 	public void testEqualityError2() throws FrontEndException, TLA2BException {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME 1 = (1=1)\n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	
@@ -58,7 +58,7 @@ public class LogicOperatorsTest {
 				+ "ASSUME k = (k2 \\land k3) \n"
 				+ "=================================";
 		
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k").toString());
 		assertEquals("BOOL", t.getConstantType("k2").toString());
 		assertEquals("BOOL", t.getConstantType("k3").toString());
@@ -70,7 +70,7 @@ public class LogicOperatorsTest {
 				+ "CONSTANTS k, k2, k3\n"
 				+ "ASSUME 1 = (k2 \\land k3) \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	/**********************************************************************
@@ -84,7 +84,7 @@ public class LogicOperatorsTest {
 				+ "CONSTANTS k, k2, S\n"
 				+ "ASSUME k = (\\A x \\in S : x = k2) /\\ k2 = 1 \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("BOOL", t.getConstantType("k").toString());
 		assertEquals("INTEGER", t.getConstantType("k2").toString());
 		assertEquals("POW(INTEGER)", t.getConstantType("S").toString());
@@ -95,6 +95,6 @@ public class LogicOperatorsTest {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "ASSUME \\A <<x,y>> \\in {1} : TRUE \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 }

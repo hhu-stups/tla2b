@@ -12,7 +12,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class ExceptTest {
@@ -24,7 +24,7 @@ public class ExceptTest {
 				+ "ASSUME k = [k2 EXCEPT ![TRUE] = 0]  \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(BOOL*INTEGER)", t.getConstantType("k"));
 		assertEquals("POW(BOOL*INTEGER)", t.getConstantType("k2"));
 	}
@@ -36,7 +36,7 @@ public class ExceptTest {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = [k EXCEPT ![1] = [a|-> 1, b |-> TRUE], ![1].b = k2 ] "
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*struct(a:INTEGER,b:BOOL))",
 				t.getConstantType("k"));
 		assertEquals("BOOL", t.getConstantType("k2"));
@@ -49,7 +49,7 @@ public class ExceptTest {
 				+ "CONSTANTS k, k2 \n"
 				+ "ASSUME k = [k EXCEPT ![1].a = 2, ![1].b = k2 ] /\\ k2 = TRUE \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*struct(a:INTEGER,b:BOOL))",
 				t.getConstantType("k"));
 	}
@@ -61,7 +61,7 @@ public class ExceptTest {
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = [k EXCEPT !.a = 2, !.b = TRUE] \n"
 				+ "=================================";
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("struct(a:INTEGER,b:BOOL)", t.getConstantType("k")
 				.toString());
 	}
@@ -73,7 +73,7 @@ public class ExceptTest {
 				+ "CONSTANTS a, b \n"
 				+ "ASSUME a = [a EXCEPT !.a = 1, !.b = 1] \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -84,7 +84,7 @@ public class ExceptTest {
 				+ "ASSUME  r = [a |-> TRUE] \n"
 				+ "/\\ r2 = [r EXCEPT !.a = 1 = @] \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -95,7 +95,7 @@ public class ExceptTest {
 				+ "ASSUME  r = [x \\in {1,2}|->TRUE] \n"
 				+ "/\\ r2 = [r EXCEPT ![1] = 1 = @] \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -106,7 +106,7 @@ public class ExceptTest {
 				+ "ASSUME  r = [x \\in {1,2}|->TRUE] \n"
 				+ "/\\ r2 = [r EXCEPT ![1] = @ + 1] \n"
 				+ "=================================";
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test
@@ -117,7 +117,7 @@ public class ExceptTest {
 				+ "ASSUME k = [k EXCEPT ![1] = @ = @] \n"
 				+ "=================================";
 
-		TestTypeChecker t = Util.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
 	}
 

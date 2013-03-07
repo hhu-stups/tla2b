@@ -4,13 +4,11 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.fileToString;
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class TestUnchanged {
@@ -19,17 +17,17 @@ public class TestUnchanged {
 
 	@Test
 	public void testOneUnchangedVariable() throws Exception {
-		StringBuilder sb = Util.translate(path + "OneUnchangedVariable.tla");
-		String expected = fileToString(path + "OneUnchangedVariable.mch");
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		StringBuilder sb = TestUtil.translate(path + "OneUnchangedVariable.tla");
+		String expected = TestUtil.fileToString(path + "OneUnchangedVariable.mch");
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 	@Test
 	public void testSeveralUnchangedVariables() throws Exception {
-		StringBuilder sb = Util
+		StringBuilder sb = TestUtil
 				.translate(path + "SeveralUnchangedVariables.tla");
-		String expected = fileToString(path + "SeveralUnchangedVariables.mch");
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		String expected = TestUtil.fileToString(path + "SeveralUnchangedVariables.mch");
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 
 }

@@ -4,13 +4,12 @@
 
 package de.tla2b.configfile;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 
 public class DefAssignmentTest {
@@ -23,12 +22,12 @@ public class DefAssignmentTest {
 				+ "ASSUME foo = 1 \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo = 1";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		String expected = "MACHINE Testing \n"
 				+ "PROPERTIES foo = 1 \n"
 				+ "DEFINITIONS foo == 1 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 	@Ignore
@@ -40,7 +39,7 @@ public class DefAssignmentTest {
 				+ "ASSUME foo = foo \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo = a";
-		StringBuilder sb = Util.translateString(module, config);
+		StringBuilder sb = TestUtil.translateString(module, config);
 		System.out.println(sb);
 		String expected = "MACHINE Testing \n"
 				+ "SETS ENUM1 = {a} \n"
@@ -59,13 +58,13 @@ public class DefAssignmentTest {
 				+ "ASSUME foo = foo \n"
 				+ "=================================";
 		final String config = "CONSTANTS foo = foo";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 		String expected = "MACHINE Testing \n"
 				+ "PROPERTIES foo = foo \n"
 				+ "DEFINITIONS foo == 1 \n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
 }

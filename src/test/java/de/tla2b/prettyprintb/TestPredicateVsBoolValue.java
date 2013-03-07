@@ -4,14 +4,12 @@
 
 package de.tla2b.prettyprintb;
 
-import static de.tla2b.util.TestUtil.getTreeAsString;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.tla2b.translation.Translator;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -26,13 +24,13 @@ public class TestPredicateVsBoolValue {
 				+ "foo == TRUE \n"
 				+ "ASSUME foo \n"
 				+ "=======";
-		StringBuilder sb = Util.translateString(module);
+		StringBuilder sb = TestUtil.translateString(module);
 		System.out.println(sb);
 		//TODO
 		final String expected = "MACHINE Testing\n"
 				+ "PROPERTIES foo \n"
 				+ "DEFINITIONS foo == TRUE\n"
 				+ "END";
-		assertEquals(getTreeAsString(expected), getTreeAsString(sb.toString()));
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 }

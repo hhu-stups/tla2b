@@ -40,6 +40,15 @@ public class Translator implements TranslationGlobals {
 			modelConfig.parse();
 		}
 	}
+	
+	public static StringBuilder translateString(String moduleString, String configString)
+			throws FrontEndException, TLA2BException, AbortException {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		Translator translator = new Translator();
+		translator.startTest(moduleString, configString);
+		return translator.translate();
+	}
 
 	public static void createTempfile(String moduleString){
 		File dir = new File("temp/");
@@ -68,7 +77,6 @@ public class Translator implements TranslationGlobals {
 		createTempfile(moduleString);
 		
 		ToolIO.setUserDir("temp/");
-		String moduleName = Translator.evalFileName("Testing.tla");
 
 		moduleNode = parseModule("Testing.tla");
 

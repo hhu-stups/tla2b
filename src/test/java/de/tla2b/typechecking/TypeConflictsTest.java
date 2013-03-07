@@ -10,7 +10,7 @@ import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.util.TestTypeChecker;
-import de.tla2b.util.Util;
+import de.tla2b.util.TestUtil;
 
 import util.ToolIO;
 
@@ -23,7 +23,7 @@ public class TypeConflictsTest {
 				+ "ASSUME k = {k} \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 
 	@Test(expected = TypeErrorException.class)
@@ -33,7 +33,7 @@ public class TypeConflictsTest {
 				+ "ASSUME {k} = k  \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test(expected = TypeErrorException.class)
@@ -43,7 +43,7 @@ public class TypeConflictsTest {
 				+ "ASSUME {{k}} = k  \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test(expected = TypeErrorException.class)
@@ -53,7 +53,7 @@ public class TypeConflictsTest {
 				+ "ASSUME k = [a |-> k]  \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test(expected = TypeErrorException.class)
@@ -64,7 +64,7 @@ public class TypeConflictsTest {
 				+ "ASSUME k = [x \\in {} |-> k]  \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 	
 	@Test(expected = TypeErrorException.class)
@@ -74,6 +74,6 @@ public class TypeConflictsTest {
 				+ "ASSUME a = [x|->1] /\\ b = [y|->a, x|->1] /\\ a=b  \n"
 				+ "=================================";
 
-		Util.typeCheckString(module);
+		TestUtil.typeCheckString(module);
 	}
 }
