@@ -595,32 +595,18 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		 **********************************************************************/
 		case OPCODE_sso: // $SubsetOf Represents {x \in S : P}
 		{
-			SetType found = new SetType(new Untyped());
+
+			TLAType domainType = evalBoundedVariables(n);
+			SetType found = new SetType(domainType);
 			try {
 				found = found.unify(expected);
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
-						"Expected %s, found POW(_A) at '%s',\n%s", expected, n
-								.getOperator().getName(), n.getLocation()));
+						"Expected %s, found %s at '%s',\n%s", expected, found,
+						n.getOperator().getName(), n.getLocation()));
 			}
-
-			if (n.isBdedQuantATuple()[0]) {
-				throw new TypeErrorException(
-						"A tuple as parameter within the set constructor is not permitted.\n"
-								+ n.getLocation());
-			}
-			ExprNode[] bounds = n.getBdedQuantBounds();
-			SetType S = (SetType) visitExprNode(bounds[0], found);
-			TLAType xType = S.getSubType();
-
-			FormalParamNode x = n.getBdedQuantSymbolLists()[0][0];
-			x.setToolObject(TYPE_ID, xType);
-			if (xType instanceof AbstractHasFollowers) {
-				((AbstractHasFollowers) xType).addFollower(x);
-			}
-
 			visitExprOrOpArgNode(n.getArgs()[0], BoolType.getInstance());
-			return S;
+			return found;
 		}
 
 		case OPCODE_soa: // $SetOfAll Represents {e : p1 \in S, p2,p3 \in S2}
@@ -713,8 +699,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 			n.setToolObject(TYPE_ID, found);
 			if (found instanceof AbstractHasFollowers) {
-				((AbstractHasFollowers) found)
-						.addFollower(n);
+				((AbstractHasFollowers) found).addFollower(n);
 			}
 			return found;
 		}
@@ -725,65 +710,14 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		case OPCODE_rfs: // recursive function ( f[x\in Nat] == IF x = 0 THEN 1
 							// ELSE f[n-1]
 		{
-			ArrayList<TLAType> domList = new ArrayList<TLAType>();
-			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
-			ExprNode[] bounds = n.getBdedQuantBounds();
 
 			FormalParamNode recFunc = n.getUnbdedQuantSymbols()[0];
 			FunctionType recType = new FunctionType();
 			recFunc.setToolObject(TYPE_ID, recType);
 			recType.addFollower(recFunc);
 
-			for (int i = 0; i < bounds.length; i++) {
-				SetType s = (SetType) visitExprNode(bounds[i], new SetType(
-						new Untyped()));
-				TLAType subType = s.getSubType();
-
-				if (n.isBdedQuantATuple()[i]) {
-					domList.add(subType);
-					if (subType instanceof TupleType) {
-						TupleType t = (TupleType) subType;
-						if (params[i].length != t.getTypes().size()) {
-							throw new TypeErrorException("Expected tuple with "
-									+ params[i].length
-									+ " components, found tuple with "
-									+ t.getTypes().size() + "components.\n"
-									+ bounds[i].getLocation());
-						}
-						for (int j = 0; j < params[i].length; j++) {
-							FormalParamNode p = params[i][j];
-							TLAType paramType = t.getTypes().get(j);
-							p.setToolObject(TYPE_ID, paramType);
-							if (paramType instanceof AbstractHasFollowers) {
-								((AbstractHasFollowers) paramType)
-										.addFollower(p);
-							}
-						}
-					} else {
-						throw new TypeErrorException("Expected tuple, found '"
-								+ subType + "'.\n" + bounds[i].getLocation());
-					}
-				} else {
-					// is not a tuple: all parameter have the same type
-					for (int j = 0; j < params[i].length; j++) {
-						domList.add(subType);
-						FormalParamNode p = params[i][j];
-						p.setToolObject(TYPE_ID, subType);
-						if (subType instanceof AbstractHasFollowers) {
-							((AbstractHasFollowers) subType).addFollower(p);
-						}
-					}
-				}
-			}
-			TLAType domType = null;
-			if (domList.size() > 1) {
-				domType = new TupleType(domList);
-			} else {
-				domType = domList.get(0);
-			}
-
-			FunctionType found = new FunctionType(domType, new Untyped());
-
+			TLAType domainType = evalBoundedVariables(n);
+			FunctionType found = new FunctionType(domainType, new Untyped());
 			visitExprOrOpArgNode(n.getArgs()[0], found.getRange());
 
 			try {
@@ -808,60 +742,8 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		case OPCODE_nrfs: // succ[n \in Nat] == n + 1
 		case OPCODE_fc: // [n \in Nat |-> n+1]
 		{
-			ArrayList<TLAType> domList = new ArrayList<TLAType>();
-			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
-			ExprNode[] bounds = n.getBdedQuantBounds();
-			for (int i = 0; i < bounds.length; i++) {
-				SetType s = (SetType) visitExprNode(bounds[i], new SetType(
-						new Untyped()));
-				TLAType subType = s.getSubType();
-
-				if (n.isBdedQuantATuple()[i]) {
-					domList.add(subType);
-					if (subType instanceof TupleType) {
-						TupleType t = (TupleType) subType;
-						if (params[i].length != t.getTypes().size()) {
-							throw new TypeErrorException("Expected tuple with "
-									+ params[i].length
-									+ " components, found tuple with "
-									+ t.getTypes().size() + "components.\n"
-									+ bounds[i].getLocation());
-						}
-						for (int j = 0; j < params[i].length; j++) {
-							FormalParamNode p = params[i][j];
-							TLAType paramType = t.getTypes().get(j);
-							p.setToolObject(TYPE_ID, paramType);
-							if (paramType instanceof AbstractHasFollowers) {
-								((AbstractHasFollowers) paramType)
-										.addFollower(p);
-							}
-						}
-					} else {
-						throw new TypeErrorException("Expected tuple, found '"
-								+ subType + "'.\n" + bounds[i].getLocation());
-					}
-				} else {
-					// is not a tuple: all parameter have the same type
-					for (int j = 0; j < params[i].length; j++) {
-						domList.add(subType);
-						FormalParamNode p = params[i][j];
-						p.setToolObject(TYPE_ID, subType);
-						if (subType instanceof AbstractHasFollowers) {
-							((AbstractHasFollowers) subType).addFollower(p);
-						}
-					}
-				}
-			}
-
-			TLAType domType = null;
-			if (domList.size() > 1) {
-				domType = new TupleType(domList);
-			} else {
-				domType = domList.get(0);
-			}
-
-			FunctionType found = new FunctionType(domType, new Untyped());
-
+			TLAType domainType = evalBoundedVariables(n);
+			FunctionType found = new FunctionType(domainType, new Untyped());
 			visitExprOrOpArgNode(n.getArgs()[0], found.getRange());
 
 			try {
@@ -1121,6 +1003,80 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 
 		throw new NotImplementedException("Not supported Operator: "
 				+ n.getOperator().getName().toString() + "\n" + n.getLocation());
+	}
+
+	private TLAType evalBoundedVariables(OpApplNode n) throws TLA2BException {
+		ArrayList<TLAType> domList = new ArrayList<TLAType>();
+		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
+		ExprNode[] bounds = n.getBdedQuantBounds();
+		for (int i = 0; i < bounds.length; i++) {
+			SetType boundType = (SetType) visitExprNode(bounds[i], new SetType(
+					new Untyped()));
+			TLAType subType = boundType.getSubType();
+
+			if (n.isBdedQuantATuple()[i]) {
+				if (subType instanceof TupleType) {
+					domList.add(subType);
+					TupleType t = (TupleType) subType;
+					if (params[i].length != t.getTypes().size()) {
+						throw new TypeErrorException("Expected tuple with "
+								+ params[i].length
+								+ " components, found tuple with "
+								+ t.getTypes().size() + " components.\n"
+								+ bounds[i].getLocation());
+					}
+					for (int j = 0; j < params[i].length; j++) {
+						FormalParamNode p = params[i][j];
+						TLAType paramType = t.getTypes().get(j);
+						p.setToolObject(TYPE_ID, paramType);
+						if (paramType instanceof AbstractHasFollowers) {
+							((AbstractHasFollowers) paramType).addFollower(p);
+						}
+					}
+				} else if (subType instanceof Untyped) {
+					TupleType tuple = new TupleType(params[i].length);
+					try {
+						tuple = (TupleType) tuple.unify(subType);
+					} catch (UnificationException e) {
+						throw new TypeErrorException(String.format(
+								"Expected %s, found %s ,\n%s", tuple, subType,
+								n.getLocation()));
+					}
+
+					domList.add(tuple);
+					for (int j = 0; j < params[i].length; j++) {
+						FormalParamNode p = params[i][j];
+						TLAType paramType = tuple.getTypes().get(j);
+						p.setToolObject(TYPE_ID, paramType);
+						if (paramType instanceof AbstractHasFollowers) {
+							((AbstractHasFollowers) paramType).addFollower(p);
+						}
+					}
+
+				} else {
+					throw new TypeErrorException("Expected tuple, found '"
+							+ subType + "'.\n" + bounds[i].getLocation());
+				}
+			} else {
+				// is not a tuple: all parameter have the same type
+				for (int j = 0; j < params[i].length; j++) {
+					domList.add(subType);
+					FormalParamNode p = params[i][j];
+					p.setToolObject(TYPE_ID, subType);
+					if (subType instanceof AbstractHasFollowers) {
+						((AbstractHasFollowers) subType).addFollower(p);
+					}
+				}
+			}
+		}
+
+		TLAType domType = null;
+		if (domList.size() == 1) {
+			domType = domList.get(0);
+		} else {
+			domType = new TupleType(domList);
+		}
+		return domType;
 	}
 
 	/**
@@ -1459,10 +1415,9 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			try {
 				found = found.unify(expected);
 			} catch (UnificationException e) {
-				throw new TypeErrorException(
-						String.format(
-								"Expected %s, found %s at 'SubSeq',\n%s",
-								expected, found, n.getLocation()));
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at 'SubSeq',\n%s", expected,
+						found, n.getLocation()));
 			}
 			return found;
 		}
@@ -1490,16 +1445,36 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			return IntType.getInstance();
 		}
 
-		case B_OPCODE_permseq:{ // PermutedSequences(S)
+		case B_OPCODE_permseq: { // PermutedSequences(S)
 			SetType argType = (SetType) visitExprOrOpArgNode(n.getArgs()[0],
 					new SetType(new Untyped()));
-			SetType found = new SetType(new FunctionType(IntType.getInstance(), argType.getSubType()));
+			SetType found = new SetType(new FunctionType(IntType.getInstance(),
+					argType.getSubType()));
 			try {
 				found = found.unify(expected);
 			} catch (UnificationException e) {
 				throw new TypeErrorException(String.format(
 						"Expected %s, found %s at 'PermutedSequences',\n%s",
 						expected, found, n.getLocation()));
+			}
+			return found;
+		}
+
+		/**********************************************************************
+		 * Standard Module TLA2B
+		 **********************************************************************/
+		case B_OPCODE_pow1: // POW1
+		{
+
+			SetType set = new SetType(new Untyped());
+			set = (SetType) visitExprOrOpArgNode(n.getArgs()[0], set);
+			SetType found = new SetType(set);
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at '%s',\n%s", expected, n
+								.getOperator().getName(), n.getLocation()));
 			}
 			return found;
 		}
@@ -1561,32 +1536,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			}
 		}
 		return p;
-	}
-
-	/**
-	 * @param n
-	 * @throws TLA2BException
-	 */
-	private void evalBoundedVariables(OpApplNode n) throws TLA2BException {
-		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
-		ExprNode[] bounds = n.getBdedQuantBounds();
-		for (int i = 0; i < bounds.length; i++) {
-			if (n.isBdedQuantATuple()[i]) {
-				throw new TypeErrorException(
-						"A tuple of bounded variable is not permitted.\n"
-								+ n.getLocation());
-			}
-			SetType S = (SetType) visitExprNode(bounds[i], new SetType(
-					new Untyped()));
-			TLAType pType = S.getSubType();
-			for (int j = 0; j < params[i].length; j++) {
-				FormalParamNode p = params[i][j];
-				p.setToolObject(TYPE_ID, pType);
-				if (pType instanceof AbstractHasFollowers) {
-					((AbstractHasFollowers) pType).addFollower(p);
-				}
-			}
-		}
 	}
 
 }

@@ -23,23 +23,23 @@ import tlc2.tool.ModelConfig;
 import util.FileUtil;
 import util.ToolIO;
 
-public class Translator implements TranslationGlobals {
+public class Tla2BTranslator implements TranslationGlobals {
 	private ModuleNode moduleNode;
 	private ModelConfig modelConfig;
 	private TypeChecker typechecker;
 	private String moduleName;
 
-	public Translator() {
+	public Tla2BTranslator() {
 		this.moduleName = "Testing";
 	}
 
-	public Translator(String moduleName) {
+	public Tla2BTranslator(String moduleName) {
 		this.moduleName = moduleName;
 	}
 
 	public void start(String moduleFileName, String configFileName)
 			throws TLA2BException {
-		String moduleName = Translator.evalFileName(moduleFileName);
+		String moduleName = Tla2BTranslator.evalFileName(moduleFileName);
 		moduleNode = parseModule(moduleName);
 
 		modelConfig = null;
@@ -54,7 +54,7 @@ public class Translator implements TranslationGlobals {
 			TLA2BException {
 		ToolIO.setMode(ToolIO.TOOL);
 		ToolIO.reset();
-		Translator translator = new Translator();
+		Tla2BTranslator translator = new Tla2BTranslator(moduleName);
 		translator.startTest(moduleString, configString);
 		return translator.translate();
 	}

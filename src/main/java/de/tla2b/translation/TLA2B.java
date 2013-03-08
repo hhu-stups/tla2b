@@ -91,7 +91,7 @@ public class TLA2B implements TranslationGlobals {
 
 		StringBuilder s = new StringBuilder();
 		ToolIO.setMode(ToolIO.TOOL);
-		Translator t = new Translator();
+		Tla2BTranslator t = new Tla2BTranslator();
 		try {
 			t.start(name, configName);
 		} catch (FrontEndException e1) {

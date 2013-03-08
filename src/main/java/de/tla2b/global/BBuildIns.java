@@ -72,6 +72,10 @@ public interface BBuildIns {
 	public static final UniqueString OP_permseq = UniqueString
 			.uniqueStringOf("PermutedSequences");
 
+	//BBuildIns
+	public static final UniqueString OP_pow1 = UniqueString
+			.uniqueStringOf("POW1");
+	
 	public static final int B_OPCODE_dotdot = 1;
 	public static final int B_OPCODE_plus = 2;
 	public static final int B_OPCODE_minus = 3;
@@ -109,5 +113,7 @@ public interface BBuildIns {
 	public static final int B_OPCODE_setprod = B_OPCODE_conc + 3;
 	public static final int B_OPCODE_setsum = B_OPCODE_conc + 4;
 	public static final int B_OPCODE_permseq = B_OPCODE_conc + 5;
+	
+	public static final int B_OPCODE_pow1 = B_OPCODE_permseq + 1;
 	
 }

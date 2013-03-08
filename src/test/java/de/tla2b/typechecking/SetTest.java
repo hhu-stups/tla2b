@@ -244,7 +244,7 @@ public class SetTest {
 		assertEquals("POW(BOOL)", t.getConstantType("S"));
 	}
 
-	@Test(expected = TypeErrorException.class)
+	@Test (expected = TypeErrorException.class)
 	public void testSubsetOfException() throws FrontEndException,
 			TLA2BException {
 		final String module = "-------------- MODULE Testing ----------------\n"
@@ -264,16 +264,52 @@ public class SetTest {
 		TestUtil.typeCheckString(module);
 	}
 
-	@Test(expected = TypeErrorException.class)
+	@Test (expected = TypeErrorException.class)
 	public void testSubsetOfException3() throws FrontEndException,
 			TLA2BException {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k\n"
-				+ "ASSUME k = {x \\in {} : 1} \n"
+				+ "ASSUME k = {x \\in {} : 1 = 1} \n"
 				+ "=================================";
 		TestUtil.typeCheckString(module);
 	}
 
+	@Test 
+	public void testSubsetOfTuple() throws FrontEndException,
+			TLA2BException {
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k\n"
+				+ "ASSUME k = {<<x,y>> \\in {1} \\times {TRUE} : TRUE} \n"
+				+ "=================================";
+		TestTypeChecker t = TestUtil.typeCheckString(module);
+		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
+	}
+	
+	@Test 
+	public void testSubsetOfTuple2() throws FrontEndException,
+			TLA2BException {
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k, S, S2\n"
+				+ "ASSUME k = {<<x,y>> \\in S \\times S2 : x = 1 /\\ y = TRUE} \n"
+				+ "=================================";
+		TestTypeChecker t = TestUtil.typeCheckString(module);
+		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
+		assertEquals("POW(INTEGER)", t.getConstantType("S"));
+		assertEquals("POW(BOOL)", t.getConstantType("S2"));
+	}
+	
+	@Test 
+	public void testSubsetOfTuple3() throws FrontEndException,
+			TLA2BException {
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "CONSTANTS k, S\n"
+				+ "ASSUME k = {<<x,y>> \\in S : x = 1 /\\ y = TRUE} \n"
+				+ "=================================";
+		TestTypeChecker t = TestUtil.typeCheckString(module);
+		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("k"));
+		assertEquals("POW(INTEGER*BOOL)", t.getConstantType("S"));
+	}
+	
 	/**********************************************************************
 	 * set constructor: {e : x \in S}
 	 **********************************************************************/

@@ -45,6 +45,9 @@ public class BBuiltInOPs implements BBuildIns{
 		B_Opcode_Table.put(OP_setprod, B_OPCODE_setprod);
 		B_Opcode_Table.put(OP_setsum, B_OPCODE_setsum);
 		B_Opcode_Table.put(OP_permseq, B_OPCODE_permseq);
+		
+		B_Opcode_Table.put(OP_pow1, B_OPCODE_pow1);
+		
 	}
 	
 	public static boolean contains(UniqueString s){

@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.tla2b.translation.Translator;
+import de.tla2b.translation.Tla2BTranslator;
 import de.tla2b.util.TestUtil;
 
 import util.ToolIO;

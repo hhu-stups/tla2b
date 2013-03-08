@@ -49,7 +49,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	public void start() throws TLA2BException {
 		String module = "----MODULE Testing----\n" + "Expression == "
 				+ TLAExpression + "\n====";
-		Translator.createTempfile("Testing",module);
+		Tla2BTranslator.createTempfile("Testing",module);
 
 		ToolIO.setUserDir("temp/");
 
@@ -128,7 +128,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	public static ModuleNode parseModule(String module)
 			throws de.tla2b.exceptions.FrontEndException {
 
-		Translator.createTempfile("Testing", module);
+		Tla2BTranslator.createTempfile("Testing", module);
 		String moduleName = "Testing.tla";
 
 		SpecObj spec = new SpecObj(moduleName, null);
@@ -163,7 +163,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		if (n == null) { // Parse Error
 			// System.out.println("Rootmodule null");
 			throw new de.tla2b.exceptions.FrontEndException(
-					Translator.allMessagesToString(ToolIO.getAllMessages()),
+					Tla2BTranslator.allMessagesToString(ToolIO.getAllMessages()),
 					spec);
 		}
 		return n;

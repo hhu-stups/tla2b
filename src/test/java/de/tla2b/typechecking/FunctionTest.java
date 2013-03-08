@@ -106,14 +106,15 @@ public class FunctionTest {
 		TestUtil.typeCheckString(module);
 	}
 
-	@Test(expected = TypeErrorException.class)
+	@Test (expected = TypeErrorException.class)
 	public void testFunctionConstructorFail2() throws FrontEndException,
 			TLA2BException {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k \n"
 				+ "ASSUME k = [<<x,y,z>> \\in ({1} \\times {1}) |-> TRUE]  \n"
 				+ "=================================";
-		TestUtil.typeCheckString(module);
+		TestTypeChecker t = TestUtil.typeCheckString(module);
+		System.out.println(t.getConstantType("k"));
 	}
 
 	@Test

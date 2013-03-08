@@ -10,7 +10,7 @@ import de.tla2b.analysis.TypeChecker;
 import de.tla2b.exceptions.FrontEndException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.global.TranslationGlobals;
-import de.tla2b.translation.Translator;
+import de.tla2b.translation.Tla2BTranslator;
 import de.tla2b.types.TLAType;
 
 import tla2sany.semantic.FormalParamNode;
@@ -34,7 +34,7 @@ public class TestTypeChecker implements TranslationGlobals {
 
 	public void startTest(String moduleString, String configString)
 			throws FrontEndException, TLA2BException {
-		Translator translator = new Translator();
+		Tla2BTranslator translator = new Tla2BTranslator();
 		translator.startTest(moduleString, configString);
 		translator.translate();
 		moduleNode = translator.getModuleNode();
@@ -43,7 +43,7 @@ public class TestTypeChecker implements TranslationGlobals {
 	
 	public void start(String moduleFileName, String configFileName)
 			throws FrontEndException, TLA2BException {
-		Translator translator = new Translator();
+		Tla2BTranslator translator = new Tla2BTranslator();
 		translator.start(moduleFileName, configFileName);
 		translator.translate();
 		moduleNode = translator.getModuleNode();

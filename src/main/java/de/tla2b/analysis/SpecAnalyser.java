@@ -217,7 +217,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants,
 
 	/**
 	 * Searches for BOperations in a ExprNode. BOperations are seperated with
-	 * the aid of the \/ operator.
+	 * the aid of the disjunction (\/) operator.
 	 * 
 	 * @param exprNode
 	 * @param opName
@@ -470,10 +470,11 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants,
 							.getOriginallyDefinedInModuleNode().getName()
 							.toString())) {
 				
-				visitBuiltInKind(node, parameters);
+				for (int i = 0; i < node.getArgs().length; i++) {
+					visitExprOrOpArgNode(node.getArgs()[i], parameters);
+				}
 				return;
 			}
-
 			bDefinitionsSet.add(def);
 			visitExprNode(def.getBody(), def.getParams());
 

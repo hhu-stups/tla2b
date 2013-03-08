@@ -28,5 +28,5 @@ public interface TranslationGlobals {
 
 	final ArrayList<String> STANDARD_MODULES = new ArrayList<String>(
 			Arrays.asList(new String[] { "Naturals", "FiniteSets", "Integers",
-					"Sequences", "TLC", "Relations", "TLA2B" }));
+					"Sequences", "TLC", "Relations", "TLA2B", "BBuildIns" }));
 }

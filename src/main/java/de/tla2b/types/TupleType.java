@@ -12,6 +12,15 @@ public class TupleType extends AbstractHasFollowers {
 		super(TUPLE);
 		setTypes(typeList);
 	}
+	
+	public TupleType(int size){
+		super(TUPLE);
+		ArrayList<TLAType> list = new ArrayList<TLAType>();
+		for (int i = 0; i < size; i++) {
+			list.add(new Untyped());
+		}
+		setTypes(list);
+	}
 
 	public ArrayList<TLAType> getTypes() {
 		return new ArrayList<TLAType>(types);

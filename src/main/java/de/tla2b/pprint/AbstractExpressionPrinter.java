@@ -1163,7 +1163,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		}
 
 		/**********************************************************************
-		 * Standard Module Sequences
+		 * Standard Module TLA2B
 		 **********************************************************************/
 		case B_OPCODE_min: { // MinOfSet(s)
 			out.append("min(");
@@ -1195,6 +1195,15 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 
 		case B_OPCODE_permseq: { // PermutedSequences(s)
 			out.append("perm(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append(")");
+			return new ExprReturn(out);
+		}
+		/**********************************************************************
+		 * Standard Module TLA2B
+		 **********************************************************************/
+		case B_OPCODE_pow1: { // POW1
+			out.append("POW1(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append(")");
 			return new ExprReturn(out);
