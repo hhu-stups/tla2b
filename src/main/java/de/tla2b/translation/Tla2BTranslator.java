@@ -49,6 +49,15 @@ public class Tla2BTranslator implements TranslationGlobals {
 		}
 	}
 
+	public static StringBuilder translateFile(String moduleFileName,
+			String configFileName) {
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
+		Tla2BTranslator translator = new Tla2BTranslator();
+		// translator.startTest(moduleString, configString);
+		return null;
+	}
+
 	public static StringBuilder translateString(String moduleName,
 			String moduleString, String configString) throws FrontEndException,
 			TLA2BException {
@@ -160,7 +169,6 @@ public class Tla2BTranslator implements TranslationGlobals {
 
 	public static ModuleNode parseModule(String moduleName)
 			throws de.tla2b.exceptions.FrontEndException {
-
 		SpecObj spec = new SpecObj(moduleName, null);
 		try {
 			SANY.frontEndMain(spec, moduleName, ToolIO.out);

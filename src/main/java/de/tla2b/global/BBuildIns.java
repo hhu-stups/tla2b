@@ -76,6 +76,11 @@ public interface BBuildIns {
 	public static final UniqueString OP_pow1 = UniqueString
 			.uniqueStringOf("POW1");
 	
+	
+	//Relations
+	public static final UniqueString OP_rel_inverse = UniqueString
+			.uniqueStringOf("rel_inverse");
+	
 	public static final int B_OPCODE_dotdot = 1;
 	public static final int B_OPCODE_plus = 2;
 	public static final int B_OPCODE_minus = 3;
@@ -116,4 +121,6 @@ public interface BBuildIns {
 	
 	public static final int B_OPCODE_pow1 = B_OPCODE_permseq + 1;
 	
+	
+	public static final int B_OPCODE_rel_inverse = B_OPCODE_pow1 + 1;
 }

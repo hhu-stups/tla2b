@@ -1209,6 +1209,17 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			return new ExprReturn(out);
 		}
 
+		/**********************************************************************
+		 * Standard Module Relations
+		 **********************************************************************/
+		
+		case B_OPCODE_rel_inverse: { // POW1
+			out.append("(");
+			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
+			out.append("~)");
+			return new ExprReturn(out);
+		}
+		
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
 		 ***********************************************************************/

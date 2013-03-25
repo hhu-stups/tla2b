@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import de.tla2b.exceptions.UnificationException;
 
-
 public class TupleType extends AbstractHasFollowers {
 	private ArrayList<TLAType> types;
 
@@ -12,8 +11,8 @@ public class TupleType extends AbstractHasFollowers {
 		super(TUPLE);
 		setTypes(typeList);
 	}
-	
-	public TupleType(int size){
+
+	public TupleType(int size) {
 		super(TUPLE);
 		ArrayList<TLAType> list = new ArrayList<TLAType>();
 		for (int i = 0; i < size; i++) {
@@ -87,12 +86,20 @@ public class TupleType extends AbstractHasFollowers {
 			return true;
 		}
 		if (o instanceof FunctionType) {
+			//TODO
 			FunctionType func = (FunctionType) o;
 			if (!(func.getDomain() instanceof IntType)) {
 				return false;
 			}
 			TLAType range = func.getRange();
-			return compareToAll(range);
+			for (int i = 0; i < types.size(); i++) {
+				if (types.get(i).compare(range)) {
+					continue;
+				} else {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
@@ -167,12 +174,21 @@ public class TupleType extends AbstractHasFollowers {
 			}
 		}
 		if (o instanceof FunctionType) {
-			TLAType t = types.get(0);
-			for (int i = 1; i < types.size(); i++) {
-				t = t.unify(types.get(i));
+			//TODO
+			if(compareToAll(new Untyped())){
+				//Function 
+				TLAType t = types.get(0);
+				for (int i = 1; i < types.size(); i++) {
+					t = t.unify(types.get(i));
+				}
+				FunctionType func = new FunctionType(IntType.getInstance(), t);
+				return func.unify(o);
+			}else{
+				TLAType res = types.get(1).unify(((FunctionType) o).getRange());
+				types.set(1, res);
+				return this;
 			}
-			FunctionType func = new FunctionType(IntType.getInstance(), t);
-			return func.unify(o);
+			
 		}
 		throw new RuntimeException();
 	}

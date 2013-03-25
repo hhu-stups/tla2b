@@ -179,11 +179,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
 			// Definition in this module
-			if (STANDARD_MODULES.contains(def
-					.getOriginallyDefinedInModuleNode().getName().toString())
-					|| STANDARD_MODULES.contains(def.getSource()
-							.getOriginallyDefinedInModuleNode().getName()
-							.toString())) {
+			String moduleName1 = def.getOriginallyDefinedInModuleNode().getName().toString();
+			String moduleName2 = def.getSource().getOriginallyDefinedInModuleNode().getName().toString();
+			
+			if ( STANDARD_MODULES.contains(moduleName1) || STANDARD_MODULES.contains(moduleName2)){
 				continue;
 			}
 			if (usedDefinitions.contains(def))
@@ -420,7 +419,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				pType = pType.cloneTLAType();
 				if (pType.isUntyped())
 					untyped = true;
-
+				
 				pType = visitExprOrOpArgNode(n.getArgs()[i], pType); // unify
 																		// both
 																		// types
@@ -1475,6 +1474,28 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				throw new TypeErrorException(String.format(
 						"Expected %s, found %s at '%s',\n%s", expected, n
 								.getOperator().getName(), n.getLocation()));
+			}
+			return found;
+		}
+
+		/**********************************************************************
+		 * Standard Module Relations
+		 **********************************************************************/
+		case B_OPCODE_rel_inverse: // POW1
+		{
+			SetType set = new SetType(new TupleType(2));
+			set = (SetType) visitExprOrOpArgNode(n.getArgs()[0], set);
+			TupleType t = (TupleType) set.getSubType();
+			ArrayList<TLAType> list = new ArrayList<TLAType>();
+			list.add(t.getTypes().get(1));
+			list.add(t.getTypes().get(0));
+			SetType found = new SetType(new TupleType(list));
+			try {
+				found = found.unify(expected);
+			} catch (UnificationException e) {
+				throw new TypeErrorException(String.format(
+						"Expected %s, found %s at '%s',\n%s", expected, found,
+						n.getOperator().getName(), n.getLocation()));
 			}
 			return found;
 		}

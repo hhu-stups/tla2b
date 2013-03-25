@@ -48,6 +48,10 @@ public class BBuiltInOPs implements BBuildIns{
 		
 		B_Opcode_Table.put(OP_pow1, B_OPCODE_pow1);
 		
+		//relations
+		B_Opcode_Table.put(OP_rel_inverse, B_OPCODE_rel_inverse);
+		
+		
 	}
 	
 	public static boolean contains(UniqueString s){
