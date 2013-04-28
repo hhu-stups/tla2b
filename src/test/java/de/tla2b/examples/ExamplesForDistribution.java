@@ -21,6 +21,26 @@ public class ExamplesForDistribution {
 		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
 	
+	
+	@Test
+	public void testSumAndProduct() throws Exception {
+		String path = "src/test/resources/examples/SumAndProduct/";
+		StringBuilder sb = TestUtil.translate(path + "SumAndProductTransition.tla");
+		System.out.println(sb);
+		//String expected = TestUtil.fileToString(path + "AsynchInterface.mch");
+		//assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
+	}
+	
+	@Test
+	public void testMySequence() throws Exception {
+		String path = "src/test/resources/examples/MySequence/";
+		StringBuilder sb = TestUtil.translate(path + "MySequence.tla");
+		System.out.println(sb);
+		//String expected = TestUtil.fileToString(path + "AsynchInterface.mch");
+		//assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
+	}
+	
+	
 	@Test
 	public void testChannel() throws Exception {
 		String path = "src/test/resources/examples/Channel/";

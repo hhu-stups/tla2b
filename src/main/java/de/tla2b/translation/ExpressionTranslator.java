@@ -31,11 +31,11 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	private ArrayList<String> noVariables;
 	private StringBuilder BExpression;
 
-	public static String translateExpression(String bExpression)
+	public static String translateExpression(String tlaExpression)
 			throws TLA2BException {
 		ToolIO.reset();
 		ToolIO.setMode(ToolIO.TOOL);
-		ExpressionTranslator et = new ExpressionTranslator(bExpression);
+		ExpressionTranslator et = new ExpressionTranslator(tlaExpression);
 		et.start();
 		return et.BExpression.toString();
 	}

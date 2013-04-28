@@ -412,11 +412,29 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 * Set Constructor
 		 **********************************************************************/
 		case OPCODE_sso: { // $SubsetOf Represents {x \in S : P}
+			//TODO tuple with more than 2 arguments
+			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
+			ExprNode[] bounds = n.getBdedQuantBounds();
+			
+			StringBuilder temp = new StringBuilder();
+			if(params[0].length>0){
+				temp.append("(");
+					for (int j = 0; j < params[0].length; j++) {
+						FormalParamNode p = params[0][j];
+						temp.append(getPrintName(p));
+						if (j < params[0].length - 1)
+							temp.append(", ");
+					}
+					temp.append(")");
+			}else{
+				FormalParamNode p = n.getBdedQuantSymbolLists()[0][0];
+				temp.append(getPrintName(p));
+			}
+		
 			out.append("{");
-			FormalParamNode p = n.getBdedQuantSymbolLists()[0][0];
-			out.append(getPrintName(p));
+			out.append(temp);
 			out.append("|");
-			out.append(p.getName().toString());
+			out.append(temp);
 			out.append(" : ");
 			ExprNode in = n.getBdedQuantBounds()[0];
 			out.append(visitExprNode(in, d, NOBOOL).out);
@@ -450,6 +468,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 ***********************************************************************/
 		case OPCODE_tup: { // $Tuple
 			TLAType t = (TLAType) n.getToolObject(TYPE_ID);
+			//System.out.println(n.toString(3) + " " +t + " " +t.getClass());
 			if(t instanceof TupleType){
 				out.append("(");
 				out.append(evalOpMoreArgs(n, ", ", d, VALUE, P_comma));
@@ -1256,13 +1275,31 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		StringBuilder out = new StringBuilder();
 		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		ExprNode[] in = n.getBdedQuantBounds();
+		boolean [] isTuple = n.isBdedQuantATuple();
+		//System.out.println(n.toString(4));
+		System.out.println(isTuple[0]);
 		for (int i = 0; i < params.length; i++) {
-			for (int j = 0; j < params[i].length; j++) {
-				out.append(getPrintName(params[i][j]));
+			if(isTuple[i]){
+				out.append("(");
+				for (int j = 0; j < params[i].length; j++) {
+					out.append(getPrintName(params[i][j]));
+					if(j == 0)
+						out.append(", ");
+				}
+				out.append(")");
 				out.append(" : ");
 				out.append(visitExprNode(in[i], d, NOBOOL).out);
-				if (j < params[i].length - 1 || i < params.length - 1) {
+				if (i < params.length - 1) {
 					out.append(" & ");
+				}
+			}else{
+				for (int j = 0; j < params[i].length; j++) {
+					out.append(getPrintName(params[i][j]));
+					out.append(" : ");
+					out.append(visitExprNode(in[i], d, NOBOOL).out);
+					if (j < params[i].length - 1 || i < params.length - 1) {
+						out.append(" & ");
+					}
 				}
 			}
 		}

@@ -182,6 +182,7 @@ public class TupleType extends AbstractHasFollowers {
 					t = t.unify(types.get(i));
 				}
 				FunctionType func = new FunctionType(IntType.getInstance(), t);
+				this.setFollowersTo(func);
 				return func.unify(o);
 			}else{
 				TLAType res = types.get(1).unify(((FunctionType) o).getRange());

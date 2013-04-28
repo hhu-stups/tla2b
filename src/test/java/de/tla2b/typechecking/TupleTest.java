@@ -36,6 +36,18 @@ public class TupleTest {
 		TestTypeChecker t = TestUtil.typeCheckString(module);
 		assertEquals("INTEGER*BOOL*INTEGER", t.getConstantType("k").toString());
 	}
+	
+	@Test
+	public void testTuple3Components2() throws FrontEndException, TLA2BException {
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "EXTENDS Naturals \n"
+				+ "CONSTANTS k \n"
+				+ "ASSUME k = <<1,1,1>> \n"
+				+ "=================================";
+
+		TestTypeChecker t = TestUtil.typeCheckString(module);
+		assertEquals("INTEGER*INTEGER*INTEGER", t.getConstantType("k").toString());
+	}
 
 	@Test
 	public void testTupleComponentsOfTheSameType() throws FrontEndException,

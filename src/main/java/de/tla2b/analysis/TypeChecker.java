@@ -179,10 +179,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 		for (int i = 0; i < opDefs.length; i++) {
 			OpDefNode def = opDefs[i];
 			// Definition in this module
-			String moduleName1 = def.getOriginallyDefinedInModuleNode().getName().toString();
-			String moduleName2 = def.getSource().getOriginallyDefinedInModuleNode().getName().toString();
-			
-			if ( STANDARD_MODULES.contains(moduleName1) || STANDARD_MODULES.contains(moduleName2)){
+			String moduleName1 = def.getOriginallyDefinedInModuleNode()
+					.getName().toString();
+			String moduleName2 = def.getSource()
+					.getOriginallyDefinedInModuleNode().getName().toString();
+
+			if (STANDARD_MODULES.contains(moduleName1)
+					|| STANDARD_MODULES.contains(moduleName2)) {
 				continue;
 			}
 			if (usedDefinitions.contains(def))
@@ -388,7 +391,10 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			OpDefNode def = (OpDefNode) n.getOperator();
 
 			// Definition is a BBuilt-in definition
-			if (BBuiltInOPs.contains(def.getName())) {
+			String sourceModule = def.getSource()
+					.getOriginallyDefinedInModuleNode().getName().toString();
+			if (BBuiltInOPs.contains(def.getName())
+					&& STANDARD_MODULES.contains(sourceModule)) {
 				return evalBBuiltIns(n, expected);
 			}
 
@@ -419,7 +425,7 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				pType = pType.cloneTLAType();
 				if (pType.isUntyped())
 					untyped = true;
-				
+
 				pType = visitExprOrOpArgNode(n.getArgs()[i], pType); // unify
 																		// both
 																		// types
@@ -680,7 +686,6 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 			for (int i = 0; i < n.getArgs().length; i++) {
 				list.add(visitExprOrOpArgNode(n.getArgs()[i], new Untyped()));
 			}
-
 			TLAType found = null;
 			if (list.size() == 0) {
 				found = new FunctionType(IntType.getInstance(), new Untyped());

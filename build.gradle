@@ -14,11 +14,13 @@ repositories {
    	mavenRepo name: 'cobra_ext', url: "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
 }
 
+def parser_version = '2.4.18-SNAPSHOT'
+
 dependencies {
 	compile files('externalLibs/tla')
-	testCompile (group: 'de.prob', name: 'prologlib', version: '2.4.10-SNAPSHOT')
- 	testCompile (group: 'de.prob', name: 'parserbase', version: '2.4.10-SNAPSHOT')
-  	testCompile (group: 'de.prob', name: 'bparser', version: '2.4.10-SNAPSHOT')
+	testCompile (group: 'de.prob', name: 'prologlib', version: parser_version)
+ 	testCompile (group: 'de.prob', name: 'parserbase', version: parser_version)
+  	testCompile (group: 'de.prob', name: 'bparser', version: parser_version)
 	testCompile (group: 'junit', name: 'junit', version: '4.+')
 }
 
