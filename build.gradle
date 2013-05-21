@@ -17,18 +17,13 @@ repositories {
 def parser_version = '2.4.18-SNAPSHOT'
 
 dependencies {
-	compile files('externalLibs/tla')
+	compile 'com.microsoft:tla2tools:1.4.6'
 	testCompile (group: 'de.prob', name: 'prologlib', version: parser_version)
  	testCompile (group: 'de.prob', name: 'parserbase', version: parser_version)
   	testCompile (group: 'de.prob', name: 'bparser', version: parser_version)
 	testCompile (group: 'junit', name: 'junit', version: '4.+')
 }
 
-ant.importBuild 'build.xml'
-
-compileJava {
-	dependsOn tla
-}
 
 jar {
 	from sourceSets.main.allJava
