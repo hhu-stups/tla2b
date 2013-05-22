@@ -318,6 +318,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			FileWriter fw = new FileWriter(f);
 			fw.write(TLA2B);
 			fw.close();
+			f.deleteOnExit();
 		} catch (IOException e) {
 			throw new TLA2BIOException(
 					"Can not create standard module TLA2B.tla in directory '"

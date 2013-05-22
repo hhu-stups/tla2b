@@ -65,7 +65,7 @@ public class Tla2BTranslator implements TranslationGlobals {
 		dir.mkdirs();
 		
 		try {
-			File f = new File("temp/Testing.tla");
+			File f = new File("temp/"+ moduleName+ ".tla");
 			f.createNewFile();
 			FileWriter fw = new FileWriter(f);
 			fw.write(moduleString);
@@ -76,12 +76,12 @@ public class Tla2BTranslator implements TranslationGlobals {
 		}
 		
 		ToolIO.setUserDir("temp/");
-		moduleNode = parseModule("Testing" + ".tla");
+		moduleNode = parseModule(moduleName + ".tla");
 		
 		
 		modelConfig = null;
 		if (configString != null) {
-			File f = new File("temp/Testing.cfg");
+			File f = new File("temp/" + moduleName +".cfg");
 			try {
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
@@ -90,7 +90,7 @@ public class Tla2BTranslator implements TranslationGlobals {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			modelConfig = new ModelConfig("Testing.cfg", null);
+			modelConfig = new ModelConfig(moduleName +".cfg", null);
 			modelConfig.parse();
 			f.deleteOnExit();
 		}
