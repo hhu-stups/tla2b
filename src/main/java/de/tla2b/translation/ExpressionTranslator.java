@@ -4,6 +4,9 @@
 
 package de.tla2b.translation;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +14,7 @@ import java.util.Set;
 import de.tla2b.analysis.SymbolRenamer;
 import de.tla2b.analysis.TypeChecker;
 import de.tla2b.exceptions.TLA2BException;
+import de.tla2b.exceptions.TLA2BIOException;
 import de.tla2b.exceptions.TypeErrorException;
 import de.tla2b.pprint.ExpressionPrinter;
 
@@ -47,19 +51,38 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	}
 
 	public void start() throws TLA2BException {
-		String module = "----MODULE Testing----\n" + "Expression == "
-				+ TLAExpression + "\n====";
-		Tla2BTranslator.createTempfile("Testing",module);
 
-		ToolIO.setUserDir("temp/");
+		String dir = System.getProperty("java.io.tmpdir");
+		ToolIO.setUserDir(dir);
 
-		SpecObj spec = parseModuleWithoutSemanticAnalyse("Testing.tla");
+		createStandardModule(dir);
 
-		evalVariables(spec);
-		
+		File tempFile = null;
+		String moduleName = null;
+		try {
+			tempFile = File.createTempFile("Testing", ".tla");
+
+			moduleName = tempFile.getName().substring(0,
+					tempFile.getName().indexOf("."));
+
+			String module = "----MODULE " + moduleName + "----\n"
+					+ "Expression == " + TLAExpression + "\n====";
+
+			FileWriter fw = new FileWriter(tempFile);
+			fw.write(module);
+			fw.close();
+		} catch (IOException e) {
+			throw new TLA2BIOException(
+					"Can not create file "+ tempFile.getName() +" in directory '"
+							+ dir + "'");
+		}
+
+		SpecObj spec = parseModuleWithoutSemanticAnalyse(moduleName);
+		evalVariables(spec, moduleName);
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("----MODULE Testing----\n");
-		sb.append("EXTENDS Naturals, Integers, Sequences, FiniteSets \n");
+		sb.append("----MODULE " + moduleName + " ----\n");
+		sb.append("EXTENDS Naturals, Integers, Sequences, FiniteSets, TLA2B \n");
 		if (variables.size() > 0) {
 			sb.append("VARIABLES ");
 			for (int i = 0; i < variables.size(); i++) {
@@ -75,11 +98,22 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		sb.append(TLAExpression);
 		sb.append("\n====================");
 		// System.out.println(sb);
-		BExpression = translate(sb.toString());
+
+		try {
+			FileWriter fw = new FileWriter(tempFile);
+			fw.write(sb.toString());
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		BExpression = translate(moduleName, sb.toString());
 	}
 
-	private static StringBuilder translate(String expr) throws TLA2BException {
-		ModuleNode moduleNode = parseModule(expr);
+	private static StringBuilder translate(String moduleName, String expr)
+			throws TLA2BException {
+
+		ModuleNode moduleNode = parseModule(moduleName, expr);
 
 		TypeChecker tc = new TypeChecker(moduleNode);
 		try {
@@ -112,9 +146,11 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		try {
 			SANY.frontEndInitialize(spec, ToolIO.out);
 			SANY.frontEndParse(spec, ToolIO.out);
-		
+
 		} catch (InitException e1) {
+			System.out.println(e1);
 		} catch (ParseException e1) {
+			System.out.println(e1);
 		}
 
 		if (spec.parseErrors.isFailure()) {
@@ -125,11 +161,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		return spec;
 	}
 
-	public static ModuleNode parseModule(String module)
+	public static ModuleNode parseModule(String moduleName, String module)
 			throws de.tla2b.exceptions.FrontEndException {
-
-		Tla2BTranslator.createTempfile("Testing", module);
-		String moduleName = "Testing.tla";
 
 		SpecObj spec = new SpecObj(moduleName, null);
 		try {
@@ -163,7 +196,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		if (n == null) { // Parse Error
 			// System.out.println("Rootmodule null");
 			throw new de.tla2b.exceptions.FrontEndException(
-					Tla2BTranslator.allMessagesToString(ToolIO.getAllMessages()),
+					Tla2BTranslator
+							.allMessagesToString(ToolIO.getAllMessages()),
 					spec);
 		}
 		return n;
@@ -173,8 +207,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 * @param spec
 	 * @return
 	 */
-	private void evalVariables(SpecObj spec) {
-		ParseUnit p = (ParseUnit) spec.parseUnitContext.get("Testing");
+	private void evalVariables(SpecObj spec, String moduleName) {
+		ParseUnit p = (ParseUnit) spec.parseUnitContext.get(moduleName);
 		TreeNode n_module = p.getParseTree();
 		TreeNode n_body = n_module.heirs()[2];
 		TreeNode n_operatorDefintion = n_body.heirs()[0];
@@ -276,4 +310,27 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			searchVarInSyntaxTree(treeNode.heirs()[i]);
 		}
 	}
+
+	private void createStandardModule(String dir) throws TLA2BIOException {
+		File f = new File(dir + "TLA2B.TLA");
+		try {
+			f.createNewFile();
+			FileWriter fw = new FileWriter(f);
+			fw.write(TLA2B);
+			fw.close();
+		} catch (IOException e) {
+			throw new TLA2BIOException(
+					"Can not create standard module TLA2B.tla in directory '"
+							+ dir + "'");
+		}
+
+	}
+
+	private static final String TLA2B = "--------- MODULE TLA2B ---------\n"
+			+ "LOCAL INSTANCE Naturals \n" + "LOCAL INSTANCE Sequences \n"
+			+ "MinOfSet(S) == CHOOSE p \\in S: \\A n \\in S: p \\leq n \n"
+			+ "MaxOfSet(S) == CHOOSE p \\in S: \\A n \\in S: p \\geq n \n"
+			+ "SetProduct(S)  == S \n" 
+			+ "SetSummation(S) == S \n"
+			+ "PermutedSequences(S) == S\n" + "==============================";
 }

@@ -49,15 +49,6 @@ public class Tla2BTranslator implements TranslationGlobals {
 		}
 	}
 
-	public static StringBuilder translateFile(String moduleFileName,
-			String configFileName) {
-		ToolIO.setMode(ToolIO.TOOL);
-		ToolIO.reset();
-		Tla2BTranslator translator = new Tla2BTranslator();
-		// translator.startTest(moduleString, configString);
-		return null;
-	}
-
 	public static StringBuilder translateString(String moduleName,
 			String moduleString, String configString) throws FrontEndException,
 			TLA2BException {
@@ -68,67 +59,45 @@ public class Tla2BTranslator implements TranslationGlobals {
 		return translator.translate();
 	}
 
-	public static void createTempfile(String fileName, String moduleString) {
-		File dir = new File("temp/");
-		dir.mkdirs();
-		File tempFile = new File("temp/" + fileName + ".tla");
-		try {
-			tempFile.createNewFile();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		FileWriter fw;
-		try {
-			fw = new FileWriter(tempFile);
-			fw.write(moduleString);
-			fw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public void startTest(String moduleString, String configString)
 			throws de.tla2b.exceptions.FrontEndException, TLA2BException {
-
-		createTempfile(moduleName, moduleString);
-
+		File dir = new File("temp/");
+		dir.mkdirs();
+		
+		try {
+			File f = new File("temp/Testing.tla");
+			f.createNewFile();
+			FileWriter fw = new FileWriter(f);
+			fw.write(moduleString);
+			fw.close();
+			f.deleteOnExit();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		ToolIO.setUserDir("temp/");
-
-		moduleNode = parseModule(moduleName + ".tla");
-
-		// TODO delete every time: finally
-		File tempFile = new File("temp/" + moduleName + ".tla");
-		tempFile.delete();
-
+		moduleNode = parseModule("Testing" + ".tla");
+		
+		
 		modelConfig = null;
 		if (configString != null) {
-
-			File configFile = new File("temp/Testing.cfg");
+			File f = new File("temp/Testing.cfg");
 			try {
-				configFile.createNewFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-
-			FileWriter fw2;
-			try {
-				fw2 = new FileWriter(configFile);
-				fw2.write(configString);
-				fw2.close();
+				f.createNewFile();
+				FileWriter fw = new FileWriter(f);
+				fw.write(configString);
+				fw.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			modelConfig = new ModelConfig("Testing.cfg", null);
 			modelConfig.parse();
-			configFile.delete();
+			f.deleteOnExit();
 		}
-		File dir = new File("temp/");
-		dir.delete();
+		dir.deleteOnExit();
 	}
 
+	
 	public StringBuilder translate() throws TLA2BException {
 		InstanceTransformation trans = new InstanceTransformation(moduleNode);
 		trans.start();
