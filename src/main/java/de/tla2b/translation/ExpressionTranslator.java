@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	public static String translateExpression(String tlaExpression)
 			throws TLA2BException {
 		ToolIO.reset();
-		ToolIO.setMode(ToolIO.TOOL);
+		//ToolIO.setMode(ToolIO.TOOL);
 		ExpressionTranslator et = new ExpressionTranslator(tlaExpression);
 		et.start();
 		return et.BExpression.toString();
@@ -53,6 +54,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	public void start() throws TLA2BException {
 
 		String dir = System.getProperty("java.io.tmpdir");
+		System.out.println(dir);
 		ToolIO.setUserDir(dir);
 
 		createStandardModule(dir);
@@ -65,7 +67,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			moduleName = tempFile.getName().substring(0,
 					tempFile.getName().indexOf("."));
 
-			String module = "----MODULE " + moduleName + "----\n"
+			String module = "----MODULE " + moduleName + " ----\n"
 					+ "Expression == " + TLAExpression + "\n====";
 
 			FileWriter fw = new FileWriter(tempFile);
@@ -175,6 +177,8 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		if (spec.parseErrors.isFailure()) {
 			String[] m = ToolIO.getAllMessages();
 			String message = m[0] + "\n\n" + module + "\n\n" + m[1];
+			
+			message = Arrays.toString(m);
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 
@@ -183,6 +187,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			String message = m[0] + "\n\n" + module + "\n\n"
 					+ spec.semanticErrors;
 			// System.out.println(message);
+			message = Arrays.toString(m);
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 
@@ -190,7 +195,10 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		ModuleNode n = spec.getExternalModuleTable().rootModule;
 		if (spec.getInitErrors().isFailure()) {
 			System.err.println(spec.getInitErrors());
-			return null;
+			throw new de.tla2b.exceptions.FrontEndException(
+					Tla2BTranslator
+							.allMessagesToString(ToolIO.getAllMessages()),
+					spec);
 		}
 
 		if (n == null) { // Parse Error
