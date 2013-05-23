@@ -185,7 +185,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			// System.out.println(spec.parseErrors);
 			message += Tla2BTranslator.allMessagesToString(ToolIO
 					.getAllMessages());
-			System.out.println(message);
+			message += "\n TLA2B path: " +tla2b.getAbsolutePath();
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 
@@ -326,14 +326,15 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		}
 	}
 
+	private static File tla2b;
 	private void createStandardModule(String dir) throws TLA2BIOException {
-		File f = new File(dir, "TLA2B.TLA");
+		tla2b = new File(dir, "TLA2B.TLA");
 		try {
-			f.createNewFile();
-			FileWriter fw = new FileWriter(f);
+			tla2b.createNewFile();
+			FileWriter fw = new FileWriter(tla2b);
 			fw.write(TLA2B);
 			fw.close();
-			f.deleteOnExit();
+			//tla2b.deleteOnExit();
 		} catch (IOException e) {
 			throw new TLA2BIOException(
 					"Can not create standard module TLA2B.tla in directory '"
