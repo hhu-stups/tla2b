@@ -64,13 +64,14 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 		File tempFile = null;
 		String moduleName = null;
+		String module = null;
 		try {
 			tempFile = File.createTempFile("Testing", ".tla");
 
 			moduleName = tempFile.getName().substring(0,
 					tempFile.getName().indexOf("."));
 
-			String module = "----MODULE " + moduleName + " ----\n"
+			module = "----MODULE " + moduleName + " ----\n"
 					+ "Expression == " + TLAExpression + "\n====";
 
 			FileWriter fw = new FileWriter(tempFile);
@@ -81,7 +82,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 					+ tempFile.getName() + " in directory '" + dir + "'");
 		}
 
-		SpecObj spec = parseModuleWithoutSemanticAnalyse(moduleName);
+		SpecObj spec = parseModuleWithoutSemanticAnalyse(moduleName, module);
 		evalVariables(spec, moduleName);
 
 		StringBuilder sb = new StringBuilder();
@@ -145,7 +146,7 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 	 * @param moduleFileName
 	 * @throws de.tla2b.exceptions.FrontEndException
 	 */
-	private SpecObj parseModuleWithoutSemanticAnalyse(String moduleFileName)
+	private SpecObj parseModuleWithoutSemanticAnalyse(String moduleFileName, String module)
 			throws de.tla2b.exceptions.FrontEndException {
 		SpecObj spec = new SpecObj(moduleFileName, null);
 
@@ -160,8 +161,9 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 		}
 
 		if (spec.parseErrors.isFailure()) {
-			String[] m = ToolIO.getAllMessages();
-			String message = m[0] + "\n\n" + moduleFileName + "\n\n" + m[1];
+			String message = module + "\n\n";
+			message += Tla2BTranslator.allMessagesToString(ToolIO
+					.getAllMessages());
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 		return spec;
@@ -169,7 +171,6 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	public static ModuleNode parseModule(String moduleName, String module)
 			throws de.tla2b.exceptions.FrontEndException {
-
 		SpecObj spec = new SpecObj(moduleName, null);
 		try {
 			SANY.frontEndMain(spec, moduleName, ToolIO.out);
@@ -185,7 +186,6 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			// System.out.println(spec.parseErrors);
 			message += Tla2BTranslator.allMessagesToString(ToolIO
 					.getAllMessages());
-			message += "\n TLA2B path: " +tla2b.getAbsolutePath();
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 
@@ -194,7 +194,6 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 			String message = module + "\n\n" + spec.semanticErrors;
 			message += Tla2BTranslator.allMessagesToString(ToolIO
 					.getAllMessages());
-			System.out.println(message);
 			throw new de.tla2b.exceptions.FrontEndException(message, spec);
 		}
 
@@ -328,13 +327,13 @@ public class ExpressionTranslator implements SyntaxTreeConstants {
 
 	private static File tla2b;
 	private void createStandardModule(String dir) throws TLA2BIOException {
-		tla2b = new File(dir, "TLA2B.TLA");
+		tla2b = new File(dir, "TLA2B.tla");
 		try {
 			tla2b.createNewFile();
 			FileWriter fw = new FileWriter(tla2b);
 			fw.write(TLA2B);
 			fw.close();
-			//tla2b.deleteOnExit();
+			tla2b.deleteOnExit();
 		} catch (IOException e) {
 			throw new TLA2BIOException(
 					"Can not create standard module TLA2B.tla in directory '"
