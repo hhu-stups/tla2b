@@ -1,5 +1,5 @@
 -------------------------- MODULE InstanceOpArg -----------------------------
 CONSTANTS c2, foo2(_,_)
-INSTANCE opArg WITH c <- c2, foo <- foo2
+INSTANCE OpArg WITH c <- c2, foo <- foo2
 
 =======================================================================
