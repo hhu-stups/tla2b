@@ -32,7 +32,7 @@ jar {
 manifest.mainAttributes("Main-Class" : 'de.tla2b.translation.TLA2B')
 manifest.mainAttributes("Class-Path": './tla/')
 
-task copy(dependsOn: jar) << {
+task copy(dependsOn: build) << {
 	copy {
 		from('build/libs/')
 		into('build/tla2b')

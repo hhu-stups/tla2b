@@ -468,7 +468,6 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 ***********************************************************************/
 		case OPCODE_tup: { // $Tuple
 			TLAType t = (TLAType) n.getToolObject(TYPE_ID);
-			//System.out.println(n.toString(3) + " " +t + " " +t.getClass());
 			if(t instanceof TupleType){
 				out.append("(");
 				out.append(evalOpMoreArgs(n, ", ", d, VALUE, P_comma));
@@ -617,7 +616,6 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 				out.append(" <+ {");
 				for (int i = 1; i < n.getArgs().length; i++) {
 					OpApplNode pair = (OpApplNode) n.getArgs()[i];
-					// System.out.println(pair.toString(4));
 					OpApplNode domSeq = (OpApplNode) pair.getArgs()[0];
 					ExprOrOpArgNode domExpr = domSeq.getArgs()[0];
 					StringBuilder dom = new StringBuilder();
@@ -656,7 +654,6 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					list.poll();
 					String res = evalExceptValue(list, func.getRange(), val,
 							oldRecOrFunc + "(" + dom + ")");
-					// System.out.println(res);
 					out.append(res);
 					// out.append(brackets(
 					// visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE),
@@ -1276,8 +1273,6 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		ExprNode[] in = n.getBdedQuantBounds();
 		boolean [] isTuple = n.isBdedQuantATuple();
-		//System.out.println(n.toString(4));
-		System.out.println(isTuple[0]);
 		for (int i = 0; i < params.length; i++) {
 			if(isTuple[i]){
 				out.append("(");

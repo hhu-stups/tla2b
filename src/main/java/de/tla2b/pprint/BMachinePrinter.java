@@ -87,16 +87,15 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		out.append("MACHINE " + module.getName().toString() + "\n");
 
 		out.append(evalEnumeratedSets());
-
+		
 		// Constants and Properties
 		out.append(evalConsDecl());
 		out.append(evalPropertyStatements());
-
 		tempLetInNodes.clear();
 		StringBuilder operations = evalOperations();
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
-
+		
 		out.append(evalDefinitions());
 
 		out.append(evalVariables());
@@ -104,7 +103,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		out.append(evalInvariants());
 
 		out.append(evalInit());
-
+		
 		out.append(operations);
 		out.append("END");
 		return out;
@@ -305,7 +304,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 				out.append(" & ");
 			}
 			out.append(visitExprOrOpArgNode(op.getNode(), d, PREDICATE).out);
-
+			
 			out.append("\n\tTHEN ");
 
 			boolean first2 = true;

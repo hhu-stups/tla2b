@@ -121,7 +121,7 @@ public class Tla2BTranslator implements TranslationGlobals {
 		}
 
 		specAnalyser.start();
-
+		
 		typechecker = new TypeChecker(moduleNode, conEval, specAnalyser);
 		typechecker.start();
 
@@ -129,10 +129,8 @@ public class Tla2BTranslator implements TranslationGlobals {
 
 		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode, specAnalyser);
 		symRenamer.start();
-
 		BMachinePrinter p = new BMachinePrinter(moduleNode, conEval,
 				specAnalyser);
-
 		return p.start();
 	}
 
