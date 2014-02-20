@@ -4,7 +4,6 @@
 
 package de.tla2b.pprint;
 
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -21,8 +20,6 @@ import de.tla2b.types.EnumType;
 import de.tla2b.types.SetType;
 import de.tla2b.types.TLAType;
 
-
-
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.FormalParamNode;
@@ -33,7 +30,8 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.value.SetEnumValue;
 
-public class BMachinePrinter extends AbstractExpressionPrinter implements TranslationGlobals{
+public class BMachinePrinter extends AbstractExpressionPrinter implements
+		TranslationGlobals {
 	private ModuleNode module;
 	private ArrayList<OpDeclNode> bConstants;
 	private ArrayList<ExprNode> inits;
@@ -87,7 +85,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		out.append("MACHINE " + module.getName().toString() + "\n");
 
 		out.append(evalEnumeratedSets());
-		
+
 		// Constants and Properties
 		out.append(evalConsDecl());
 		out.append(evalPropertyStatements());
@@ -95,7 +93,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		StringBuilder operations = evalOperations();
 		globalLets.addAll(tempLetInNodes);
 		tempLetInNodes.clear();
-		
+
 		out.append(evalDefinitions());
 
 		out.append(evalVariables());
@@ -103,7 +101,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		out.append(evalInvariants());
 
 		out.append(evalInit());
-		
+
 		out.append(operations);
 		out.append("END");
 		return out;
@@ -114,12 +112,11 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 	 */
 	private StringBuilder evalEnumeratedSets() {
 		StringBuilder out = new StringBuilder();
-		
+
 		if (setEnumeration == null || setEnumeration.size() == 0)
 			return out;
-		
-		out.append("SETS\n ");
 
+		out.append("SETS\n ");
 
 		ArrayList<EnumType> printed = new ArrayList<EnumType>();
 		int counter = 1;
@@ -162,8 +159,8 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 				first = false;
 			}
 		}
-		
-		if(operatorModelvalues!=null && operatorModelvalues.size()>0){
+
+		if (operatorModelvalues != null && operatorModelvalues.size() > 0) {
 			for (int i = 0; i < operatorModelvalues.size(); i++) {
 				OpDefNode def = operatorModelvalues.get(i);
 				TLAType type = (TLAType) def.getToolObject(TYPE_ID);
@@ -200,11 +197,11 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 					counter++;
 					first = false;
 				}
-				
+
 			}
-			
+
 		}
-		
+
 		out.append("\n");
 		return out;
 	}
@@ -304,7 +301,7 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 				out.append(" & ");
 			}
 			out.append(visitExprOrOpArgNode(op.getNode(), d, PREDICATE).out);
-			
+
 			out.append("\n\tTHEN ");
 
 			boolean first2 = true;
@@ -345,11 +342,20 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		StringBuilder out = new StringBuilder();
 		OpDeclNode[] vars = module.getVariableDecls();
 		if (vars.length > 0) {
-			out.append("VARIABLES ");
+			out.append("VARIABLES\n ");
 			for (int i = 0; i < vars.length; i++) {
+				String[] comments = vars[i].getPreComments();
+				if (comments.length > 0) {
+					String pragma = comments[comments.length - 1];
+					if (pragma.startsWith("(*@")) {
+						pragma = pragma.replace('(', '/').replace(')', '/');
+						out.append(pragma).append(" ");
+					}
+
+				}
 				out.append(getPrintName(vars[i]));
 				if (i != vars.length - 1)
-					out.append(", ");
+					out.append(",\n ");
 			}
 			out.append("\n");
 		}
@@ -434,20 +440,20 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 	 */
 	private StringBuilder visitOpDefNode(OpDefNode def) {
 		StringBuilder out = new StringBuilder();
-//		ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
-//				CONSTANT_OBJECT);
-//		if (conObj != null) {
-//			System.out.println("hier");
-//			// config substitution
-//			// out.append(" " + defName.replace('!', '_'));
-//			String defName = getPrintName(def);
-//			String defValue = conObj.getValue().toString();
-//			if(defName.equals(defName.equals(defValue)))
-//				return out;
-//			out.append(" " + defName);
-//			out.append(" == " + defValue);
-//			return out;
-//		}
+		// ConstantObj conObj = (ConstantObj) def.getSource().getToolObject(
+		// CONSTANT_OBJECT);
+		// if (conObj != null) {
+		// System.out.println("hier");
+		// // config substitution
+		// // out.append(" " + defName.replace('!', '_'));
+		// String defName = getPrintName(def);
+		// String defValue = conObj.getValue().toString();
+		// if(defName.equals(defName.equals(defValue)))
+		// return out;
+		// out.append(" " + defName);
+		// out.append(" == " + defValue);
+		// return out;
+		// }
 
 		DContext d = new DContext("\t");
 		tempLetInNodes.clear();
@@ -483,12 +489,21 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements Transl
 		StringBuilder out = new StringBuilder();
 		if (bConstants.size() + recursiveFunktions.size() == 0)
 			return out;
-		out.append("ABSTRACT_CONSTANTS ");
+		out.append("ABSTRACT_CONSTANTS\n");
 		// out.append("CONSTANTS ");
 		for (int i = 0; i < bConstants.size(); i++) {
+			String[] comments = bConstants.get(i).getPreComments();
+			if (comments.length > 0) {
+				String pragma = comments[comments.length - 1];
+				if (pragma.startsWith("(*@")) {
+					pragma = pragma.replace('(', '/').replace(')', '/');
+					out.append(pragma).append(" ");
+				}
+
+			}
 			out.append(getPrintName(bConstants.get(i)));
 			if (i < bConstants.size() - 1 || recursiveFunktions.size() > 0)
-				out.append(", ");
+				out.append(",\n ");
 		}
 		for (int i = 0; i < recursiveFunktions.size(); i++) {
 			out.append(getPrintName(recursiveFunktions.get(i).getOpDefNode()));
