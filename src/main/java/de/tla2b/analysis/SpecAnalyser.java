@@ -119,7 +119,7 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants,
 
 		// test whether there is a init predicate if there is a variable
 		if (moduleNode.getVariableDecls().length > 0 && inits == null) {
-			throw new SemanticErrorException("No initail predicate is defined.");
+			throw new SemanticErrorException("No initial predicate is defined.");
 		}
 
 		// check if there is B constant with arguments.
