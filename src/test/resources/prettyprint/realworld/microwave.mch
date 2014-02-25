@@ -1,4 +1,4 @@
-MACHINE MicroWave
+MACHINE microwave
 DEFINITIONS
  Init == magnetron_running = FALSE
 	 & door_open = FALSE
