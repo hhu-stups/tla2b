@@ -1070,7 +1070,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			ExprReturn second = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
 			String res = String
 					.format("(%%t_.( t_ = 0 & %s < 0 | -%s mod %s )\\/%%t_.( t_ = 0 & not(%s<0) | %s mod %s))(0)",
-							first.out, brackets(first, P_uminus, false), second.out, first.out, first.out, second.out);
+							first.out, brackets(first, P_uminus, false), brackets(second, P_mod, false), first.out, brackets(first, P_mod, true), brackets(second, P_mod, false));
 			return new ExprReturn(res);
 //			out.append(evalOpMoreArgs(n, " mod ", d, NOBOOL, P_mod));
 //			return new ExprReturn(out, P_mod);
