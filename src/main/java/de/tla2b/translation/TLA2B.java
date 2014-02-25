@@ -13,6 +13,7 @@ import java.io.Writer;
 import java.util.Date;
 
 import de.tla2b.exceptions.FrontEndException;
+import de.tla2b.exceptions.NotImplementedException;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.global.TranslationGlobals;
 import util.FileUtil;
@@ -142,6 +143,12 @@ public class TLA2B implements TranslationGlobals {
 		StringBuilder s = new StringBuilder();
 		try {
 			s = t.translate();
+		} catch (NotImplementedException e){
+			error = true;
+			System.err.print("**** Translation Error ****\n");
+			System.err.print("Not implemented:\n");
+			System.err.println(e.getMessage());
+			System.exit(-1);
 		} catch (TLA2BException e) {
 			error = true;
 			System.err.print("**** Translation Error ****\n");

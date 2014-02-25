@@ -311,6 +311,11 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 					"SubstInKind should never occur after InstanceTransformation");
 		}
 
+		case DecimalKind:{
+			// currently not supported
+		}
+		
+		
 		}
 
 		throw new NotImplementedException(exprNode.toString(2));

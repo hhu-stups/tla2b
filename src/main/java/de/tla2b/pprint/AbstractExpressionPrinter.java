@@ -657,7 +657,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					list.poll();
 					String res = evalExceptValue(list, func.getRange(), val,
 							oldRecOrFunc + "(" + dom + ")");
+					out.append("(");
 					out.append(res);
+					out.append("");
 					// out.append(brackets(
 					// visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE),
 					// P_maplet, false));
