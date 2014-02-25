@@ -4,7 +4,6 @@
 
 package de.tla2b.pprint;
 
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -21,8 +20,6 @@ import de.tla2b.types.SetType;
 import de.tla2b.types.StructType;
 import de.tla2b.types.TLAType;
 import de.tla2b.types.TupleType;
-
-
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AtNode;
@@ -62,8 +59,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			return visitOpApplNode((OpApplNode) n, d, expected);
 
 		case NumeralKind: {
-			// this is hack to represent a TLCValue in abstract syntax tree of the module
-			if (n instanceof TLCValueNode){
+			// this is hack to represent a TLCValue in abstract syntax tree of
+			// the module
+			if (n instanceof TLCValueNode) {
 				out.append(((TLCValueNode) n).getValue());
 				return new ExprReturn(out);
 			}
@@ -111,7 +109,8 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 	 * @param list
 	 * @param t
 	 */
-	private StringBuilder evalAtValue(LinkedList<ExprOrOpArgNode> list, TLAType t) {
+	private StringBuilder evalAtValue(LinkedList<ExprOrOpArgNode> list,
+			TLAType t) {
 		StringBuilder sb = new StringBuilder();
 		if (list.size() == 0)
 			return sb;
@@ -124,7 +123,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			return sb.append(evalAtValue(list, s.getType(fieldName)));
 		} else {
 			FunctionType func = (FunctionType) t;
-			
+
 			TLAType range = func.getRange();
 			sb.append("(");
 
@@ -216,9 +215,10 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		StringBuilder out = new StringBuilder();
 		OpDefNode def = (OpDefNode) n.getOperator();
 		// Operator is a B built-in operator
-		if (BBuiltInOPs.contains(def.getName()) && STANDARD_MODULES.contains(def.getSource()
-				.getOriginallyDefinedInModuleNode().getName()
-				.toString())) {
+		if (BBuiltInOPs.contains(def.getName())
+				&& STANDARD_MODULES.contains(def.getSource()
+						.getOriginallyDefinedInModuleNode().getName()
+						.toString())) {
 			return evalBBuiltIns(n, d, expected);
 		}
 
@@ -412,25 +412,25 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 * Set Constructor
 		 **********************************************************************/
 		case OPCODE_sso: { // $SubsetOf Represents {x \in S : P}
-			//TODO tuple with more than 2 arguments
+			// TODO tuple with more than 2 arguments
 			FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 			ExprNode[] bounds = n.getBdedQuantBounds();
-			
+
 			StringBuilder temp = new StringBuilder();
-			if(params[0].length>0){
+			if (params[0].length > 0) {
 				temp.append("(");
-					for (int j = 0; j < params[0].length; j++) {
-						FormalParamNode p = params[0][j];
-						temp.append(getPrintName(p));
-						if (j < params[0].length - 1)
-							temp.append(", ");
-					}
-					temp.append(")");
-			}else{
+				for (int j = 0; j < params[0].length; j++) {
+					FormalParamNode p = params[0][j];
+					temp.append(getPrintName(p));
+					if (j < params[0].length - 1)
+						temp.append(", ");
+				}
+				temp.append(")");
+			} else {
 				FormalParamNode p = n.getBdedQuantSymbolLists()[0][0];
 				temp.append(getPrintName(p));
 			}
-		
+
 			out.append("{");
 			out.append(temp);
 			out.append("|");
@@ -439,7 +439,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 			ExprNode in = n.getBdedQuantBounds()[0];
 			out.append(visitExprNode(in, d, NOBOOL).out);
 			out.append(" & ");
-			out.append(brackets(visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE), P_and, false));
+			out.append(brackets(
+					visitExprOrOpArgNode(n.getArgs()[0], d, PREDICATE), P_and,
+					false));
 			out.append("}");
 			return new ExprReturn(out);
 		}
@@ -468,14 +470,14 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		 ***********************************************************************/
 		case OPCODE_tup: { // $Tuple
 			TLAType t = (TLAType) n.getToolObject(TYPE_ID);
-			if(t instanceof TupleType){
+			if (t instanceof TupleType) {
 				out.append("(");
 				out.append(evalOpMoreArgs(n, ", ", d, VALUE, P_comma));
 				out.append(")");
-			}else{
+			} else {
 				out.append("[");
 				out.append(evalOpMoreArgs(n, ", ", d, VALUE, P_comma));
-				out.append("]");	
+				out.append("]");
 			}
 			return new ExprReturn(out);
 		}
@@ -584,8 +586,9 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					StringNode s = (StringNode) list.poll();
 					String fieldName = s.getRep().toString();
 
-					String res = evalExceptValue(list, structType.getType(fieldName),
-							val, oldRecOrFunc + "'" + fieldName);
+					String res = evalExceptValue(list,
+							structType.getType(fieldName), val, oldRecOrFunc
+									+ "'" + fieldName);
 					temp.put(fieldName, res);
 				}
 
@@ -860,8 +863,8 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 	 * @param string
 	 * @return
 	 */
-	private String evalExceptValue(LinkedList<ExprOrOpArgNode> list, TLAType type,
-			String val, String prefix) {
+	private String evalExceptValue(LinkedList<ExprOrOpArgNode> list,
+			TLAType type, String val, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		ExprOrOpArgNode head = list.poll();
 		if (head == null) {
@@ -1068,12 +1071,12 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		{
 			ExprReturn first = visitExprOrOpArgNode(n.getArgs()[0], d, VALUE);
 			ExprReturn second = visitExprOrOpArgNode(n.getArgs()[1], d, VALUE);
-			String res = String
-					.format("(%%t_.( t_ = 0 & %s < 0 | -%s mod %s )\\/%%t_.( t_ = 0 & not(%s<0) | %s mod %s))(0)",
-							first.out, brackets(first, P_uminus, false), brackets(second, P_mod, false), first.out, brackets(first, P_mod, true), brackets(second, P_mod, false));
+			String res = String.format("(%s - %s * (%s / %s))",
+					brackets(first, P_minus, true),
+					brackets(second, P_times, true),
+					brackets(first, P_div, true),
+					brackets(second, P_div, false));
 			return new ExprReturn(res);
-//			out.append(evalOpMoreArgs(n, " mod ", d, NOBOOL, P_mod));
-//			return new ExprReturn(out, P_mod);
 		}
 
 		case B_OPCODE_div: // /
@@ -1228,14 +1231,14 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		/**********************************************************************
 		 * Standard Module Relations
 		 **********************************************************************/
-		
+
 		case B_OPCODE_rel_inverse: { // POW1
 			out.append("(");
 			out.append(visitExprOrOpArgNode(n.getArgs()[0], d, NOBOOL).out);
 			out.append("~)");
 			return new ExprReturn(out);
 		}
-		
+
 		/***********************************************************************
 		 * TLA+ Built-Ins, but not in tlc.tool.BuiltInOPs
 		 ***********************************************************************/
@@ -1272,13 +1275,13 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 		StringBuilder out = new StringBuilder();
 		FormalParamNode[][] params = n.getBdedQuantSymbolLists();
 		ExprNode[] in = n.getBdedQuantBounds();
-		boolean [] isTuple = n.isBdedQuantATuple();
+		boolean[] isTuple = n.isBdedQuantATuple();
 		for (int i = 0; i < params.length; i++) {
-			if(isTuple[i]){
+			if (isTuple[i]) {
 				out.append("(");
 				for (int j = 0; j < params[i].length; j++) {
 					out.append(getPrintName(params[i][j]));
-					if(j == 0)
+					if (j == 0)
 						out.append(", ");
 				}
 				out.append(")");
@@ -1287,7 +1290,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 				if (i < params.length - 1) {
 					out.append(" & ");
 				}
-			}else{
+			} else {
 				for (int j = 0; j < params[i].length; j++) {
 					out.append(getPrintName(params[i][j]));
 					out.append(" : ");

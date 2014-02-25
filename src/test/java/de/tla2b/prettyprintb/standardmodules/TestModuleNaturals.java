@@ -97,8 +97,9 @@ public class TestModuleNaturals {
 				+ "ASSUME -3 % 2 = 1 \n"
 				+ "=================================";
 		StringBuilder sb = TestUtil.translateString(module);
+		System.out.println(sb);
 		final String expected = "MACHINE Testing\n"
-				+ "PROPERTIES (%t_.( t_ = 0 & -3 < 0 | -(-3) mod 2 )\\/%t_.( t_ = 0 & not(-3<0) | -3 mod 2))(0) = 1 \n"
+				+ "PROPERTIES (-3 - 2 * (-3 / 2)) = 1 \n"
 				+ "END";
 		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
 	}
