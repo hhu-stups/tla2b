@@ -647,8 +647,11 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					ExprOrOpArgNode second = pair.getArgs()[1];
 					OpApplNode seq = (OpApplNode) first;
 
-					String val = visitExprOrOpArgNode((ExprOrOpArgNode) second,
-							d, VALUE).out.toString();
+					
+					String val = brackets(visitExprOrOpArgNode((ExprOrOpArgNode) second,
+							d, VALUE), P_maplet, false).toString();
+					//String val = visitExprOrOpArgNode((ExprOrOpArgNode) second,
+					//		d, VALUE).out.toString();
 
 					LinkedList<ExprOrOpArgNode> list = new LinkedList<ExprOrOpArgNode>();
 					for (int j = 0; j < seq.getArgs().length; j++) {
@@ -657,9 +660,7 @@ public abstract class AbstractExpressionPrinter extends BuiltInOPs implements
 					list.poll();
 					String res = evalExceptValue(list, func.getRange(), val,
 							oldRecOrFunc + "(" + dom + ")");
-					out.append("(");
 					out.append(res);
-					out.append("");
 					// out.append(brackets(
 					// visitExprOrOpArgNode(pair.getArgs()[1], d, VALUE),
 					// P_maplet, false));

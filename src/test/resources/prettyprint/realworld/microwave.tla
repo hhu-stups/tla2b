@@ -1,4 +1,4 @@
----- MODULE MicroWave ----
+---- MODULE microwave ----
 EXTENDS Naturals
 
 VARIABLES
