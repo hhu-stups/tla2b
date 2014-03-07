@@ -75,19 +75,28 @@ public class TLA2B implements TranslationGlobals {
 		mainFile = args[i];
 	}
 
-	private void evalModuleFileName() {
-		String name = mainFile;
-		if (name.toLowerCase().endsWith(".tla")) {
-			name = name.substring(0, name.length() - 4);
+	private void evalModuleFileName() throws IOException {
+		File file = new File(mainFile);
+		String canonicalPath;
+		if(file.exists()){
+			canonicalPath = file.getCanonicalPath();
+		}else {
+			throw new IOException("File '"+ mainFile + "' does not exit.");
+		}
+		
+
+		String moduleName = canonicalPath;
+		if (moduleName.toLowerCase().endsWith(".tla")) {
+			moduleName = moduleName.substring(0, moduleName.length() - 4);
 		}
 
-		name = name.replace("\\", File.separator);
-		name = name.replace("/", File.separator);
+		moduleName = moduleName.replace("\\", File.separator);
+		moduleName = moduleName.replace("/", File.separator);
 
-		mainModuleName = name
-				.substring(name.lastIndexOf(FileUtil.separator) + 1);
+		mainModuleName = moduleName
+				.substring(moduleName.lastIndexOf(FileUtil.separator) + 1);
 
-		path = name.substring(0, name.lastIndexOf(FileUtil.separator) + 1);
+		path = moduleName.substring(0, moduleName.lastIndexOf(FileUtil.separator) + 1);
 
 		if (path.equals("")) {
 			ToolIO.setUserDir("." + File.separator);
@@ -120,7 +129,14 @@ public class TLA2B implements TranslationGlobals {
 		TLA2B tla2b = new TLA2B();
 		tla2b.handleParameter(args);
 
-		tla2b.evalModuleFileName();
+		
+		try {
+			tla2b.evalModuleFileName();
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			System.exit(-1);
+		}
+		
 		tla2b.evalConfigFile();
 
 		ToolIO.setMode(ToolIO.TOOL);
@@ -143,7 +159,7 @@ public class TLA2B implements TranslationGlobals {
 		StringBuilder s = new StringBuilder();
 		try {
 			s = t.translate();
-		} catch (NotImplementedException e){
+		} catch (NotImplementedException e) {
 			error = true;
 			System.err.print("**** Translation Error ****\n");
 			System.err.print("Not implemented:\n");
@@ -210,7 +226,7 @@ public class TLA2B implements TranslationGlobals {
 
 	}
 
-	public static String translateFile(String mainFile) throws TLA2BException {
+	public static String translateFile(String mainFile) throws TLA2BException, IOException {
 		TLA2B tla2b = new TLA2B();
 		tla2b.mainFile = mainFile;
 		tla2b.evalModuleFileName();
@@ -256,5 +272,5 @@ public class TLA2B implements TranslationGlobals {
 		in.close();
 		return res.toString();
 	}
-	
+
 }
