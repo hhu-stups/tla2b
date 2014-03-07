@@ -14,7 +14,11 @@ repositories {
    	mavenRepo name: 'cobra_ext', url: "http://cobra.cs.uni-duesseldorf.de/artifactory/repo"
 }
 
-def parser_version = '2.4.18-SNAPSHOT'
+def parser_version = '2.4.20-SNAPSHOT'
+
+configurations { // configuration that holds jars to copy into lib
+	releaseJars
+}
 
 dependencies {
 	//compile 'com.microsoft:tla2tools:1.4.6'
@@ -23,12 +27,17 @@ dependencies {
  	testCompile (group: 'de.prob', name: 'parserbase', version: parser_version)
   	testCompile (group: 'de.prob', name: 'bparser', version: parser_version)
 	testCompile (group: 'junit', name: 'junit', version: '4.+')
+	
+	releaseJars (group: 'de.tla', name: 'tlatools', version: '1.0.0-SNAPSHOT')
 }
 
 
 jar {
 	from sourceSets.main.allJava
- }
+}
+jar	{
+	from configurations.releaseJars.collect { it.isDirectory() ? it : zipTree(it) }
+}
 
 manifest.mainAttributes("Main-Class" : 'de.tla2b.translation.TLA2B')
 manifest.mainAttributes("Class-Path": './tla/ tlatools.jar')
