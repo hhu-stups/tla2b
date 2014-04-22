@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import de.tla2b.analysis.BOperation;
+import de.tla2b.analysis.PredicateVsExpression;
+import de.tla2b.analysis.PredicateVsExpression.DefinitionType;
 import de.tla2b.analysis.RecursiveFunktion;
 import de.tla2b.analysis.SpecAnalyser;
 import de.tla2b.config.ConfigfileEvaluator;
@@ -19,7 +21,6 @@ import de.tla2b.global.TranslationGlobals;
 import de.tla2b.types.EnumType;
 import de.tla2b.types.SetType;
 import de.tla2b.types.TLAType;
-
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.FormalParamNode;
@@ -33,6 +34,7 @@ import tlc2.value.SetEnumValue;
 public class BMachinePrinter extends AbstractExpressionPrinter implements
 		TranslationGlobals {
 	private ModuleNode module;
+	private PredicateVsExpression predicateVsExpression;
 	private ArrayList<OpDeclNode> bConstants;
 	private ArrayList<ExprNode> inits;
 	private ArrayList<BOperation> bOperations;
@@ -53,11 +55,12 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements
 	 * @param moduleNode
 	 * @param conEval
 	 * @param specAnalyser
+	 * @param predVsExpr
 	 */
 	public BMachinePrinter(ModuleNode moduleNode, ConfigfileEvaluator conEval,
-			SpecAnalyser specAnalyser) {
+			SpecAnalyser specAnalyser, PredicateVsExpression predVsExpr) {
 		this.module = moduleNode;
-
+		this.predicateVsExpression = predVsExpr;
 		if (conEval == null) {
 			bConstants = new ArrayList<OpDeclNode>();
 			for (int i = 0; i < moduleNode.getConstantDecls().length; i++) {
@@ -688,9 +691,18 @@ public class BMachinePrinter extends AbstractExpressionPrinter implements
 
 		}
 		TLAType defType = (TLAType) n.getToolObject(TYPE_ID);
+
+		StringBuilder newSB = new StringBuilder();
+		if (expected == PREDICATE
+				&& predicateVsExpression.getDefinitionType(def) == DefinitionType.EXPRESSION) {
+			newSB.append(out + " = TRUE");
+			return new ExprReturn(newSB, P_equals);
+		}
+
 		if (defType != null && defType.getKind() == BOOL) {
 			return makeBoolValue(out, expected, P_max);
 		}
+
 		return new ExprReturn(out);
 	}
 

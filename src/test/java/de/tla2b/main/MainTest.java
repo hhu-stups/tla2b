@@ -15,7 +15,7 @@ public class MainTest {
 	@Ignore
 	@Test
 	public void testMainClassModule() throws Exception {
-		String mainFile = "src/test/resources/main/Counter.tla";
+		String mainFile = "src/test/resources/main/counter.tla";
 		TLA2B.main(new String[]{mainFile});
 		assertFalse(TLA2B.hasError());
 	}

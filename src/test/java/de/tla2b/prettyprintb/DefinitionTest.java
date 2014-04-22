@@ -32,6 +32,20 @@ public class DefinitionTest {
 	}
 	
 	@Test
+	public void testDefinitionCall() throws Exception {
+		final String module = "-------------- MODULE Testing ----------------\n"
+				+ "foo == TRUE\n"
+				+ "ASSUME foo\n"
+				+ "=================================";
+		StringBuilder sb = TestUtil.translateString(module);
+		System.out.println(sb);
+		final String expected = "MACHINE Testing\n"
+				+ "PROPERTIES foo = TRUE \n"
+				+ "DEFINITIONS foo == TRUE \n" + "END";
+		assertEquals(TestUtil.getTreeAsString(expected), TestUtil.getTreeAsString(sb.toString()));
+	}
+	
+	@Test
 	public void testDefinition2() throws Exception {
 		final String module = "-------------- MODULE Testing ----------------\n"
 				+ "CONSTANTS k\n"

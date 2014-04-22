@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import de.tla2b.analysis.InstanceTransformation;
+import de.tla2b.analysis.PredicateVsExpression;
 import de.tla2b.analysis.SpecAnalyser;
 import de.tla2b.analysis.SymbolRenamer;
 import de.tla2b.analysis.SymbolSorter;
@@ -14,7 +15,6 @@ import de.tla2b.config.ModuleOverrider;
 import de.tla2b.exceptions.TLA2BException;
 import de.tla2b.global.TranslationGlobals;
 import de.tla2b.pprint.BMachinePrinter;
-
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
@@ -105,6 +105,8 @@ public class Tla2BTranslator implements TranslationGlobals {
 		SymbolSorter symbolSorter = new SymbolSorter(moduleNode);
 		symbolSorter.sort();
 
+		PredicateVsExpression predVsExpr = new PredicateVsExpression(moduleNode);
+		
 		SpecAnalyser specAnalyser;
 
 		ConfigfileEvaluator conEval = null;
@@ -130,7 +132,8 @@ public class Tla2BTranslator implements TranslationGlobals {
 		SymbolRenamer symRenamer = new SymbolRenamer(moduleNode, specAnalyser);
 		symRenamer.start();
 		BMachinePrinter p = new BMachinePrinter(moduleNode, conEval,
-				specAnalyser);
+				specAnalyser, predVsExpr);
+		
 		return p.start();
 	}
 

@@ -8,8 +8,12 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import de.be4.classicalb.core.parser.BParser;
+import de.be4.classicalb.core.parser.exceptions.BException;
+import de.be4.classicalb.core.parser.node.Node;
+import de.be4.classicalb.core.parser.node.Start;
+import de.tla2b.util.Ast2String;
 import de.tla2b.util.TestUtil;
-
 import util.ToolIO;
 
 public class TestSet {
@@ -20,7 +24,7 @@ public class TestSet {
 	/**********************************************************************
 	 * Set Enumeration: {1,2,3}
 	 **********************************************************************/
-
+	
 	@Test
 	public void testSetEnumeration() throws Exception {
 		ToolIO.reset();
