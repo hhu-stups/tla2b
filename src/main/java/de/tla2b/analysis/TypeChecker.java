@@ -439,11 +439,13 @@ public class TypeChecker extends BuiltInOPs implements IType, ASTConstants,
 				p.setToolObject(TEMP_TYPE_ID, pType);
 			}
 
-			if (found.isUntyped() || untyped) {
-				// evaluate the body of the definition again
-				paramId = TEMP_TYPE_ID;
-				found = visitExprNode(def.getBody(), found);
-				paramId = TYPE_ID;
+			if(!def.getInRecursive()){
+				if (found.isUntyped() || untyped) {
+					// evaluate the body of the definition again
+					paramId = TEMP_TYPE_ID;
+					found = visitExprNode(def.getBody(), found);
+					paramId = TYPE_ID;
+				}
 			}
 
 			n.setToolObject(TYPE_ID, found);

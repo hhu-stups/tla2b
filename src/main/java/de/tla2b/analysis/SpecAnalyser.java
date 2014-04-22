@@ -475,8 +475,9 @@ public class SpecAnalyser extends BuiltInOPs implements ASTConstants,
 				}
 				return;
 			}
-			bDefinitionsSet.add(def);
-			visitExprNode(def.getBody(), def.getParams());
+			if(bDefinitionsSet.add(def)){
+				visitExprNode(def.getBody(), def.getParams());
+			}
 
 			for (int i = 0; i < node.getArgs().length; i++) {
 				visitExprOrOpArgNode(node.getArgs()[i], parameters);
